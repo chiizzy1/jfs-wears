@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { apiClient, getErrorMessage } from "@/lib/api-client";
+import { ErrorFallback } from "@/components/ui/error-fallback";
 
 interface Category {
   id: string;
@@ -12,8 +14,6 @@ interface Category {
   imageUrl?: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-
 // Fallback images for categories without images
 const fallbackImages: Record<string, string> = {
   default: "/hero.png",
@@ -22,36 +22,47 @@ const fallbackImages: Record<string, string> = {
 export default function CategoryGrid() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchCategories = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await apiClient.get<Category[]>("/categories");
+      setCategories(data);
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+      setError(getErrorMessage(err));
+      setCategories([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const res = await fetch(`${API_BASE_URL}/categories`);
-        if (!res.ok) throw new Error("Failed to fetch categories");
-        const data: Category[] = await res.json();
-        setCategories(data);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        // Set empty array on error - component will show empty state
-        setCategories([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     fetchCategories();
   }, []);
+
+  const SectionHeader = () => (
+    <div className="flex justify-between items-end mb-12">
+      <div>
+        <h2 className="text-3xl md:text-4xl font-bold mb-4">Shop by Category</h2>
+        <p className="text-gray-500">Curated essentials for every occasion.</p>
+      </div>
+      <Link
+        href="/shop"
+        className="text-primary font-medium hover:underline decoration-accent underline-offset-4 hidden md:block"
+      >
+        View All Categories &rarr;
+      </Link>
+    </div>
+  );
 
   if (loading) {
     return (
       <section className="py-20 bg-white">
         <div className="container-width">
-          <div className="flex justify-between items-end mb-12">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Shop by Category</h2>
-              <p className="text-gray-500">Curated essentials for every occasion.</p>
-            </div>
-          </div>
+          <SectionHeader />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 h-[600px]">
             {[1, 2, 3].map((i) => (
               <div key={i} className={`bg-gray-200 rounded-2xl animate-pulse ${i === 1 ? "md:col-span-2 lg:col-span-2" : ""}`} />
@@ -62,16 +73,22 @@ export default function CategoryGrid() {
     );
   }
 
+  if (error) {
+    return (
+      <section className="py-20 bg-white">
+        <div className="container-width">
+          <SectionHeader />
+          <ErrorFallback variant="card" title="Failed to load categories" description={error} onRetry={fetchCategories} />
+        </div>
+      </section>
+    );
+  }
+
   if (categories.length === 0) {
     return (
       <section className="py-20 bg-white">
         <div className="container-width">
-          <div className="flex justify-between items-end mb-12">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Shop by Category</h2>
-              <p className="text-gray-500">Curated essentials for every occasion.</p>
-            </div>
-          </div>
+          <SectionHeader />
           <div className="flex justify-center py-12 border-2 border-dashed border-gray-300 rounded-xl">
             <p className="text-gray-400">No categories available at the moment.</p>
           </div>
@@ -87,18 +104,7 @@ export default function CategoryGrid() {
   return (
     <section className="py-20 bg-white">
       <div className="container-width">
-        <div className="flex justify-between items-end mb-12">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Shop by Category</h2>
-            <p className="text-gray-500">Curated essentials for every occasion.</p>
-          </div>
-          <Link
-            href="/shop"
-            className="text-primary font-medium hover:underline decoration-accent underline-offset-4 hidden md:block"
-          >
-            View All Categories &rarr;
-          </Link>
-        </div>
+        <SectionHeader />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 h-[600px]">
           {/* Main Category */}

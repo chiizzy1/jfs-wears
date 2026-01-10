@@ -4,14 +4,29 @@ import { useCartStore } from "@/stores/cart-store";
 import { useAuthStore } from "@/stores/auth-store";
 import toast from "react-hot-toast";
 import { CheckoutValues } from "@/schemas/checkout.schema";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { apiClient, getErrorMessage } from "@/lib/api-client";
 
 export interface ShippingZone {
   id: string;
   name: string;
   states: string[];
   fee: number;
+}
+
+interface OrderResponse {
+  id: string;
+  orderNumber: string;
+  total: number;
+}
+
+interface PaymentResponse {
+  authorizationUrl?: string;
+  reference?: string;
+}
+
+interface PromotionValidation {
+  discount: number;
+  message: string;
 }
 
 export function useCheckout() {
@@ -33,13 +48,11 @@ export function useCheckout() {
   useEffect(() => {
     async function fetchShippingZones() {
       try {
-        const res = await fetch(`${API_BASE_URL}/shipping/zones`);
-        if (res.ok) {
-          const zones: ShippingZone[] = await res.json();
-          setShippingZones(zones);
-        }
+        const zones = await apiClient.get<ShippingZone[]>("/shipping/zones");
+        setShippingZones(zones);
       } catch (error) {
         console.error("Failed to fetch shipping zones:", error);
+        // Don't show toast for this - zones might not be configured
       }
     }
     fetchShippingZones();
@@ -54,22 +67,14 @@ export function useCheckout() {
     if (!promoCode.trim()) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/promotions/validate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: promoCode, orderAmount: subtotal }),
+      const data = await apiClient.post<PromotionValidation>("/promotions/validate", {
+        code: promoCode,
+        orderAmount: subtotal,
       });
-
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Invalid promo code");
-      }
-
-      const data = await res.json();
       setDiscount(data.discount);
       toast.success(data.message);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to apply promo code");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
       setDiscount(0);
     }
   };
@@ -103,55 +108,40 @@ export function useCheckout() {
           phone: data.phone,
         },
         promoCode: promoCode || undefined,
-        paymentMethod: data.paymentMethod, // Include payment method in payload if API supports it
+        paymentMethod: data.paymentMethod,
       };
 
-      const res = await fetch(`${API_BASE_URL}/orders`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderPayload),
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to create order");
-      }
-
-      const order = await res.json();
+      const order = await apiClient.post<OrderResponse>("/orders", orderPayload);
 
       // Handle Payment Redirects
       if (data.paymentMethod === "card") {
-        const paymentRes = await fetch(`${API_BASE_URL}/payments/initialize`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        try {
+          const paymentData = await apiClient.post<PaymentResponse>("/payments/initialize", {
             orderId: order.id,
             amount: total,
             email: data.email,
             provider: "PAYSTACK",
-          }),
-        });
+          });
 
-        if (paymentRes.ok) {
-          const paymentData = await paymentRes.json();
           if (paymentData.authorizationUrl) {
             clearCart();
             window.location.href = paymentData.authorizationUrl;
             return;
           }
+        } catch (paymentError) {
+          console.error("Payment initialization failed:", paymentError);
+          // Continue to COD fallback or show error
+          toast.error("Payment initialization failed. Please try again or choose another payment method.");
+          throw paymentError;
         }
       }
 
       // Default Success (COD / Transfer)
       toast.success(`Order #${order.orderNumber || order.id.slice(0, 8)} placed successfully!`);
       clearCart();
-      router.push(`/order-success?id=${order.id}`); // Redirect to order-success page (assuming it exists or using shop)
-      // Original code redirected to /shop but order-success is better UX usually.
-      // Checking existing code: router.push(`/shop`);
-      // I'll stick to /shop to match original behavior or use /order-success if I see it in file list.
-      // I saw /order-success route in build output!
-    } catch (error: any) {
-      toast.error(error.message || "Failed to place order");
+      router.push(`/order-success?id=${order.id}`);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
       throw error;
     } finally {
       setIsSubmitting(false);

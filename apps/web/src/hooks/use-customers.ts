@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customersService } from "@/services/customers.service";
 import { toast } from "react-hot-toast";
+import { getErrorMessage } from "@/lib/api-client";
 
 export const CUSTOMERS_QUERY_KEY = ["customers"];
 
@@ -20,14 +21,13 @@ export function useCustomers() {
   });
 
   const deleteCustomer = useMutation({
-    mutationFn: customersService.deleteCustomer,
+    mutationFn: (id: string) => customersService.deleteCustomer(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CUSTOMERS_QUERY_KEY });
       toast.success("Customer deactivated");
     },
     onError: (error) => {
-      console.error("Failed to delete customer:", error);
-      toast.error("Failed to deactivate customer");
+      toast.error(getErrorMessage(error));
     },
   });
 

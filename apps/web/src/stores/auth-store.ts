@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { apiClient, ApiError, getErrorMessage } from "@/lib/api-client";
 
 export interface User {
   id: string;
@@ -15,11 +14,17 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
+interface AuthResponse {
+  user: User;
+  tokens: AuthTokens;
+}
+
 interface AuthState {
   user: User | null;
   tokens: AuthTokens | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  error: string | null;
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
@@ -29,6 +34,7 @@ interface AuthState {
   setLoading: (loading: boolean) => void;
   getAuthHeader: () => Record<string, string>;
   resetPassword: (token: string, password: string) => Promise<void>;
+  clearError: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -38,58 +44,41 @@ export const useAuthStore = create<AuthState>()(
       tokens: null,
       isAuthenticated: false,
       isLoading: false,
+      error: null,
 
       login: async (email: string, password: string) => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
-          const res = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-          });
-
-          if (!res.ok) {
-            const error = await res.json();
-            throw new Error(error.message || "Login failed");
-          }
-
-          const data = await res.json();
+          const data = await apiClient.post<AuthResponse>("/auth/login", { email, password });
           set({
             user: data.user,
             tokens: data.tokens,
             isAuthenticated: true,
             isLoading: false,
+            error: null,
           });
         } catch (error) {
-          set({ isLoading: false });
-          throw error;
+          const message = getErrorMessage(error);
+          set({ isLoading: false, error: message });
+          throw error instanceof ApiError ? error : new ApiError(0, message);
         }
       },
 
       register: async (email: string, password: string, name?: string) => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
-          const res = await fetch(`${API_BASE_URL}/auth/register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password, name }),
-          });
-
-          if (!res.ok) {
-            const error = await res.json();
-            throw new Error(error.message || "Registration failed");
-          }
-
-          const data = await res.json();
+          const data = await apiClient.post<AuthResponse>("/auth/register", { email, password, name });
           set({
             user: data.user,
             tokens: data.tokens,
             isAuthenticated: true,
             isLoading: false,
+            error: null,
           });
         } catch (error) {
-          set({ isLoading: false });
-          throw error;
+          const message = getErrorMessage(error);
+          set({ isLoading: false, error: message });
+          throw error instanceof ApiError ? error : new ApiError(0, message);
         }
       },
 
@@ -98,6 +87,7 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           tokens: null,
           isAuthenticated: false,
+          error: null,
         });
       },
 
@@ -106,18 +96,9 @@ export const useAuthStore = create<AuthState>()(
         if (!tokens?.refreshToken) return false;
 
         try {
-          const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ refreshToken: tokens.refreshToken }),
+          const data = await apiClient.post<AuthTokens>("/auth/refresh", {
+            refreshToken: tokens.refreshToken,
           });
-
-          if (!res.ok) {
-            get().logout();
-            return false;
-          }
-
-          const data = await res.json();
           set({ tokens: data });
           return true;
         } catch {
@@ -135,24 +116,18 @@ export const useAuthStore = create<AuthState>()(
       },
 
       resetPassword: async (token: string, password: string) => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
-          const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token, password }),
-          });
-
-          if (!res.ok) {
-            const error = await res.json();
-            throw new Error(error.message || "Reset failed");
-          }
-        } catch (error) {
-          throw error;
-        } finally {
+          await apiClient.post("/auth/reset-password", { token, password });
           set({ isLoading: false });
+        } catch (error) {
+          const message = getErrorMessage(error);
+          set({ isLoading: false, error: message });
+          throw error instanceof ApiError ? error : new ApiError(0, message);
         }
       },
+
+      clearError: () => set({ error: null }),
     }),
     {
       name: "jfs-auth-storage",

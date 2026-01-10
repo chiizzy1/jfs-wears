@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { apiClient, ApiError } from "@/lib/api-client";
 
 export interface ApiResponse<T> {
   data: T;
@@ -44,32 +44,60 @@ export interface Category {
   imageUrl?: string;
 }
 
+// API response types
+interface ApiProduct {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  basePrice: number;
+  categoryId: string;
+  category?: { id: string; name: string; slug: string };
+  images?: Array<{ id: string; url: string; altText?: string; isMain?: boolean }>;
+  variants?: Array<{
+    id: string;
+    sku: string;
+    size?: string;
+    color?: string;
+    stock: number;
+    priceAdjustment?: number;
+  }>;
+  isActive: boolean;
+  isFeatured: boolean;
+}
+
+interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+}
+
 // Helper function to map API product response to frontend Product interface
-function mapApiProduct(apiProduct: Record<string, unknown>): Product {
+function mapApiProduct(apiProduct: ApiProduct): Product {
   return {
-    id: apiProduct.id as string,
-    name: apiProduct.name as string,
-    slug: apiProduct.slug as string,
-    description: (apiProduct.description as string) || "",
+    id: apiProduct.id,
+    name: apiProduct.name,
+    slug: apiProduct.slug,
+    description: apiProduct.description || "",
     price: Number(apiProduct.basePrice),
-    categoryId: apiProduct.categoryId as string,
-    category: apiProduct.category as { id: string; name: string; slug: string } | undefined,
-    images: ((apiProduct.images as Array<Record<string, unknown>>) || []).map((img) => ({
-      id: img.id as string,
-      url: img.url as string,
-      alt: (img.altText as string) || undefined,
-      isPrimary: (img.isMain as boolean) || false,
+    categoryId: apiProduct.categoryId,
+    category: apiProduct.category,
+    images: (apiProduct.images || []).map((img) => ({
+      id: img.id,
+      url: img.url,
+      alt: img.altText || undefined,
+      isPrimary: img.isMain || false,
     })),
-    variants: ((apiProduct.variants as Array<Record<string, unknown>>) || []).map((v) => ({
-      id: v.id as string,
-      sku: v.sku as string,
-      size: (v.size as string) || undefined,
-      color: (v.color as string) || undefined,
-      stock: v.stock as number,
+    variants: (apiProduct.variants || []).map((v) => ({
+      id: v.id,
+      sku: v.sku,
+      size: v.size || undefined,
+      color: v.color || undefined,
+      stock: v.stock,
       price: Number(apiProduct.basePrice) + Number(v.priceAdjustment || 0),
     })),
-    isActive: apiProduct.isActive as boolean,
-    isFeatured: apiProduct.isFeatured as boolean,
+    isActive: apiProduct.isActive,
+    isFeatured: apiProduct.isFeatured,
   };
 }
 
@@ -95,35 +123,27 @@ export async function fetchProducts(params?: {
   if (params?.gender) searchParams.set("gender", params.gender);
   if (params?.search) searchParams.set("search", params.search);
 
-  const url = `${API_BASE_URL}/products?${searchParams.toString()}`;
-
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
-    if (!res.ok) throw new Error("Failed to fetch products");
-    const data = await res.json();
+    const data = await apiClient.get<PaginatedResponse<ApiProduct> | ApiProduct[]>(`/products?${searchParams.toString()}`);
 
-    // API returns { items, total, page, ... } structure
-    const items = data.items || data;
-    const products = (Array.isArray(items) ? items : []).map(mapApiProduct);
-    const total = data.total || products.length;
+    // API returns { items, total, page, ... } structure or array
+    const items = Array.isArray(data) ? data : data.items || [];
+    const products = items.map(mapApiProduct);
+    const total = Array.isArray(data) ? products.length : data.total || products.length;
     const limit = params?.limit || 12;
     const totalPages = Math.ceil(total / limit);
 
     return { products, total, totalPages };
   } catch (error) {
     console.error("Error fetching products:", error);
+    // Return empty results on error - don't crash
     return { products: [], total: 0, totalPages: 0 };
   }
 }
 
 export async function fetchProductBySlug(slug: string): Promise<Product | null> {
   try {
-    // The API endpoint is /products/:slug (not /products/slug/:slug)
-    const res = await fetch(`${API_BASE_URL}/products/${slug}`, {
-      next: { revalidate: 60 },
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
+    const data = await apiClient.get<ApiProduct>(`/products/${slug}`);
     return mapApiProduct(data);
   } catch (error) {
     console.error("Error fetching product:", error);
@@ -133,11 +153,7 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
 
 export async function fetchCategories(): Promise<Category[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/categories`, {
-      next: { revalidate: 300 },
-    });
-    if (!res.ok) throw new Error("Failed to fetch categories");
-    return res.json();
+    return await apiClient.get<Category[]>("/categories");
   } catch (error) {
     console.error("Error fetching categories:", error);
     return [];
@@ -148,3 +164,6 @@ export async function fetchFeaturedProducts(): Promise<Product[]> {
   const result = await fetchProducts({ featured: true, limit: 8 });
   return result.products;
 }
+
+// Re-export ApiError for convenience
+export { ApiError };

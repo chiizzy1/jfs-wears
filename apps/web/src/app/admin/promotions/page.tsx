@@ -28,9 +28,8 @@ export default function PromotionsPage() {
       validTo: new Date(data.validTo).toISOString(),
     };
 
-    createPromotion.mutate(payload, {
-      onSuccess: () => setIsModalOpen(false),
-    });
+    createPromotion.mutate(payload);
+    setIsModalOpen(false);
   };
 
   const handleUpdate = (data: PromotionFormValues) => {
@@ -47,15 +46,9 @@ export default function PromotionsPage() {
       validTo: new Date(data.validTo).toISOString(),
     };
 
-    updatePromotion.mutate(
-      { id: editingPromotion.id, data: payload },
-      {
-        onSuccess: () => {
-          setIsModalOpen(false);
-          setEditingPromotion(null);
-        },
-      }
-    );
+    updatePromotion.mutate({ id: editingPromotion.id, data: payload });
+    setIsModalOpen(false);
+    setEditingPromotion(null);
   };
 
   const handleDelete = (id: string, code: string) => {

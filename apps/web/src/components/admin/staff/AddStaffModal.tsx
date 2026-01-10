@@ -37,11 +37,8 @@ export function AddStaffModal({ isOpen, onClose }: AddStaffModalProps) {
   }, [isOpen, form]);
 
   const onSubmit = (data: StaffFormValues) => {
-    createStaff.mutate(data, {
-      onSuccess: () => {
-        onClose();
-      },
-    });
+    createStaff.mutate(data);
+    onClose();
   };
 
   return (

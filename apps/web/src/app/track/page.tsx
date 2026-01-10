@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { apiClient, getErrorMessage, isApiError } from "@/lib/api-client";
+import { ErrorFallback } from "@/components/ui/error-fallback";
 
 interface OrderItem {
   id: string;
@@ -47,29 +47,39 @@ function TrackContent() {
   const [orderNumber, setOrderNumber] = useState(orderParam || "");
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isNotFound, setIsNotFound] = useState(false);
+
+  const fetchOrder = useCallback(async (num: string) => {
+    if (!num.trim()) return;
+
+    setIsLoading(true);
+    setError(null);
+    setIsNotFound(false);
+
+    try {
+      const data = await apiClient.get<Order>(`/orders/track/${num}`);
+      setOrder(data);
+    } catch (err) {
+      console.error("Error fetching order:", err);
+
+      if (isApiError(err) && err.isNotFound) {
+        setIsNotFound(true);
+        setError("Order not found. Please check your order number.");
+      } else {
+        setError(getErrorMessage(err));
+      }
+      setOrder(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (orderParam) {
       fetchOrder(orderParam);
     }
-  }, [orderParam]);
-
-  const fetchOrder = async (num: string) => {
-    setIsLoading(true);
-    setError("");
-    try {
-      const res = await fetch(`${API_BASE_URL}/orders/track/${num}`);
-      if (!res.ok) throw new Error("Order not found");
-      const data = await res.json();
-      setOrder(data);
-    } catch (err) {
-      setError("Order not found. Please check your order number.");
-      setOrder(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [orderParam, fetchOrder]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,7 +112,16 @@ function TrackContent() {
         </div>
 
         {/* Error State */}
-        {error && <div className="bg-error/10 text-error rounded-xl p-4 text-center mb-8">{error}</div>}
+        {error && (
+          <div className="mb-8">
+            <ErrorFallback
+              variant={isNotFound ? "card" : "inline"}
+              title={isNotFound ? "Order not found" : "Something went wrong"}
+              description={error}
+              onRetry={orderNumber.trim() ? () => fetchOrder(orderNumber.trim()) : undefined}
+            />
+          </div>
+        )}
 
         {/* Order Details */}
         {order && (

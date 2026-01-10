@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { productsService } from "@/services/products.service";
 import { toast } from "react-hot-toast";
+import { getErrorMessage } from "@/lib/api-client";
 
 export const useProducts = (params?: { category?: string }) => {
   const queryClient = useQueryClient();
@@ -16,13 +17,13 @@ export const useProducts = (params?: { category?: string }) => {
   });
 
   const deleteProductMutation = useMutation({
-    mutationFn: productsService.deleteProduct,
+    mutationFn: (id: string) => productsService.deleteProduct(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Product deleted successfully");
     },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete product");
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 
@@ -30,28 +31,27 @@ export const useProducts = (params?: { category?: string }) => {
     mutationFn: productsService.createProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      // toast.success("Product created successfully"); // Handled in component
     },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to create product");
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 
   const updateProductMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => productsService.updateProduct(id, data),
+    mutationFn: ({ id, data }: { id: string; data: unknown }) => productsService.updateProduct(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Product updated successfully");
     },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to update product");
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 
   const uploadImagesMutation = useMutation({
     mutationFn: ({ id, files }: { id: string; files: File[] }) => productsService.uploadProductImages(id, files),
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to upload images");
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 
@@ -72,8 +72,6 @@ export const useProducts = (params?: { category?: string }) => {
 };
 
 export const useProduct = (id: string) => {
-  const queryClient = useQueryClient();
-
   // Ensure id is valid before querying
   const enabled = !!id && id !== "new";
 

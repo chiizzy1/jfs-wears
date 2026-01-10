@@ -11,7 +11,7 @@ vi.mock("zustand/middleware", async () => {
 });
 
 // Import store AFTER mocking persist
-import { useCartStore, CartItem } from "./store";
+import { useCartStore, CartItem } from "@/stores/cart-store";
 
 // Helper to reset store between tests
 const resetStore = () => {
@@ -132,8 +132,8 @@ describe("Cart Store", () => {
 
       // Assert
       const { items } = useCartStore.getState();
-      expect(items.find((i) => i.variantId === "variant-1")?.quantity).toBe(10);
-      expect(items.find((i) => i.variantId === "variant-2")?.quantity).toBe(2);
+      expect(items.find((i: CartItem) => i.variantId === "variant-1")?.quantity).toBe(10);
+      expect(items.find((i: CartItem) => i.variantId === "variant-2")?.quantity).toBe(2);
     });
   });
 

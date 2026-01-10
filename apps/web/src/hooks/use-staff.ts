@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { staffService } from "@/services/staff.service";
 import { CreateStaffDto } from "@/lib/admin-api";
 import { toast } from "react-hot-toast";
+import { getErrorMessage } from "@/lib/api-client";
 
 export const STAFF_KEYS = {
   all: ["staff"] as const,
@@ -22,8 +23,8 @@ export function useStaff() {
       queryClient.invalidateQueries({ queryKey: STAFF_KEYS.lists() });
       toast.success("Staff member added successfully");
     },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to create staff member");
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 
@@ -33,8 +34,8 @@ export function useStaff() {
       queryClient.invalidateQueries({ queryKey: STAFF_KEYS.lists() });
       toast.success("Staff member deleted successfully");
     },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete staff member");
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 

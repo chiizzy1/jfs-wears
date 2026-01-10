@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { promotionsService } from "@/services/promotions.service";
 import { CreatePromotionDto } from "@/lib/admin-api";
 import { toast } from "react-hot-toast";
+import { getErrorMessage } from "@/lib/api-client";
 
 export const PROMOTIONS_QUERY_KEY = ["promotions"];
 
@@ -27,8 +28,7 @@ export function usePromotions() {
       toast.success("Promotion created successfully");
     },
     onError: (error) => {
-      console.error("Failed to create promotion:", error);
-      toast.error("Failed to create promotion");
+      toast.error(getErrorMessage(error));
     },
   });
 
@@ -39,20 +39,18 @@ export function usePromotions() {
       toast.success("Promotion updated successfully");
     },
     onError: (error) => {
-      console.error("Failed to update promotion:", error);
-      toast.error("Failed to update promotion");
+      toast.error(getErrorMessage(error));
     },
   });
 
   const deletePromotion = useMutation({
-    mutationFn: promotionsService.deletePromotion,
+    mutationFn: (id: string) => promotionsService.deletePromotion(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PROMOTIONS_QUERY_KEY });
       toast.success("Promotion deleted");
     },
     onError: (error) => {
-      console.error("Failed to delete promotion:", error);
-      toast.error("Failed to delete promotion");
+      toast.error(getErrorMessage(error));
     },
   });
 
