@@ -5,6 +5,8 @@ import ProductCard from "./ProductCard";
 import { Product } from "@/lib/api";
 import { apiClient, getErrorMessage } from "@/lib/api-client";
 import { ErrorFallback } from "@/components/ui/error-fallback";
+import useEmblaCarousel from "embla-carousel-react";
+import AutoScroll from "embla-carousel-auto-scroll";
 
 interface ApiProduct {
   id: string;
@@ -60,11 +62,19 @@ export default function FeaturedProducts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [emblaRef] = useEmblaCarousel({ loop: true, dragFree: true }, [
+    AutoScroll({
+      playOnInit: true,
+      stopOnInteraction: false,
+      stopOnMouseEnter: true, // Pauses on hover
+      speed: 1, // Slower speed
+    }),
+  ]);
+
   const fetchFeaturedProducts = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Fetch enough products to create a decent loop
       const data = await apiClient.get<ApiProduct[]>("/products/featured?limit=10");
       const mappedProducts = data.map(mapApiProduct);
       setProducts(mappedProducts);
@@ -82,8 +92,8 @@ export default function FeaturedProducts() {
 
   const SectionHeader = () => (
     <div className="container-width text-center mb-12">
-      <h2 className="text-3xl md:text-4xl font-bold mb-4">Trending Now</h2>
-      <p className="text-gray-500 max-w-2xl mx-auto">
+      <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Trending Now</h2>
+      <p className="text-gray-500 max-w-2xl mx-auto text-sm md:text-base">
         Discover the pieces everyone is talking about. Limited edition drops and bestsellers.
       </p>
     </div>
@@ -124,63 +134,34 @@ export default function FeaturedProducts() {
     );
   }
 
-  // Duplicate products for infinite loop
-  // We need enough duplicates to fill the screen + buffer
+  // Duplicate for density if needed, though loop: true handles most cases.
+  // We'll duplicate once to ensure smooth looping even on wide screens.
   const marqueeProducts = [...products, ...products, ...products];
 
   return (
     <section className="py-24 bg-[#F8F6F3] overflow-hidden">
       <SectionHeader />
 
-      {/* Marquee Container with Gradient Masks for fade effect */}
       <div className="relative w-full">
-        {/* Left Fade */}
+        {/* Gradient Masks */}
         <div className="absolute left-0 top-0 bottom-0 w-8 md:w-32 z-10 bg-linear-to-r from-[#F8F6F3] to-transparent pointer-events-none" />
-        {/* Right Fade */}
         <div className="absolute right-0 top-0 bottom-0 w-8 md:w-32 z-10 bg-linear-to-l from-[#F8F6F3] to-transparent pointer-events-none" />
 
-        {/* Scrolling Track */}
-        <div className="flex overflow-hidden group">
-          <motion.div
-            className="flex gap-4 md:gap-6 px-4"
-            animate={{
-              x: ["0%", "-33.333%"], // Move by one set of products
-            }}
-            transition={{
-              x: {
-                repeat: Infinity,
-                repeatType: "loop",
-                duration: products.length * 3, // Adjust speed based on number of products
-                ease: "linear",
-              },
-            }}
-            // Pause animation on hover
-            style={{
-              width: "max-content",
-            }}
-            whileHover={{ animationPlayState: "paused" }} // Note: Framer Motion interactions might need CSS for pause on hover perfectly, but let's try a CSS override approach or just speed modification if needed.
-            // Actually, Framer Motion doesn't support 'whileHover' for pausing an infinite 'animate'.
-            // We'll use a CSS class for the hover-pause or use the 'hover' variant if we were using variants,
-            // but for a simple loop, often CSS animation is smoother for the pause.
-            // Let's stick to Framer Motion for the movement but wrapper for pause.
-          >
+        {/* Embla Carousel */}
+        <div className="overflow-hidden" ref={emblaRef}>
+          <div className="flex touch-pan-y gap-4 md:gap-6 px-4">
             {marqueeProducts.map((product, index) => (
-              <ProductCard
-                key={`${product.id}-${index}`}
-                product={product}
-                className="w-[260px] md:w-[320px] shrink-0 transition-opacity duration-300 hover:opacity-100"
-              />
+              <div key={`${product.id}-${index}`} className="flex-[0_0_260px] md:flex-[0_0_320px] min-w-0">
+                <ProductCard product={product} className="transition-opacity duration-300 hover:opacity-100" />
+              </div>
             ))}
-          </motion.div>
+          </div>
         </div>
 
-        {/* Hover Hint */}
-        <div className="text-center mt-8 text-xs uppercase tracking-widest text-gray-400 opacity-0 md:opacity-50">
-          Scrolls infinitely • Hover to shop
+        <div className="text-center mt-8 text-xs uppercase tracking-widest text-gray-400 opacity-50">
+          Scrolls <span className="hidden md:inline">infinitely</span> • Drag to explore
         </div>
       </div>
     </section>
   );
 }
-
-import { motion } from "framer-motion";

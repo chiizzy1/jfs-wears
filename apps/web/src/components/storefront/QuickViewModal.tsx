@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/api";
@@ -17,6 +18,11 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
   const [selectedSize, setSelectedSize] = useState<string | undefined>();
   const [selectedColor, setSelectedColor] = useState<string | undefined>();
   const [activeImage, setActiveImage] = useState(product.images.find((img) => img.isPrimary)?.url || product.images[0]?.url);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const sizes = useMemo(() => [...new Set(product.variants.map((v) => v.size).filter(Boolean))], [product.variants]);
   const colors = useMemo(() => [...new Set(product.variants.map((v) => v.color).filter(Boolean))], [product.variants]);
@@ -32,9 +38,9 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
   const currentPrice = currentVariant ? currentVariant.price : product.price;
   const hasDiscount = product.compareAtPrice && product.compareAtPrice > currentPrice;
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-fade-in" onClick={onClose} />
@@ -178,6 +184,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

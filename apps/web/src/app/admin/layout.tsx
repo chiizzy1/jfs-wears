@@ -5,6 +5,9 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { AdminAuthProvider, useAdminAuth } from "@/lib/admin-auth";
 import { Toaster } from "react-hot-toast";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
+import { useState } from "react";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -121,10 +124,54 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   );
 }
 
+function AdminSidebarContent({ pathname }: { pathname: string }) {
+  return (
+    <div className="flex flex-col h-full bg-white">
+      <div className="p-6 border-b border-gray-100">
+        <Link href="/admin" className="block">
+          <span className="text-lg tracking-[0.2em] uppercase font-medium text-primary">JFS WEARS</span>
+          <p className="text-xs text-muted mt-1 tracking-widest uppercase">Admin Panel</p>
+        </Link>
+      </div>
+
+      <nav className="p-4 flex-1">
+        <ul className="space-y-1">
+          {navItems.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                  pathname === item.href ? "bg-black text-white" : "text-primary hover:bg-gray-50"
+                }`}
+              >
+                {item.icon}
+                <span className="text-xs uppercase tracking-widest">{item.label}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div className="p-4 border-t border-gray-100">
+        <Link
+          href="/"
+          className="flex items-center gap-2 px-4 py-3 text-xs uppercase tracking-widest text-muted hover:text-primary transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Store
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isLoading, isAuthenticated, logout } = useAdminAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Skip auth check for login page
   if (pathname === "/admin/login") {
@@ -156,55 +203,36 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-secondary flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-100 fixed h-full">
-        <div className="p-6 border-b border-gray-100">
-          <Link href="/admin" className="block">
-            <span className="text-lg tracking-[0.2em] uppercase font-medium text-primary">JFS WEARS</span>
-            <p className="text-xs text-muted mt-1 tracking-[0.1em] uppercase">Admin Panel</p>
-          </Link>
-        </div>
-
-        <nav className="p-4">
-          <ul className="space-y-1">
-            {navItems.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
-                    pathname === item.href ? "bg-black text-white" : "text-primary hover:bg-gray-50"
-                  }`}
-                >
-                  {item.icon}
-                  <span className="text-xs uppercase tracking-[0.1em]">{item.label}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {/* Back to Store */}
-        <div className="absolute bottom-4 left-4 right-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2 px-4 py-3 text-xs uppercase tracking-[0.1em] text-muted hover:text-primary transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Store
-          </Link>
-        </div>
+      {/* Desktop Sidebar */}
+      <aside className="w-64 bg-white border-r border-gray-100 fixed h-full hidden md:block z-20">
+        <AdminSidebarContent pathname={pathname} />
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64">
+      <main className="flex-1 ml-0 md:ml-64 transition-[margin] duration-200 ease-in-out">
         {/* Top Bar */}
         <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
-          <div className="flex items-center justify-between px-8 py-5">
-            <h1 className="text-sm uppercase tracking-[0.2em] font-medium text-muted">
-              {navItems.find((item) => item.href === pathname)?.label || "Dashboard"}
-            </h1>
+          <div className="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5">
+            <div className="flex items-center gap-4">
+              {/* Mobile Menu Trigger */}
+              <div className="md:hidden">
+                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                  <SheetTrigger asChild>
+                    <button className="p-2 -ml-2 hover:bg-gray-50 rounded-md">
+                      <Menu className="w-6 h-6 text-primary" />
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="p-0 w-72">
+                    <AdminSidebarContent pathname={pathname} />
+                  </SheetContent>
+                </Sheet>
+              </div>
+
+              <h1 className="text-xs sm:text-sm uppercase tracking-[0.2em] font-medium text-muted truncate max-w-[150px] sm:max-w-none">
+                {navItems.find((item) => item.href === pathname)?.label || "Dashboard"}
+              </h1>
+            </div>
+
             <div className="flex items-center gap-4">
               {/* Notifications */}
               <button className="relative p-2 hover:bg-gray-50 transition-colors">
@@ -219,10 +247,10 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
               </button>
               {/* Profile */}
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-black flex items-center justify-center text-white font-medium">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 bg-black flex items-center justify-center text-white font-medium text-sm sm:text-base">
                   {user?.name?.[0]?.toUpperCase() || "A"}
                 </div>
-                <div>
+                <div className="hidden sm:block">
                   <p className="text-sm font-medium">{user?.name || "Admin"}</p>
                   <button onClick={handleLogout} className="text-xs text-muted hover:text-sale transition-colors">
                     Sign Out
@@ -234,7 +262,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <div className="p-8">{children}</div>
+        <div className="p-4 sm:p-8">{children}</div>
       </main>
     </div>
   );

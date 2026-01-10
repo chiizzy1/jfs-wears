@@ -1,6 +1,6 @@
 import { fetchProducts, fetchCategories } from "@/lib/api";
 import { ShopHero } from "@/components/shop/ShopHero";
-import { ShopSidebar } from "@/components/shop/ShopSidebar";
+import { ShopSidebar, ShopMobileFilter } from "@/components/shop/ShopSidebar";
 import { ProductGrid } from "@/components/shop/ProductGrid";
 
 interface ShopPageProps {
@@ -33,6 +33,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 
       <div className="container-width py-12">
         <div className="flex flex-col lg:flex-row gap-8">
+          <ShopMobileFilter categories={categories} currentCategory={params.category} />
           <ShopSidebar categories={categories} currentCategory={params.category} />
           <ProductGrid products={products} />
         </div>
