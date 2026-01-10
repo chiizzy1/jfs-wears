@@ -22,7 +22,6 @@ interface AuthResponse {
 
 interface AuthState {
   user: User | null;
-  tokens: AuthTokens | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -30,10 +29,9 @@ interface AuthState {
   // Actions
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name?: string) => Promise<void>;
-  logout: () => void;
-  refreshAccessToken: () => Promise<boolean>;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<void>;
   setLoading: (loading: boolean) => void;
-  getAuthHeader: () => Record<string, string>;
   resetPassword: (token: string, password: string) => Promise<void>;
   clearError: () => void;
   setUser: (user: Partial<User>) => void;
@@ -43,7 +41,6 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
-      tokens: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
@@ -51,10 +48,10 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
+          // API will set httpOnly cookies, we just store user info
           const data = await apiClient.post<AuthResponse>("/auth/login", { email, password });
           set({
             user: data.user,
-            tokens: data.tokens,
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -72,7 +69,6 @@ export const useAuthStore = create<AuthState>()(
           const data = await apiClient.post<AuthResponse>("/auth/register", { email, password, name });
           set({
             user: data.user,
-            tokens: data.tokens,
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -84,38 +80,41 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        try {
+          // Call logout endpoint to clear cookies
+          await apiClient.post("/auth/logout");
+        } catch {
+          // Ignore logout errors
+        }
         set({
           user: null,
-          tokens: null,
           isAuthenticated: false,
           error: null,
         });
       },
 
-      refreshAccessToken: async () => {
-        const { tokens } = get();
-        if (!tokens?.refreshToken) return false;
-
+      /**
+       * Check if user is authenticated by calling /auth/me
+       * Used on app load to verify cookie auth state
+       */
+      checkAuth: async () => {
         try {
-          const data = await apiClient.post<AuthTokens>("/auth/refresh", {
-            refreshToken: tokens.refreshToken,
+          const data = await apiClient.get<{ user: User }>("/auth/me");
+          set({
+            user: data.user,
+            isAuthenticated: true,
           });
-          set({ tokens: data });
-          return true;
         } catch {
-          get().logout();
-          return false;
+          // Not authenticated - clear state
+          set({
+            user: null,
+            isAuthenticated: false,
+          });
         }
       },
 
       setLoading: (loading: boolean) => set({ isLoading: loading }),
-
-      getAuthHeader: (): Record<string, string> => {
-        const { tokens } = get();
-        if (!tokens?.accessToken) return {};
-        return { Authorization: `Bearer ${tokens.accessToken}` };
-      },
 
       resetPassword: async (token: string, password: string) => {
         set({ isLoading: true, error: null });
@@ -140,9 +139,9 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "jfs-auth-storage",
+      // Only persist user info, NOT tokens (tokens are in httpOnly cookies)
       partialize: (state) => ({
         user: state.user,
-        tokens: state.tokens,
         isAuthenticated: state.isAuthenticated,
       }),
     }

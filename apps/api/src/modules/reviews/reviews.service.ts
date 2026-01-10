@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CreateReviewDto, UpdateReviewDto } from "./dto/reviews.dto";
+import { sanitizeText } from "../../common/utils/sanitize.util";
 
 @Injectable()
 export class ReviewsService {
@@ -24,13 +25,14 @@ export class ReviewsService {
       },
     });
 
+    // Sanitize user input to prevent XSS
     return this.prisma.review.create({
       data: {
         productId,
         userId,
         rating: data.rating,
-        title: data.title,
-        comment: data.comment,
+        title: data.title ? sanitizeText(data.title) : undefined,
+        comment: data.comment ? sanitizeText(data.comment) : undefined,
         isVerified: !!hasPurchased,
       },
       include: {
@@ -91,8 +93,8 @@ export class ReviewsService {
       where: { id: reviewId },
       data: {
         rating: data.rating,
-        title: data.title,
-        comment: data.comment,
+        title: data.title ? sanitizeText(data.title) : undefined,
+        comment: data.comment ? sanitizeText(data.comment) : undefined,
       },
     });
   }

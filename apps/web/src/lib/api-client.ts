@@ -126,16 +126,24 @@ async function request<T>(endpoint: string, options: RequestInit & RequestOption
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     // Combine external signal with timeout signal
-    const signal = options.signal
-      ? (AbortSignal as unknown as { any: (signals: AbortSignal[]) => AbortSignal }).any?.([options.signal, controller.signal]) ||
-        controller.signal
-      : controller.signal;
+    // Note: AbortSignal.any is not widely supported, so we fallback to timeout signal
+    let signal = controller.signal;
+    if (options.signal) {
+      // If AbortSignal.any is available (modern browsers), use it
+      if (typeof AbortSignal !== "undefined" && "any" in AbortSignal) {
+        signal = (AbortSignal as { any: (signals: AbortSignal[]) => AbortSignal }).any([options.signal, controller.signal]);
+      } else {
+        // Fallback: listen to external signal and abort our controller
+        options.signal.addEventListener("abort", () => controller.abort());
+      }
+    }
 
     try {
       const response = await fetch(url, {
         ...fetchOptions,
         headers,
         signal,
+        credentials: "include", // Include cookies for httpOnly auth
       });
 
       clearTimeout(timeoutId);

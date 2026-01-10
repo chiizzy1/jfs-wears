@@ -3,6 +3,7 @@ import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { OrdersService } from "./orders.service";
 import { PrismaService } from "../../prisma/prisma.service";
 import { EmailService } from "../email/email.service";
+import { SettingsService } from "../settings/settings.service";
 import { Decimal } from "@prisma/client/runtime/library";
 import { OrderStatus } from "./dto/orders.dto";
 
@@ -10,6 +11,7 @@ describe("OrdersService", () => {
   let service: OrdersService;
   let prismaService: jest.Mocked<PrismaService>;
   let emailService: jest.Mocked<EmailService>;
+  let settingsService: jest.Mocked<SettingsService>;
 
   const mockProduct = {
     id: "product-123",
@@ -61,17 +63,23 @@ describe("OrdersService", () => {
       sendOrderConfirmation: jest.fn().mockResolvedValue(undefined),
     };
 
+    const mockSettingsService = {
+      getSettings: jest.fn().mockResolvedValue({ currency: "NGN" }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrdersService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: EmailService, useValue: mockEmailService },
+        { provide: SettingsService, useValue: mockSettingsService },
       ],
     }).compile();
 
     service = module.get<OrdersService>(OrdersService);
     prismaService = module.get(PrismaService);
     emailService = module.get(EmailService);
+    settingsService = module.get(SettingsService);
   });
 
   afterEach(() => {
@@ -186,7 +194,7 @@ describe("OrdersService", () => {
       (prismaService.order.update as jest.Mock).mockResolvedValue(updatedOrder);
 
       // Act
-      const result = await service.updateStatus("order-123", "SHIPPED");
+      const result = await service.updateStatus("order-123", OrderStatus.SHIPPED);
 
       // Assert
       expect(result.status).toBe("SHIPPED");

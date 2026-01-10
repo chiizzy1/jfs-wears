@@ -306,6 +306,7 @@ model Order {
   @@index([orderNumber])
   @@index([status])
   @@index([userId])
+  @@index([createdAt])
 }
 
 model OrderItem {

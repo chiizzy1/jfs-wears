@@ -28,7 +28,8 @@ import * as redisStore from "cache-manager-redis-store";
   imports: [
     CacheModule.register({
       isGlobal: true,
-      store: redisStore as any,
+      // Type assertion needed due to cache-manager-redis-store v3 typing mismatch with @nestjs/cache-manager
+      store: redisStore as unknown,
       host: process.env.REDIS_HOST || "localhost",
       port: parseInt(process.env.REDIS_PORT || "6379"),
       ttl: 600, // Default 10 minutes cache
@@ -40,7 +41,15 @@ import * as redisStore from "cache-manager-redis-store";
     LoggerModule.forRoot({
       pinoHttp: {
         transport: process.env.NODE_ENV !== "production" ? { target: "pino-pretty" } : undefined,
-        autoLogging: false,
+        // Enable logging for critical endpoints (auth, payments, orders)
+        autoLogging: {
+          ignore: (req) => {
+            // Log auth, payment, and order endpoints; ignore others
+            const url = req.url || "";
+            const criticalPaths = ["/auth", "/payments", "/orders"];
+            return !criticalPaths.some((path) => url.includes(path));
+          },
+        },
         serializers: {
           req: (req) => ({
             method: req.method,

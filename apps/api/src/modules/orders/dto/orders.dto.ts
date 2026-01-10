@@ -50,6 +50,49 @@ export class CreateOrderItemDto {
   quantity: number;
 }
 
+// Shipping address type for type-safe handling
+export class ShippingAddressDto {
+  @ApiProperty({ example: "John", description: "First name" })
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @ApiProperty({ example: "Doe", description: "Last name" })
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @ApiProperty({ example: "john@example.com", description: "Email address" })
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @ApiProperty({ example: "+2348012345678", description: "Phone number" })
+  @IsString()
+  @IsNotEmpty()
+  phone: string;
+
+  @ApiProperty({ example: "123 Admiralty Way", description: "Street address" })
+  @IsString()
+  @IsNotEmpty()
+  address: string;
+
+  @ApiProperty({ example: "Lekki", description: "City" })
+  @IsString()
+  @IsNotEmpty()
+  city: string;
+
+  @ApiProperty({ example: "Lagos", description: "State" })
+  @IsString()
+  @IsNotEmpty()
+  state: string;
+
+  @ApiPropertyOptional({ example: "Near GTBank", description: "Landmark for delivery" })
+  @IsString()
+  @IsOptional()
+  landmark?: string;
+}
+
 export class CreateOrderDto {
   @ApiProperty({ type: [CreateOrderItemDto], description: "List of items to order" })
   @IsArray()
@@ -62,8 +105,8 @@ export class CreateOrderDto {
   @IsNotEmpty()
   shippingZoneId: string;
 
-  @ApiProperty({ example: "123 Admiralty Way, Lekki", description: "Full shipping address" })
-  @IsString()
-  @IsNotEmpty()
-  shippingAddress: string;
+  @ApiProperty({ type: ShippingAddressDto, description: "Shipping address details" })
+  @ValidateNested()
+  @Type(() => ShippingAddressDto)
+  shippingAddress: ShippingAddressDto;
 }

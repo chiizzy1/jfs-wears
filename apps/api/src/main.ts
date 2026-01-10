@@ -2,6 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./app.module";
 import helmet from "helmet";
+import * as cookieParser from "cookie-parser";
 import { Logger } from "nestjs-pino";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
@@ -11,6 +12,9 @@ async function bootstrap() {
 
   // Security Headers
   app.use(helmet());
+
+  // Cookie parser for httpOnly cookie auth
+  app.use(cookieParser());
 
   // Enable CORS
   app.enableCors({
