@@ -3,8 +3,8 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useCartStore } from "@/lib/store";
-import { Button } from "@/components/ui/Button";
+import { useCartStore } from "@/stores/cart-store";
+import { Button } from "@/components/ui/button";
 
 /**
  * Premium Order Success Page
@@ -71,7 +71,7 @@ function OrderSuccessContent() {
               </Link>
             )}
             <Link href="/shop">
-              <Button variant="primary">Continue Shopping</Button>
+              <Button variant="default">Continue Shopping</Button>
             </Link>
           </div>
 

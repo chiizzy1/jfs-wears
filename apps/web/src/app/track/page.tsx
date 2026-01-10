@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -95,7 +95,7 @@ function TrackContent() {
               placeholder="Enter your order number (e.g., JFS-XXXXX)"
               className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-accent"
             />
-            <Button type="submit" variant="accent" disabled={isLoading}>
+            <Button type="submit" variant="secondary" disabled={isLoading}>
               {isLoading ? "Searching..." : "Track"}
             </Button>
           </form>

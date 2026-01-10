@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuthStore } from "@/lib/auth-store";
-import { Button } from "@/components/ui/Button";
+import { useAuthStore } from "@/stores/auth-store";
+import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
@@ -215,7 +215,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
             />
           </div>
 
-          <Button type="submit" variant="accent" disabled={isSubmitting}>
+          <Button type="submit" variant="secondary" disabled={isSubmitting}>
             {isSubmitting ? "Submitting..." : "Submit Review"}
           </Button>
         </form>

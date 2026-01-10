@@ -1,10 +1,10 @@
 "use client";
 
-import { useWishlistStore } from "@/lib/wishlist-store";
-import { useCartStore } from "@/lib/store";
+import { useWishlistStore } from "@/stores/wishlist-store";
+import { useCartStore } from "@/stores/cart-store";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
 export default function WishlistPage() {
@@ -34,7 +34,7 @@ export default function WishlistPage() {
             <h2 className="text-xl font-semibold mb-2">Your wishlist is empty</h2>
             <p className="text-gray-500 mb-6">Save items you love by clicking the heart icon on products.</p>
             <Link href="/shop">
-              <Button variant="accent">Browse Products</Button>
+              <Button variant="secondary">Browse Products</Button>
             </Link>
           </div>
         </div>
@@ -62,7 +62,7 @@ export default function WishlistPage() {
           {items.map((item) => (
             <div key={item.productId} className="bg-white rounded-2xl overflow-hidden shadow-sm group">
               {/* Image */}
-              <Link href={`/product/${item.slug}`} className="block relative aspect-[3/4] bg-gray-100">
+              <Link href={`/product/${item.slug}`} className="block relative aspect-3/4 bg-gray-100">
                 {item.image ? (
                   <Image
                     src={item.image}
@@ -84,7 +84,7 @@ export default function WishlistPage() {
 
                 <div className="flex gap-2">
                   <Link href={`/product/${item.slug}`} className="flex-1">
-                    <Button variant="accent" size="sm" className="w-full">
+                    <Button variant="secondary" size="sm" className="w-full">
                       View Product
                     </Button>
                   </Link>

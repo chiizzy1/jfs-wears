@@ -4,10 +4,10 @@ import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/api";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import AddToCartButton from "./AddToCartButton";
 import SizeGuideModal from "./SizeGuideModal";
-import { useWishlistStore } from "@/lib/wishlist-store";
+import { useWishlistStore } from "@/stores/wishlist-store";
 import toast from "react-hot-toast";
 
 interface ProductDetailsProps {
@@ -58,7 +58,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           )}
           {/* Minimal sale badge */}
           {hasDiscount && (
-            <span className="absolute top-4 left-4 text-xs uppercase tracking-[0.1em] text-sale font-medium">Sale</span>
+            <span className="absolute top-4 left-4 text-xs uppercase tracking-widest text-sale font-medium">Sale</span>
           )}
         </div>
 
@@ -111,7 +111,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               <h3 className="text-xs uppercase tracking-[0.15em] font-medium">Size</h3>
               <button
                 onClick={() => setShowSizeGuide(true)}
-                className="text-xs uppercase tracking-[0.1em] text-muted hover:text-primary transition-colors underline underline-offset-4"
+                className="text-xs uppercase tracking-widest text-muted hover:text-primary transition-colors underline underline-offset-4"
               >
                 Size Guide
               </button>
@@ -156,11 +156,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         {currentVariant && (
           <div>
             {currentVariant.stock === 0 ? (
-              <span className="text-xs uppercase tracking-[0.1em] text-sale">Out of Stock</span>
+              <span className="text-xs uppercase tracking-widest text-sale">Out of Stock</span>
             ) : currentVariant.stock <= 5 ? (
-              <span className="text-xs uppercase tracking-[0.1em] text-muted">Only {currentVariant.stock} left</span>
+              <span className="text-xs uppercase tracking-widest text-muted">Only {currentVariant.stock} left</span>
             ) : (
-              <span className="text-xs uppercase tracking-[0.1em] text-muted">In Stock</span>
+              <span className="text-xs uppercase tracking-widest text-muted">In Stock</span>
             )}
           </div>
         )}

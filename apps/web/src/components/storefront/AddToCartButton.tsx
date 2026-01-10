@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Product } from "@/lib/api";
-import { useCartStore } from "@/lib/store";
-import { useCartDrawerStore } from "@/lib/cart-drawer-store";
+import { useCartStore, CartState } from "@/stores/cart-store";
+import { useCartDrawerStore, CartDrawerState } from "@/stores/cart-drawer-store";
 import toast from "react-hot-toast";
 
 interface AddToCartButtonProps {
@@ -20,8 +20,8 @@ interface AddToCartButtonProps {
  * Opens the cart drawer on successful add
  */
 export default function AddToCartButton({ product, selectedSize, selectedColor, disabled, onSuccess }: AddToCartButtonProps) {
-  const addItem = useCartStore((state) => state.addItem);
-  const openDrawer = useCartDrawerStore((state) => state.openDrawer);
+  const addItem = useCartStore((state: CartState) => state.addItem);
+  const openDrawer = useCartDrawerStore((state: CartDrawerState) => state.openDrawer);
 
   const handleAddToCart = () => {
     // Find the specific variant based on selection
@@ -58,7 +58,7 @@ export default function AddToCartButton({ product, selectedSize, selectedColor, 
   };
 
   return (
-    <Button variant="accent" size="lg" className="flex-1" onClick={handleAddToCart} disabled={disabled}>
+    <Button variant="secondary" size="lg" className="flex-1" onClick={handleAddToCart} disabled={disabled}>
       {disabled ? "Select Options" : "Add to Cart"}
     </Button>
   );

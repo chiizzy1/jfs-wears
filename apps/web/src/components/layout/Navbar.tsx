@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useCartStore } from "@/lib/store";
-import { useWishlistStore } from "@/lib/wishlist-store";
-import { useAuthStore } from "@/lib/auth-store";
+import { useCartStore, CartState } from "@/stores/cart-store";
+import { useWishlistStore, WishlistState } from "@/stores/wishlist-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
@@ -14,8 +14,8 @@ import { useRouter } from "next/navigation";
  */
 export default function Navbar() {
   const router = useRouter();
-  const itemCount = useCartStore((state) => state.getItemCount());
-  const wishlistCount = useWishlistStore((state) => state.getItemCount());
+  const itemCount = useCartStore((state: CartState) => state.getItemCount());
+  const wishlistCount = useWishlistStore((state: WishlistState) => state.getItemCount());
   const { user, isAuthenticated, logout } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -192,7 +192,7 @@ export default function Navbar() {
                 <div className="w-7 h-7 bg-black text-white flex items-center justify-center font-medium text-xs">
                   {user.name?.[0] || user.email[0].toUpperCase()}
                 </div>
-                <span className="hidden sm:block text-xs uppercase tracking-[0.1em]">{user.name || "Account"}</span>
+                <span className="hidden sm:block text-xs uppercase tracking-widest">{user.name || "Account"}</span>
                 <svg
                   className={`w-3 h-3 transition-transform ${showUserMenu ? "rotate-180" : ""}`}
                   fill="none"
@@ -209,19 +209,19 @@ export default function Navbar() {
                 <div className="absolute right-0 top-full mt-2 w-48 bg-white shadow-lg border border-gray-100 py-2 animate-fade-in">
                   <Link
                     href="/account"
-                    className="block px-4 py-2 text-xs uppercase tracking-[0.1em] hover:bg-gray-50 transition-colors"
+                    className="block px-4 py-2 text-xs uppercase tracking-widest hover:bg-gray-50 transition-colors"
                   >
                     My Account
                   </Link>
                   <Link
                     href="/account/orders"
-                    className="block px-4 py-2 text-xs uppercase tracking-[0.1em] hover:bg-gray-50 transition-colors"
+                    className="block px-4 py-2 text-xs uppercase tracking-widest hover:bg-gray-50 transition-colors"
                   >
                     My Orders
                   </Link>
                   <Link
                     href="/wishlist"
-                    className="block px-4 py-2 text-xs uppercase tracking-[0.1em] hover:bg-gray-50 transition-colors"
+                    className="block px-4 py-2 text-xs uppercase tracking-widest hover:bg-gray-50 transition-colors"
                   >
                     Wishlist
                   </Link>
@@ -231,7 +231,7 @@ export default function Navbar() {
                       logout();
                       setShowUserMenu(false);
                     }}
-                    className="w-full text-left px-4 py-2 text-xs uppercase tracking-[0.1em] text-sale hover:bg-gray-50 transition-colors"
+                    className="w-full text-left px-4 py-2 text-xs uppercase tracking-widest text-sale hover:bg-gray-50 transition-colors"
                   >
                     Sign Out
                   </button>

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-interface CartDrawerState {
+export interface CartDrawerState {
   isOpen: boolean;
   openDrawer: () => void;
   closeDrawer: () => void;

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCartStore, CartItem } from "@/lib/store";
+import { useCartStore, CartItem } from "@/stores/cart-store";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -149,7 +149,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </Link>
                 <button
                   onClick={onClose}
-                  className="w-full mt-4 text-xs uppercase tracking-[0.1em] text-muted hover:text-primary transition-colors underline underline-offset-4"
+                  className="w-full mt-4 text-xs uppercase tracking-widest text-muted hover:text-primary transition-colors underline underline-offset-4"
                 >
                   Or continue shopping
                 </button>

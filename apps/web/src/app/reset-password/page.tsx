@@ -1,80 +1,65 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { resetPasswordSchema, ResetPasswordValues } from "@/schemas/auth.schema";
+import { useAuthStore } from "@/stores/auth-store";
 
-/**
- * Premium Reset Password Page
- */
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const { resetPassword, isLoading } = useAuthStore();
 
-  const [formData, setFormData] = useState({
-    password: "",
-    confirmPassword: "",
-  });
-  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState("");
+  const [tokenError, setTokenError] = useState("");
 
   useEffect(() => {
     if (!token) {
-      setError("Invalid or missing reset token");
+      setTokenError("Invalid or missing reset token");
     }
   }, [token]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<ResetPasswordValues>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
+  async function onSubmit(data: ResetPasswordValues) {
+    if (!token) {
+      toast.error("Invalid token");
       return;
     }
-
-    if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-
-    setIsLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password: formData.password }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Reset failed");
-      }
-
+      await resetPassword(token, data.password);
       setIsSuccess(true);
       toast.success("Password reset successfully!");
       setTimeout(() => router.push("/login"), 2000);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
-      setError(message);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Something went wrong";
       toast.error(message);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }
 
-  if (error && !token) {
+  if (tokenError) {
     return (
       <div className="min-h-screen bg-secondary flex items-center justify-center py-12 px-4">
         <div className="bg-white p-10 w-full max-w-md border border-gray-100 text-center">
           <div className="w-16 h-16 bg-gray-100 flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-sale" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+            <svg className="w-8 h-8 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -83,9 +68,9 @@ export default function ResetPasswordPage() {
             </svg>
           </div>
           <h1 className="text-xl font-medium mb-2 tracking-[0.02em]">Invalid Link</h1>
-          <p className="text-muted text-sm mb-8">{error}</p>
+          <p className="text-muted-foreground text-sm mb-8">{tokenError}</p>
           <Link href="/forgot-password">
-            <Button variant="primary">Request New Link</Button>
+            <Button variant="default">Request New Link</Button>
           </Link>
         </div>
       </div>
@@ -102,7 +87,7 @@ export default function ResetPasswordPage() {
             </svg>
           </div>
           <h1 className="text-xl font-medium mb-2 tracking-[0.02em]">Password Reset!</h1>
-          <p className="text-muted text-sm">Your password has been updated. Redirecting to login...</p>
+          <p className="text-muted-foreground text-sm">Your password has been updated. Redirecting to login...</p>
         </div>
       </div>
     );
@@ -110,53 +95,75 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen bg-secondary flex items-center justify-center py-12 px-4">
-      <div className="bg-white p-10 w-full max-w-md border border-gray-100">
+      <div className="bg-white p-10 w-full max-w-md border border-gray-100 shadow-sm">
         {/* Header */}
         <div className="text-center mb-10">
           <Link href="/" className="text-lg tracking-[0.2em] uppercase font-medium text-primary">
             JFS WEARS
           </Link>
           <h1 className="text-2xl font-medium mt-6 tracking-[0.02em]">Reset Password</h1>
-          <p className="text-muted text-sm mt-2">Enter your new password</p>
+          <p className="text-muted-foreground text-sm mt-2">Enter your new password</p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="password" className="block text-xs uppercase tracking-[0.15em] text-muted mb-2">
-              New Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-200 bg-transparent focus:outline-none focus:border-black transition-colors text-sm"
-              placeholder="••••••••"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs uppercase tracking-[0.15em] text-muted-foreground">New Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="••••••••"
+                      {...field}
+                      className="bg-transparent border-gray-200 focus:border-black transition-colors"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-xs uppercase tracking-[0.15em] text-muted mb-2">
-              Confirm New Password
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              required
-              value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-200 bg-transparent focus:outline-none focus:border-black transition-colors text-sm"
-              placeholder="••••••••"
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs uppercase tracking-[0.15em] text-muted-foreground">Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="••••••••"
+                      {...field}
+                      className="bg-transparent border-gray-200 focus:border-black transition-colors"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <Button type="submit" variant="primary" size="lg" className="w-full" disabled={isLoading}>
-            {isLoading ? "Resetting..." : "Reset Password"}
-          </Button>
-        </form>
+            <Button type="submit" variant="default" size="lg" className="w-full" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoading ? "Resetting..." : "Reset Password"}
+            </Button>
+          </form>
+        </Form>
       </div>
     </div>
+  );
+}
+
+/**
+ * Premium Reset Password Page
+ */
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-secondary flex items-center justify-center">Loading...</div>}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

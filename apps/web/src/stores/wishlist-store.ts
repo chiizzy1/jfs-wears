@@ -10,7 +10,7 @@ export interface WishlistItem {
   addedAt: number;
 }
 
-interface WishlistState {
+export interface WishlistState {
   items: WishlistItem[];
   addItem: (item: Omit<WishlistItem, "addedAt">) => void;
   removeItem: (productId: string) => void;

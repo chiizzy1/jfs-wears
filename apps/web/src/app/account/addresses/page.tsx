@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuthStore } from "@/lib/auth-store";
-import { Button } from "@/components/ui/Button";
+import { useAuthStore } from "@/stores/auth-store";
+import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
@@ -161,7 +161,7 @@ export default function AddressesPage() {
           </div>
           {!showForm && (
             <Button
-              variant="accent"
+              variant="secondary"
               onClick={() => {
                 resetForm();
                 setShowForm(true);
@@ -247,7 +247,7 @@ export default function AddressesPage() {
                 Set as default address
               </label>
               <div className="flex gap-3">
-                <Button type="submit" variant="accent">
+                <Button type="submit" variant="secondary">
                   Save Address
                 </Button>
                 <Button
@@ -275,7 +275,7 @@ export default function AddressesPage() {
         ) : addresses.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center">
             <p className="text-gray-500 mb-4">No saved addresses yet</p>
-            <Button variant="accent" onClick={() => setShowForm(true)}>
+            <Button variant="secondary" onClick={() => setShowForm(true)}>
               Add Your First Address
             </Button>
           </div>

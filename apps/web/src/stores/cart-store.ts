@@ -12,7 +12,7 @@ export interface CartItem {
   quantity: number;
 }
 
-interface CartState {
+export interface CartState {
   items: CartItem[];
   addItem: (item: CartItem) => void;
   removeItem: (variantId: string) => void;

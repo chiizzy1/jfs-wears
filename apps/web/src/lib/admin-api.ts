@@ -189,6 +189,10 @@ class AdminAPI {
     });
   }
 
+  async deleteStaff(id: string) {
+    return this.request<void>(`/staff/${id}`, { method: "DELETE" });
+  }
+
   // Categories
   async getCategories() {
     return this.request<Category[]>("/categories");

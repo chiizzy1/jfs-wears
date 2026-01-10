@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRecentlyViewedStore } from "@/lib/recently-viewed-store";
+import { useRecentlyViewedStore } from "@/stores/recently-viewed-store";
 
 interface RecentlyViewedTrackerProps {
   productId: string;

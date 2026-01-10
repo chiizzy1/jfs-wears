@@ -357,7 +357,18 @@ Required comments:
 
 ## 5. Project Structure Standards
 
-### 5.1 Specific Project Structure (Next.js App Router)
+### 5.1 Tech Stack Overview
+
+- **Framework**: Next.js (App Router)
+- **Language**: TypeScript (Strict Mode)
+- **Styling**: Tailwind CSS v4 + Utility Classes (`cn` helper)
+- **UI Library**: Radix UI Primitives + Lucide React + Shadcn components + Custom Shadcn-like components (for custom UI)
+- **State Management**: Zustand (Global), React Query (Server State)
+- **Forms**: React Hook Form + Zod Resolution
+- **Animations**: GSAP OR Framer Motion
+- **Tables**: TanStack Table (React Table)
+
+### 5.2 Specific Project Structure (Next.js App Router)
 
 The project follows a **Feature-First** architecture for components, keeping related logic close, while separating cross-cutting concerns (services, schemas).
 
@@ -378,7 +389,7 @@ src/
 └── utils/               # Helper functions
 ```
 
-### A. Pages vs. Components (Crucial Pattern)
+### 5.3 Pages vs. Components (Crucial Pattern)
 
 **Rule**: Keep `src/app` files **thin**.
 
@@ -386,9 +397,9 @@ src/
 - **Logic Location**: Move actual page logic, state, and heavy UI into `src/components/[feature]/`.
 - **Why**: Keeps routing clean and separates distinct client/server concerns.
 
-## 3. Core Patterns & Implementations
+### 5.4 Core Patterns & Implementations
 
-### A. Modals (Global Management)
+### 5.5 Modals (Global Management)
 
 **Pattern**: Do NOT create local modal state in pages. Use the global `useUIStore`.
 
@@ -401,7 +412,7 @@ src/
   openModal("my-modal-id", <MyModalContent />);
   ```
 
-### B. Data Tables (Professional Setup)
+### 5.6 Data Tables (Professional Setup)
 
 **Pattern**: Use **TanStack Table** (Headless) + Custom UI.
 
@@ -412,7 +423,7 @@ src/
   - `[Feature]Card.tsx`: The Controller. Initializes `useReactTable` and passes state to `DataTable`.
 - **Responsive**: **MUST** implement a separate list view (e.g., `MobileActivityItem`) for mobile screens. Do not try to squash the table.
 
-### C. Sidebars (Shadcn Composition)
+### 5.7 Sidebars (Shadcn Composition)
 
 **Pattern**: Use the Composable Sidebar UI primitives.
 
@@ -432,7 +443,7 @@ src/
   ```
 - **Configuration**: Define menu items in `src/constants/index.ts`, do not hardcode in the component.
 
-### D. Forms (Zod + RHF)
+### 5.8 Forms (Zod + RHF)
 
 **Strict Rule**: All inputs must be controlled via `react-hook-form` and validated with `zod`.
 
@@ -440,7 +451,61 @@ src/
 2.  **Service**: Defined in `src/services/`.
 3.  **Component**: Uses `useForm({ resolver: zodResolver(schema) })`.
 
-## 4. Layer Separation (Where code goes)
+### 5.9 Global State (Zustand)
+
+**Pattern**: Use small, focused stores in `src/stores/`.
+
+1.  **Creation**: Use `create<State>()(devtools(...))`.
+2.  **Persistence**: For user settings (theme, defaults), use `persist` middleware with `createJSONStorage`.
+    ```typescript
+    // Example: src/stores/settingsStore.ts
+    export const useSettingsStore = create<SettingsState>()(
+      devtools(
+        persist(
+          (set) => ({ ... }),
+          { name: "settings-store", storage: createJSONStorage(() => sessionStorage) }
+        )
+      )
+    );
+    ```
+3.  **Usage**: Select specific state slices to avoid unnecessary re-renders.
+    ```typescript
+    const { toggle } = useStore((state) => ({ toggle: state.toggle }));
+    ```
+
+### F. Middleware & Authentication (Route Protection)
+
+**Strategy**: Middleware performs **Lightweight Checks** with **Backend Verification**.
+
+- **File**: `src/middleware.ts`
+- **Logic**:
+  1.  Reads `auth_token` cookie.
+  2.  Checks expiration using `isTokenExpired()` (from `src/lib/jwt.ts`).
+  3.  Redirects unauthenticated users to protected routes.
+  4.  Attaches `X-Auth-Invalid` header if prompt re-login is needed.
+- **Rules**:
+  - Middleware does **NOT** verify signatures (costly). Backend APIs verify signatures.
+  - Protect all `/dashboard` or `/admin` routes.
+  - Use `src/lib/jwt.ts` for safe decoding (base64) checks.
+
+### G. Server-Side Authentication (components & APIs)
+
+**Pattern**: Use `src/lib/serverAuth.ts` for auth in Server Components or API routes.
+
+- **Helpers**:
+  - `getServerUser()`: Returns strictly typed `AuthUser` or `null`. Checks cookies + expiry.
+  - `requireAuth()`: Throws error if user is invalid (good for Layouts/Pages).
+  - `getJWTPayload()`: Access raw JWT fields safely.
+- **Usage**:
+  ```typescript
+  // In a Server Component
+  import { getServerUser } from "@/lib/serverAuth";
+  const user = await getServerUser();
+  if (!user) redirect("/login");
+  ```
+- **Note**: Like middleware, this reads the cookie but assumes signature validity is enforced by backend API calls.
+
+### 5.10 Layer Separation (Where code goes)
 
 | Layer        | Path            | Purpose           | Rule                                                                  |
 | :----------- | :-------------- | :---------------- | :-------------------------------------------------------------------- |
@@ -449,7 +514,7 @@ src/
 | **Lib**      | `src/lib/`      | Utilities         | Pure functions (date formatting, string manipulation, `cn`).          |
 | **Stores**   | `src/stores/`   | Global State      | Zustand stores for data needed across the app (Auth, UI, Settings).   |
 
-## 5. Development Checklist
+### 5.11 Development Checklist
 
 1.  **New Page**: Create `app/.../page.tsx` -> Import Client Component from `src/components`.
 2.  **New Feature**:
@@ -459,14 +524,14 @@ src/
     - Build isolated components in `src/components`.
 3.  **Styling**: Use Tailwind. Use `cn()` to merge classes. Use `cva` for variants.
 
-### 5.2 Feature Component Pattern
+### 5.12 Feature Component Pattern
 
 - **Location**: Place feature code in `src/components/[feature]/`.
 - **Pattern**: Functional Components with named exports (mostly) or default exports.
 - **Styling**: `className` prop with `cn(...)` utility for merging Tailwind classes.
 - **Rule**: Do not inline complex logic. Extract to custom hooks or services.
 
-### 5.3 Component Organization
+### 5.13 Component Organization
 
 ```
 components/
@@ -483,7 +548,7 @@ components/
 └── feedback/                # Modals, alerts, toasts
 ```
 
-### 5.4 File Naming Conventions
+### 5.14 File Naming Conventions
 
 | Type       | Convention                      | Example                 |
 | ---------- | ------------------------------- | ----------------------- |
@@ -498,7 +563,7 @@ components/
 
 ---
 
-## 6. Testing & Verification
+### 6. Testing & Verification
 
 ### 6.1 Testing Requirements
 
