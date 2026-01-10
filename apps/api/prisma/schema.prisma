@@ -20,6 +20,7 @@ model User {
   phone         String?   @unique
   name          String?
   passwordHash  String?
+  profileImage  String?   // URL to user's profile image
   isVerified    Boolean   @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

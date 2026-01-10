@@ -78,25 +78,25 @@ export default function PromotionsPage() {
           <h1 className="text-3xl font-light tracking-tight">Promotions Management</h1>
           <p className="text-muted-foreground mt-1 text-sm uppercase tracking-wider">Discount Codes & Offers</p>
         </div>
-        <Button onClick={openCreateModal} className="flex items-center gap-2">
+        <Button onClick={openCreateModal} variant="premium" className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           Create Promotion
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 border border-gray-100 rounded-sm">
-          <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-medium">Active Promotions</p>
-          <p className="text-3xl font-light mt-3">{activePromotionsCount}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+        <div className="px-6 first:pl-0">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Active Promotions</p>
+          <p className="text-4xl font-light mt-2 tracking-tight">{activePromotionsCount}</p>
         </div>
-        <div className="bg-white p-6 border border-gray-100 rounded-sm">
-          <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-medium">Total Promotions</p>
-          <p className="text-3xl font-light mt-3">{promotions.length}</p>
+        <div className="px-6">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Total Promotions</p>
+          <p className="text-4xl font-light mt-2 tracking-tight">{promotions.length}</p>
         </div>
-        <div className="bg-white p-6 border border-gray-100 rounded-sm">
-          <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-medium">Total Uses</p>
-          <p className="text-3xl font-light mt-3">{totalUsage.toLocaleString()}</p>
+        <div className="px-6">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Total Uses</p>
+          <p className="text-4xl font-light mt-2 tracking-tight">{totalUsage.toLocaleString()}</p>
         </div>
       </div>
 

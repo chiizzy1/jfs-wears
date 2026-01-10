@@ -15,12 +15,15 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        premium:
+          "group relative overflow-hidden bg-white text-black text-xs uppercase tracking-[0.2em] font-medium transition-colors duration-500 border border-black/10 hover:border-black hover:text-white",
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
+        premium: "px-8 py-3", // specific padding for premium look
       },
     },
     defaultVariants: {
@@ -35,9 +38,25 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+
+    // If premium variant, we need to inject the hover overlay div
+    // Note: If asChild is true, we hope the child handles children correctly, but Slot usually merges props.
+    // For simpler implementation, we'll just wrap the children if it's premium and NOT asChild.
+    // However, Radix Slot merges everything. We can't easily inject the div INSIDE the child component if we use Slot.
+    // But commonly users just duplicate standard button usage.
+
+    if (variant === "premium" && !asChild) {
+      return (
+        <Comp className={cn(buttonVariants({ variant, size: size || "premium", className }))} ref={ref} {...props}>
+          <span className="relative z-10">{children}</span>
+          <div className="absolute inset-0 bg-black translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out" />
+        </Comp>
+      );
+    }
+
+    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} children={children} />;
   }
 );
 Button.displayName = "Button";

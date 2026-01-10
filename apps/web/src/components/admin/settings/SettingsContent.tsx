@@ -64,8 +64,8 @@ export function SettingsContent() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           {/* General Settings */}
-          <div className="bg-white border border-gray-100 p-8">
-            <h2 className="text-xs uppercase tracking-[0.15em] font-medium mb-8">General Settings</h2>
+          <div className="pb-12 border-b border-gray-100">
+            <h2 className="text-lg font-medium tracking-tight mb-8">General Information</h2>
             <div className="space-y-6 max-w-2xl">
               <FormField
                 control={form.control}
@@ -76,7 +76,10 @@ export function SettingsContent() {
                       Store Name
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-black" />
+                      <Input
+                        {...field}
+                        className="border-t-0 border-x-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-black transition-colors bg-transparent placeholder:text-gray-300"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -92,7 +95,11 @@ export function SettingsContent() {
                       Store Email
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} type="email" className="focus-visible:ring-black" />
+                      <Input
+                        {...field}
+                        type="email"
+                        className="border-t-0 border-x-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-black transition-colors bg-transparent placeholder:text-gray-300"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -109,7 +116,7 @@ export function SettingsContent() {
                     </FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="focus-visible:ring-black">
+                        <SelectTrigger className="border-t-0 border-x-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-black transition-colors bg-transparent">
                           <SelectValue placeholder="Select currency" />
                         </SelectTrigger>
                       </FormControl>
@@ -128,14 +135,14 @@ export function SettingsContent() {
           </div>
 
           {/* Notifications */}
-          <div className="bg-white border border-gray-100 p-8">
-            <h2 className="text-xs uppercase tracking-[0.15em] font-medium mb-8">Notifications</h2>
+          <div className="pb-12 border-b border-gray-100">
+            <h2 className="text-lg font-medium tracking-tight mb-8">Notifications</h2>
             <div className="space-y-4 max-w-2xl">
               <FormField
                 control={form.control}
                 name="notifyOrder"
                 render={({ field }) => (
-                  <FormItem className="flex items-center justify-between p-4 bg-secondary cursor-pointer hover:bg-secondary/80 transition-colors rounded-sm space-y-0">
+                  <FormItem className="flex items-center justify-between py-4 cursor-pointer hover:bg-gray-50 transition-colors rounded-none space-y-0">
                     <div className="space-y-0.5">
                       <FormLabel className="text-sm font-medium cursor-pointer">Order Notifications</FormLabel>
                       <FormDescription className="text-xs text-muted-foreground">
@@ -157,7 +164,7 @@ export function SettingsContent() {
                 control={form.control}
                 name="notifyLowStock"
                 render={({ field }) => (
-                  <FormItem className="flex items-center justify-between p-4 bg-secondary cursor-pointer hover:bg-secondary/80 transition-colors rounded-sm space-y-0">
+                  <FormItem className="flex items-center justify-between py-4 cursor-pointer hover:bg-gray-50 transition-colors rounded-none space-y-0">
                     <div className="space-y-0.5">
                       <FormLabel className="text-sm font-medium cursor-pointer">Low Stock Alerts</FormLabel>
                       <FormDescription className="text-xs text-muted-foreground">
@@ -179,7 +186,7 @@ export function SettingsContent() {
                 control={form.control}
                 name="notifyReview"
                 render={({ field }) => (
-                  <FormItem className="flex items-center justify-between p-4 bg-secondary cursor-pointer hover:bg-secondary/80 transition-colors rounded-sm space-y-0">
+                  <FormItem className="flex items-center justify-between py-4 cursor-pointer hover:bg-gray-50 transition-colors rounded-none space-y-0">
                     <div className="space-y-0.5">
                       <FormLabel className="text-sm font-medium cursor-pointer">Customer Reviews</FormLabel>
                       <FormDescription className="text-xs text-muted-foreground">
@@ -200,47 +207,45 @@ export function SettingsContent() {
           </div>
 
           {/* Payment Settings (Static for now, but matched with UI) */}
-          <div className="bg-white border border-gray-100 p-8">
-            <h2 className="text-xs uppercase tracking-[0.15em] font-medium mb-8">Payment Settings</h2>
+          <div className="pb-12">
+            <h2 className="text-lg font-medium tracking-tight mb-8">Payment Gateways</h2>
             <div className="space-y-4 max-w-2xl">
-              <div className="p-4 bg-secondary flex items-center justify-between rounded-sm">
+              <div className="py-4 border-b border-gray-100 flex items-center justify-between rounded-none">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-green-100 flex items-center justify-center rounded-sm">
-                    <span className="text-green-600 font-bold">P</span>
+                  <div className="w-10 h-10 bg-black/5 flex items-center justify-center rounded-none">
+                    <span className="text-black font-bold">P</span>
                   </div>
                   <div>
                     <p className="font-medium text-sm">Paystack</p>
-                    <p className="text-xs text-muted-foreground">Accept card payments</p>
+                    <p className="text-xs text-muted-foreground">Secure card payments</p>
                   </div>
                 </div>
-                <span className="px-3 py-1 bg-green-50 text-green-700 border border-green-200 text-xs font-medium rounded-full">
-                  Connected
-                </span>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                  <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Connected</span>
+                </div>
               </div>
-              <div className="p-4 bg-secondary flex items-center justify-between rounded-sm">
+              <div className="py-4 flex items-center justify-between rounded-none">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-100 flex items-center justify-center rounded-sm">
-                    <span className="text-blue-600 font-bold">B</span>
+                  <div className="w-10 h-10 bg-black/5 flex items-center justify-center rounded-none">
+                    <span className="text-black font-bold">B</span>
                   </div>
                   <div>
                     <p className="font-medium text-sm">Bank Transfer</p>
-                    <p className="text-xs text-muted-foreground">Manual bank transfers</p>
+                    <p className="text-xs text-muted-foreground">Manual verification</p>
                   </div>
                 </div>
-                <span className="px-3 py-1 bg-green-50 text-green-700 border border-green-200 text-xs font-medium rounded-full">
-                  Active
-                </span>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                  <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Active</span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Save Button */}
           <div className="flex justify-end">
-            <Button
-              type="submit"
-              disabled={isSaving}
-              className="px-8 bg-black text-white text-xs uppercase tracking-[0.15em] hover:bg-black/90"
-            >
+            <Button type="submit" disabled={isSaving} variant="premium" className="px-8">
               {isSaving ? "Saving..." : "Save Changes"}
             </Button>
           </div>

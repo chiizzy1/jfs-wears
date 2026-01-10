@@ -31,11 +31,12 @@ function SearchContent() {
     <div className="min-h-screen bg-secondary py-8">
       <div className="container-width">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-medium tracking-[0.02em] mb-2">{query ? `Results for "${query}"` : "All Products"}</h1>
-          <p className="text-muted-foreground">
-            {products.length} product{products.length !== 1 ? "s" : ""} found
-          </p>
+        <div className="mb-12 border-b border-gray-100 pb-6">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-2">Search Results</p>
+          <div className="flex items-baseline gap-4">
+            <h1 className="text-4xl md:text-5xl font-medium tracking-tight uppercase">{query || "All Products"}</h1>
+            <span className="text-xs text-gray-400 font-mono">({products.length})</span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

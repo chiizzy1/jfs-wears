@@ -70,7 +70,14 @@ class AdminAPI {
     if (params?.category) search.set("category", params.category);
     if (params?.limit) search.set("limit", params.limit.toString());
     if (params?.offset) search.set("offset", params.offset.toString());
-    return this.request<Product[]>(`/products?${search.toString()}`);
+
+    // API returns paginated response { items, total, page, ... }
+    const response = await this.request<{ items: Product[]; total: number; page: number } | Product[]>(
+      `/products?${search.toString()}`
+    );
+
+    // Handle both paginated and array responses for compatibility
+    return Array.isArray(response) ? response : response.items || [];
   }
 
   async getProduct(id: string) {
@@ -124,7 +131,14 @@ class AdminAPI {
     if (params?.status) search.set("status", params.status);
     if (params?.limit) search.set("limit", params.limit.toString());
     if (params?.offset) search.set("offset", params.offset.toString());
-    return this.request<Order[]>(`/orders?${search.toString()}`);
+
+    // API returns paginated response { items, total, page, ... }
+    const response = await this.request<{ items: Order[]; total: number; page: number } | Order[]>(
+      `/orders?${search.toString()}`
+    );
+
+    // Handle both paginated and array responses for compatibility
+    return Array.isArray(response) ? response : response.items || [];
   }
 
   async getOrder(id: string) {

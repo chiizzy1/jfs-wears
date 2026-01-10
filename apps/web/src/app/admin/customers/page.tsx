@@ -26,18 +26,18 @@ export default function CustomersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 border border-gray-100 rounded-sm">
-          <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-medium">Total Customers</p>
-          <p className="text-3xl font-light mt-3">{customers.length}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+        <div className="px-6 first:pl-0">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Total Customers</p>
+          <p className="text-4xl font-light mt-2 tracking-tight">{customers.length}</p>
         </div>
-        <div className="bg-white p-6 border border-gray-100 rounded-sm">
-          <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-medium">Active Customers</p>
-          <p className="text-3xl font-light mt-3">{activeCustomersCount}</p>
+        <div className="px-6">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Active Customers</p>
+          <p className="text-4xl font-light mt-2 tracking-tight">{activeCustomersCount}</p>
         </div>
-        <div className="bg-white p-6 border border-gray-100 rounded-sm">
-          <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-medium">With Orders</p>
-          <p className="text-3xl font-light mt-3">{customersWithOrdersCount}</p>
+        <div className="px-6">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">With Orders</p>
+          <p className="text-4xl font-light mt-2 tracking-tight">{customersWithOrdersCount}</p>
         </div>
       </div>
 

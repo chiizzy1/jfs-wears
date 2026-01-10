@@ -8,6 +8,7 @@ import QuickViewModal from "./QuickViewModal";
 
 interface ProductCardProps {
   product: Product;
+  className?: string;
 }
 
 /**
@@ -15,7 +16,7 @@ interface ProductCardProps {
  *
  * Mason Garments-inspired: No shadows, no rounded corners, clean typography
  */
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, className = "" }: ProductCardProps) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
   const primaryImage = product.images.find((img) => img.isPrimary) || product.images[0];
@@ -37,9 +38,9 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <>
-      <Link href={`/product/${product.slug}`} className="group block">
+      <Link href={`/product/${product.slug}`} className={`group block ${className}`}>
         {/* Image Container - No rounded corners, no shadows */}
-        <div className="relative aspect-[3/4] overflow-hidden bg-secondary mb-4">
+        <div className="relative aspect-3/4 overflow-hidden bg-secondary mb-4">
           {primaryImage ? (
             <Image
               src={primaryImage.url}
@@ -55,10 +56,10 @@ export default function ProductCard({ product }: ProductCardProps) {
           {/* Minimal Badges - Text only, subtle */}
           <div className="absolute top-4 left-4 flex flex-col gap-2">
             {hasDiscount && (
-              <span className="text-xs uppercase tracking-[0.1em] text-sale font-medium">Save {discountPercent}%</span>
+              <span className="text-xs uppercase tracking-widest text-sale font-medium">Save {discountPercent}%</span>
             )}
-            {isLowStock && <span className="text-xs uppercase tracking-[0.1em] text-muted">Low Stock</span>}
-            {isOutOfStock && <span className="text-xs uppercase tracking-[0.1em] text-muted">Sold Out</span>}
+            {isLowStock && <span className="text-xs uppercase tracking-widest text-muted">Low Stock</span>}
+            {isOutOfStock && <span className="text-xs uppercase tracking-widest text-muted">Sold Out</span>}
           </div>
 
           {/* Quick View - Appears on hover, minimal style */}
@@ -75,7 +76,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Product Info - Clean typography */}
         <div className="space-y-2">
           {/* Category */}
-          {product.category && <p className="text-xs uppercase tracking-[0.1em] text-muted">{product.category.name}</p>}
+          {product.category && <p className="text-xs uppercase tracking-widest text-muted">{product.category.name}</p>}
 
           {/* Product Name - Simple hover underline */}
           <h3 className="text-sm font-medium text-primary line-clamp-2 group-hover:underline underline-offset-4 transition-all">

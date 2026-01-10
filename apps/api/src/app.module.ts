@@ -49,11 +49,11 @@ import * as redisStore from "cache-manager-redis-store";
         },
       },
     }),
-    // Rate limiting: 100 requests per 60 seconds
+    // Rate limiting: Configurable via env, defaults: 200 req/min
     ThrottlerModule.forRoot([
       {
-        ttl: 60000,
-        limit: 100,
+        ttl: parseInt(process.env.THROTTLE_TTL || "60000"),
+        limit: parseInt(process.env.THROTTLE_LIMIT || "200"),
       },
     ]),
     PrismaModule,

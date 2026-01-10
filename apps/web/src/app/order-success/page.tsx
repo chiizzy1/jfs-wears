@@ -64,15 +64,19 @@ function OrderSuccessContent() {
           </div>
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
             {orderNumber && (
-              <Link href={`/track?order=${orderNumber}`}>
-                <Button variant="outline">Track Order</Button>
-              </Link>
+              <Button
+                asChild
+                variant="outline"
+                className="rounded-none px-8 py-6 h-auto text-xs uppercase tracking-widest border-black/20 hover:border-black hover:bg-transparent"
+              >
+                <Link href={`/track?order=${orderNumber}`}>Track Order</Link>
+              </Button>
             )}
-            <Link href="/shop">
-              <Button variant="default">Continue Shopping</Button>
-            </Link>
+            <Button asChild variant="premium" className="h-auto px-10 py-4">
+              <Link href="/shop">Continue Shopping</Link>
+            </Button>
           </div>
 
           {/* Trust Message */}

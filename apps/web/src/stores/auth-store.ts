@@ -7,6 +7,7 @@ export interface User {
   email: string;
   name?: string;
   phone?: string;
+  profileImage?: string;
 }
 
 export interface AuthTokens {
@@ -35,6 +36,7 @@ interface AuthState {
   getAuthHeader: () => Record<string, string>;
   resetPassword: (token: string, password: string) => Promise<void>;
   clearError: () => void;
+  setUser: (user: Partial<User>) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -128,6 +130,13 @@ export const useAuthStore = create<AuthState>()(
       },
 
       clearError: () => set({ error: null }),
+
+      setUser: (userData: Partial<User>) => {
+        const { user } = get();
+        if (user) {
+          set({ user: { ...user, ...userData } });
+        }
+      },
     }),
     {
       name: "jfs-auth-storage",

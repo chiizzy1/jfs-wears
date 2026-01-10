@@ -21,11 +21,19 @@ export default function Navbar() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setMounted(true);
+
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Close menu when clicking outside
@@ -55,38 +63,55 @@ export default function Navbar() {
     }
   };
 
+  // Dynamic text color based on scroll state
+  const textColorClass = isScrolled ? "text-primary" : "text-white";
+  const borderColorClass = isScrolled ? "border-gray-200/50" : "border-transparent";
+  const bgClass = isScrolled ? "bg-secondary/90 backdrop-blur-md" : "bg-transparent";
+
   return (
-    <nav className="bg-secondary sticky top-0 z-50 border-b border-gray-200/50">
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out border-b ${bgClass} ${borderColorClass}`}
+    >
       <div className="container-width flex items-center justify-between h-20">
         {/* Text-Only Logo - Premium Style */}
-        <Link href="/" className="flex items-center">
-          <span className="text-lg tracking-[0.2em] uppercase font-medium text-primary">JFS WEARS</span>
+        <Link href="/" className="flex items-center group">
+          <span
+            className={`text-lg tracking-[0.2em] uppercase font-medium transition-colors duration-300 ${textColorClass} group-hover:opacity-80`}
+          >
+            JFS WEARS
+          </span>
         </Link>
 
         {/* Desktop Links - Wide Letter-Spacing */}
         <div className="hidden md:flex items-center space-x-10">
-          <Link href="/shop" className="text-xs uppercase tracking-[0.15em] text-primary hover:opacity-60 transition-opacity">
+          <Link
+            href="/shop"
+            className={`text-xs uppercase tracking-[0.15em] hover:opacity-60 transition-all duration-300 ${textColorClass}`}
+          >
             Shop
           </Link>
           <Link
             href="/shop?gender=men"
-            className="text-xs uppercase tracking-[0.15em] text-primary hover:opacity-60 transition-opacity"
+            className={`text-xs uppercase tracking-[0.15em] hover:opacity-60 transition-all duration-300 ${textColorClass}`}
           >
             Men
           </Link>
           <Link
             href="/shop?gender=women"
-            className="text-xs uppercase tracking-[0.15em] text-primary hover:opacity-60 transition-opacity"
+            className={`text-xs uppercase tracking-[0.15em] hover:opacity-60 transition-all duration-300 ${textColorClass}`}
           >
             Women
           </Link>
-          <Link href="/story" className="text-xs uppercase tracking-[0.15em] text-primary hover:opacity-60 transition-opacity">
+          <Link
+            href="/story"
+            className={`text-xs uppercase tracking-[0.15em] hover:opacity-60 transition-all duration-300 ${textColorClass}`}
+          >
             Our Story
           </Link>
         </div>
 
         {/* Actions - Thin Stroke Icons */}
-        <div className="flex items-center gap-5">
+        <div className={`flex items-center gap-5 transition-colors duration-300 ${textColorClass}`}>
           {/* Search */}
           <div className="relative">
             {showSearch ? (
@@ -97,7 +122,9 @@ export default function Navbar() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search..."
-                  className="w-48 md:w-64 px-4 py-2 text-sm border-b border-black bg-transparent focus:outline-none"
+                  className={`w-48 md:w-64 px-4 py-2 text-sm border-b bg-transparent focus:outline-none placeholder-current/50 ${
+                    isScrolled ? "border-primary" : "border-white"
+                  }`}
                   onBlur={() => !searchQuery && setShowSearch(false)}
                 />
                 <button
@@ -106,7 +133,7 @@ export default function Navbar() {
                     setShowSearch(false);
                     setSearchQuery("");
                   }}
-                  className="ml-2 p-1 text-gray-400 hover:text-primary transition-colors"
+                  className="ml-2 p-1 hover:opacity-60 transition-opacity"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -151,7 +178,11 @@ export default function Navbar() {
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
             {mounted && wishlistCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] font-medium w-4 h-4 flex items-center justify-center">
+              <span
+                className={`absolute -top-1 -right-1 text-[10px] font-medium w-4 h-4 flex items-center justify-center ${
+                  isScrolled ? "bg-primary text-white" : "bg-white text-primary"
+                }`}
+              >
                 {wishlistCount}
               </span>
             )}
@@ -176,7 +207,11 @@ export default function Navbar() {
               <path d="M16 10a4 4 0 0 1-8 0" />
             </svg>
             {mounted && itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] font-medium w-4 h-4 flex items-center justify-center">
+              <span
+                className={`absolute -top-1 -right-1 text-[10px] font-medium w-4 h-4 flex items-center justify-center ${
+                  isScrolled ? "bg-primary text-white" : "bg-white text-primary"
+                }`}
+              >
                 {itemCount}
               </span>
             )}
@@ -189,7 +224,11 @@ export default function Navbar() {
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-2 px-3 py-2 hover:opacity-60 transition-opacity"
               >
-                <div className="w-7 h-7 bg-black text-white flex items-center justify-center font-medium text-xs">
+                <div
+                  className={`w-7 h-7 flex items-center justify-center font-medium text-xs ${
+                    isScrolled ? "bg-primary text-white" : "bg-white text-primary"
+                  }`}
+                >
                   {user.name?.[0] || user.email[0].toUpperCase()}
                 </div>
                 <span className="hidden sm:block text-xs uppercase tracking-widest">{user.name || "Account"}</span>
@@ -206,7 +245,7 @@ export default function Navbar() {
 
               {/* Dropdown - Clean, no rounded corners */}
               {showUserMenu && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white shadow-lg border border-gray-100 py-2 animate-fade-in">
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white shadow-lg border border-gray-100 py-2 animate-fade-in text-primary">
                   <Link
                     href="/account"
                     className="block px-4 py-2 text-xs uppercase tracking-widest hover:bg-gray-50 transition-colors"
@@ -241,7 +280,9 @@ export default function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="hidden sm:flex bg-black text-white px-6 py-2 text-xs uppercase tracking-[0.15em] hover:bg-[#333] transition-colors"
+              className={`hidden sm:flex px-6 py-2 text-xs uppercase tracking-[0.15em] transition-colors ${
+                isScrolled ? "bg-primary text-white hover:bg-primary/80" : "bg-white text-primary hover:bg-white/90"
+              }`}
             >
               Login
             </Link>

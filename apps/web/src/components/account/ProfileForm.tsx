@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
+import { ProfileImageUpload } from "./ProfileImageUpload";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -63,6 +64,11 @@ export function ProfileForm() {
             Edit
           </Button>
         )}
+      </div>
+
+      {/* Profile Image Upload */}
+      <div className="flex justify-center mb-8">
+        <ProfileImageUpload />
       </div>
 
       {isEditing ? (

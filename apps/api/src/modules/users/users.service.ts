@@ -55,6 +55,24 @@ export class UsersService {
         email: true,
         name: true,
         phone: true,
+        profileImage: true,
+      },
+    });
+  }
+
+  // Update profile image
+  async updateProfileImage(userId: string, imageUrl: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException("User not found");
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { profileImage: imageUrl },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        profileImage: true,
       },
     });
   }

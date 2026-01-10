@@ -1,14 +1,29 @@
-import { Controller, Get, Post, Put, Delete, Param, Query, Body, Request, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Query,
+  Body,
+  Request,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+} from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { UsersService } from "./users.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard, Roles } from "../auth/guards/roles.guard";
-import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiConsumes, ApiBody } from "@nestjs/swagger";
+import { CloudinaryService } from "../upload/cloudinary.service";
 
 @ApiTags("Users")
 @ApiBearerAuth()
 @Controller("users")
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService, private cloudinaryService: CloudinaryService) {}
 
   // Customer endpoints
   @Put("profile")
@@ -16,6 +31,24 @@ export class UsersController {
   @ApiOperation({ summary: "Update current user profile" })
   async updateProfile(@Request() req: any, @Body() body: { name?: string; phone?: string }) {
     return this.usersService.updateProfile(req.user.sub, body);
+  }
+
+  @Post("profile/image")
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor("file"))
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        file: { type: "string", format: "binary" },
+      },
+    },
+  })
+  @ApiOperation({ summary: "Upload profile image" })
+  async uploadProfileImage(@Request() req: any, @UploadedFile() file: Express.Multer.File) {
+    const result = await this.cloudinaryService.uploadImage(file);
+    return this.usersService.updateProfileImage(req.user.sub, result.secureUrl);
   }
 
   @Post("change-password")

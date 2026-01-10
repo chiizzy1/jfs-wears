@@ -27,7 +27,7 @@ export function SearchFilters({
   hasActiveFilters,
 }: SearchFiltersProps) {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm sticky top-24 border border-gray-100">
+    <div className="sticky top-24 pr-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="font-semibold text-sm uppercase tracking-wide">Filters</h2>
         {hasActiveFilters && (

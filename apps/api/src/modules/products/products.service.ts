@@ -72,8 +72,12 @@ export class ProductsService {
   }
 
   async findBySlug(slug: string) {
-    return this.prisma.product.findUnique({
-      where: { slug },
+    return this.prisma.product.findFirst({
+      where: {
+        slug,
+        isActive: true,
+        deletedAt: null,
+      },
       include: {
         category: true,
         variants: { where: { isActive: true } },

@@ -16,14 +16,11 @@ export default function StaffPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xs uppercase tracking-[0.15em] font-medium text-muted">Staff</h1>
-          <p className="text-2xl font-light mt-1">Team Management</p>
+          <h1 className="text-3xl font-light tracking-tight">Staff Management</h1>
+          <p className="text-muted-foreground mt-1 text-sm uppercase tracking-wider">Team & Access Control</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            className="px-6 py-3 bg-black text-white text-xs uppercase tracking-[0.15em] hover:bg-black/90 transition-colors flex items-center gap-2"
-          >
+          <Button onClick={() => setIsModalOpen(true)} variant="premium" className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Add Staff
           </Button>
@@ -31,27 +28,27 @@ export default function StaffPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 border border-gray-100">
-          <p className="text-xs uppercase tracking-[0.15em] text-muted font-medium">Total Staff</p>
-          <p className="text-3xl font-light mt-3">{staff.length}</p>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+        <div className="px-6 first:pl-0">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Total Staff</p>
+          <p className="text-4xl font-light mt-2 tracking-tight">{staff.length}</p>
         </div>
-        <div className="bg-white p-6 border border-gray-100">
-          <p className="text-xs uppercase tracking-[0.15em] text-muted font-medium">Admins</p>
-          <p className="text-3xl font-light mt-3">{staff.filter((s) => s.role === "ADMIN").length}</p>
+        <div className="px-6">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Admins</p>
+          <p className="text-4xl font-light mt-2 tracking-tight">{staff.filter((s) => s.role === "ADMIN").length}</p>
         </div>
-        <div className="bg-white p-6 border border-gray-100">
-          <p className="text-xs uppercase tracking-[0.15em] text-muted font-medium">Managers</p>
-          <p className="text-3xl font-light mt-3">{staff.filter((s) => s.role === "MANAGER").length}</p>
+        <div className="px-6">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Managers</p>
+          <p className="text-4xl font-light mt-2 tracking-tight">{staff.filter((s) => s.role === "MANAGER").length}</p>
         </div>
-        <div className="bg-white p-6 border border-gray-100">
-          <p className="text-xs uppercase tracking-[0.15em] text-muted font-medium">Staff</p>
-          <p className="text-3xl font-light mt-3">{staff.filter((s) => s.role === "STAFF").length}</p>
+        <div className="px-6">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Staff</p>
+          <p className="text-4xl font-light mt-2 tracking-tight">{staff.filter((s) => s.role === "STAFF").length}</p>
         </div>
       </div>
 
       {/* Staff Table */}
-      <div className="bg-white border border-gray-100 rounded-sm">
+      <div className="border-t border-gray-100">
         <StaffTable />
       </div>
 

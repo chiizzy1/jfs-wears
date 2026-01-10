@@ -91,24 +91,25 @@ function TrackContent() {
   const currentStepIndex = order ? statusSteps.findIndex((s) => s.key === order.status) : -1;
 
   return (
-    <div className="min-h-screen bg-secondary py-12">
-      <div className="container-width max-w-3xl">
-        <h1 className="text-3xl font-bold text-center mb-8">Track Your Order</h1>
+    <div className="min-h-screen bg-secondary py-24">
+      <div className="container-width max-w-4xl mx-auto">
+        <h1 className="text-[10px] uppercase tracking-[0.3em] text-center mb-4 text-gray-500 font-medium">Order Status</h1>
+        <h2 className="text-4xl md:text-5xl font-medium text-center mb-12 tracking-tight">Track Your Shipment</h2>
 
         {/* Search Form */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm mb-8">
-          <form onSubmit={handleSubmit} className="flex gap-3">
+        <div className="bg-white p-0 mb-12 border-b border-gray-100 pb-12">
+          <div className="flex gap-0">
             <input
               type="text"
               value={orderNumber}
               onChange={(e) => setOrderNumber(e.target.value)}
-              placeholder="Enter your order number (e.g., JFS-XXXXX)"
-              className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-accent"
+              placeholder="ENTER ORDER NUMBER"
+              className="flex-1 px-4 py-4 border-b border-black/20 focus:border-black bg-transparent focus:outline-none placeholder:text-gray-400 text-sm uppercase tracking-widest transition-colors"
             />
-            <Button type="submit" variant="secondary" disabled={isLoading}>
-              {isLoading ? "Searching..." : "Track"}
+            <Button type="submit" variant="premium" disabled={isLoading} className="rounded-none">
+              {isLoading ? "SEARCHING..." : "TRACK ORDER"}
             </Button>
-          </form>
+          </div>
         </div>
 
         {/* Error State */}
@@ -127,7 +128,7 @@ function TrackContent() {
         {order && (
           <div className="space-y-6">
             {/* Status Timeline */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div className="bg-white p-8 border border-gray-100 mb-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <p className="text-sm text-gray-500">Order Number</p>
@@ -177,7 +178,7 @@ function TrackContent() {
             </div>
 
             {/* Order Items */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div className="bg-white p-8 border border-gray-100 mb-6">
               <h2 className="font-semibold mb-4">Order Items</h2>
               <div className="space-y-3">
                 {order.items.map((item) => (
@@ -204,7 +205,7 @@ function TrackContent() {
 
             {/* Shipping Address */}
             {order.shippingAddress && (
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="bg-white p-8 border border-gray-100">
                 <h2 className="font-semibold mb-3">Shipping Address</h2>
                 <p className="text-gray-600">
                   {order.shippingAddress.firstName} {order.shippingAddress.lastName}

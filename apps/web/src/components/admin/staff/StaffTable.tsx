@@ -15,38 +15,36 @@ export function StaffTable() {
     () => [
       {
         accessorKey: "name",
-        header: "Name",
-        cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Name</span>,
+        cell: ({ row }) => (
+          <span className="font-medium text-sm text-primary uppercase tracking-wide">{row.getValue("name")}</span>
+        ),
       },
       {
         accessorKey: "email",
-        header: "Email",
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Email</span>,
+        cell: ({ row }) => <span className="text-xs text-muted-foreground">{row.getValue("email")}</span>,
       },
       {
         accessorKey: "role",
-        header: "Role",
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Role</span>,
         cell: ({ row }) => {
           const role = row.getValue("role") as string;
-          let badgeClass = "bg-gray-100 text-gray-800";
-          if (role === "ADMIN") badgeClass = "bg-purple-100 text-purple-800";
-          else if (role === "MANAGER") badgeClass = "bg-blue-100 text-blue-800";
-
-          return <span className={`px-2 py-1 rounded-full text-xs font-semibold ${badgeClass}`}>{role}</span>;
+          return <span className="text-xs uppercase tracking-widest font-medium text-muted-foreground">{role}</span>;
         },
       },
       {
         accessorKey: "status",
-        header: "Status",
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Status</span>,
         cell: ({ row }) => {
           const isActive = row.original.isActive;
           return (
-            <span
-              className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-              }`}
-            >
-              {isActive ? "Active" : "Inactive"}
-            </span>
+            <div className="flex items-center gap-2">
+              <div className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`} />
+              <span className="text-xs uppercase tracking-widest font-medium text-muted-foreground">
+                {isActive ? "Active" : "Inactive"}
+              </span>
+            </div>
           );
         },
       },
@@ -55,10 +53,10 @@ export function StaffTable() {
         cell: ({ row }) => {
           const staffMember = row.original;
           return (
-            <div className="flex justify-end">
+            <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <Button
                 variant="ghost"
-                size="icon"
+                className="h-auto p-0 text-xs uppercase tracking-widest hover:text-red-600 hover:bg-transparent"
                 onClick={() => {
                   if (confirm("Are you sure you want to delete this staff member?")) {
                     deleteStaff.mutate(staffMember.id);
@@ -66,7 +64,7 @@ export function StaffTable() {
                 }}
                 disabled={deleteStaff.isPending}
               >
-                <Trash2 className="h-4 w-4 text-red-500" />
+                Delete
               </Button>
             </div>
           );

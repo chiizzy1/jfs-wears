@@ -21,33 +21,33 @@ export function PromotionsTable({ data, isLoading, onEdit, onDelete }: Promotion
     () => [
       {
         accessorKey: "code",
-        header: "Code",
-        cell: ({ row }) => <code className="bg-secondary px-2 py-1 text-xs font-mono rounded">{row.original.code}</code>,
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Code</span>,
+        cell: ({ row }) => <code className="text-xs font-mono uppercase tracking-wider">{row.original.code}</code>,
       },
       {
         accessorKey: "name",
-        header: "Name",
-        cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Name</span>,
+        cell: ({ row }) => <span className="font-medium text-sm text-primary uppercase tracking-wide">{row.original.name}</span>,
       },
       {
         accessorKey: "type",
-        header: "Type",
-        cell: ({ row }) => <span className="text-muted-foreground">{row.original.type}</span>,
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Type</span>,
+        cell: ({ row }) => <span className="text-xs text-muted-foreground uppercase">{row.original.type}</span>,
       },
       {
         accessorKey: "value",
-        header: "Value",
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Value</span>,
         cell: ({ row }) => (
-          <span className="font-medium">
+          <span className="font-medium text-sm tabular-nums">
             {row.original.type === "PERCENTAGE" ? `${row.original.value}%` : `₦${row.original.value.toLocaleString()}`}
           </span>
         ),
       },
       {
         accessorKey: "usageCount",
-        header: "Usage",
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Usage</span>,
         cell: ({ row }) => (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 text-sm tabular-nums">
             <span>{row.original.usageCount || 0}</span>
             {row.original.usageLimit && <span className="text-muted-foreground">/ {row.original.usageLimit}</span>}
           </div>
@@ -55,20 +55,27 @@ export function PromotionsTable({ data, isLoading, onEdit, onDelete }: Promotion
       },
       {
         accessorKey: "validTo",
-        header: "Expires",
-        cell: ({ row }) => {
-          return new Date(row.original.validTo).toLocaleDateString("en-NG", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          });
-        },
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Expires</span>,
+        cell: ({ row }) => (
+          <span className="text-xs text-muted-foreground uppercase tracking-wider">
+            {new Date(row.original.validTo).toLocaleDateString("en-NG", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+          </span>
+        ),
       },
       {
         accessorKey: "isActive",
-        header: "Status",
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Status</span>,
         cell: ({ row }) => (
-          <Badge variant={row.original.isActive ? "success" : "secondary"}>{row.original.isActive ? "Active" : "Inactive"}</Badge>
+          <div className="flex items-center gap-2">
+            <div className={`w-1.5 h-1.5 rounded-full ${row.original.isActive ? "bg-green-500" : "bg-gray-300"}`} />
+            <span className="text-xs uppercase tracking-widest font-medium text-muted-foreground">
+              {row.original.isActive ? "Active" : "Inactive"}
+            </span>
+          </div>
         ),
       },
       {
@@ -76,24 +83,22 @@ export function PromotionsTable({ data, isLoading, onEdit, onDelete }: Promotion
         cell: ({ row }) => {
           const promo = row.original;
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit(promo)}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onDelete(promo.id, promo.code)} className="text-red-600 focus:text-red-600">
-                  <Trash className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex justify-end gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <Button
+                variant="ghost"
+                className="h-auto p-0 text-xs uppercase tracking-widest hover:text-black hover:bg-transparent hover:underline underline-offset-4"
+                onClick={() => onEdit(promo)}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="ghost"
+                className="h-auto p-0 text-xs uppercase tracking-widest hover:text-red-600 hover:bg-transparent text-gray-400"
+                onClick={() => onDelete(promo.id, promo.code)}
+              >
+                Delete
+              </Button>
+            </div>
           );
         },
       },

@@ -64,7 +64,8 @@ export default function FeaturedProducts() {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiClient.get<ApiProduct[]>("/products/featured?limit=8");
+      // Fetch enough products to create a decent loop
+      const data = await apiClient.get<ApiProduct[]>("/products/featured?limit=10");
       const mappedProducts = data.map(mapApiProduct);
       setProducts(mappedProducts);
     } catch (err) {
@@ -90,21 +91,12 @@ export default function FeaturedProducts() {
 
   if (loading) {
     return (
-      <section className="py-20 bg-[#F8F6F3]">
+      <section className="py-24 bg-[#F8F6F3] overflow-hidden">
         <SectionHeader />
-        <div className="container-width">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white rounded-2xl overflow-hidden animate-pulse">
-                <div className="aspect-[3/4] bg-gray-200" />
-                <div className="p-4">
-                  <div className="h-3 bg-gray-200 rounded w-1/3 mb-2" />
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-3" />
-                  <div className="h-5 bg-gray-200 rounded w-1/4" />
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="flex gap-6 overflow-hidden">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="min-w-[280px] md:min-w-[340px] rounded-none aspect-3/4 animate-pulse bg-gray-200" />
+          ))}
         </div>
       </section>
     );
@@ -112,7 +104,7 @@ export default function FeaturedProducts() {
 
   if (error) {
     return (
-      <section className="py-20 bg-[#F8F6F3]">
+      <section className="py-24 bg-[#F8F6F3]">
         <SectionHeader />
         <div className="container-width">
           <ErrorFallback variant="card" title="Failed to load products" description={error} onRetry={fetchFeaturedProducts} />
@@ -123,25 +115,72 @@ export default function FeaturedProducts() {
 
   if (products.length === 0) {
     return (
-      <section className="py-20 bg-[#F8F6F3]">
+      <section className="py-24 bg-[#F8F6F3]">
         <SectionHeader />
-        <div className="container-width flex justify-center py-12 border-2 border-dashed border-gray-300 rounded-xl">
-          <p className="text-gray-400">No featured products available at the moment.</p>
+        <div className="container-width flex justify-center py-12 border border-dashed border-gray-300">
+          <p className="text-gray-400 uppercase tracking-widest text-xs">No featured products available</p>
         </div>
       </section>
     );
   }
 
+  // Duplicate products for infinite loop
+  // We need enough duplicates to fill the screen + buffer
+  const marqueeProducts = [...products, ...products, ...products];
+
   return (
-    <section className="py-20 bg-[#F8F6F3]">
+    <section className="py-24 bg-[#F8F6F3] overflow-hidden">
       <SectionHeader />
-      <div className="container-width">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+
+      {/* Marquee Container with Gradient Masks for fade effect */}
+      <div className="relative w-full">
+        {/* Left Fade */}
+        <div className="absolute left-0 top-0 bottom-0 w-8 md:w-32 z-10 bg-linear-to-r from-[#F8F6F3] to-transparent pointer-events-none" />
+        {/* Right Fade */}
+        <div className="absolute right-0 top-0 bottom-0 w-8 md:w-32 z-10 bg-linear-to-l from-[#F8F6F3] to-transparent pointer-events-none" />
+
+        {/* Scrolling Track */}
+        <div className="flex overflow-hidden group">
+          <motion.div
+            className="flex gap-4 md:gap-6 px-4"
+            animate={{
+              x: ["0%", "-33.333%"], // Move by one set of products
+            }}
+            transition={{
+              x: {
+                repeat: Infinity,
+                repeatType: "loop",
+                duration: products.length * 3, // Adjust speed based on number of products
+                ease: "linear",
+              },
+            }}
+            // Pause animation on hover
+            style={{
+              width: "max-content",
+            }}
+            whileHover={{ animationPlayState: "paused" }} // Note: Framer Motion interactions might need CSS for pause on hover perfectly, but let's try a CSS override approach or just speed modification if needed.
+            // Actually, Framer Motion doesn't support 'whileHover' for pausing an infinite 'animate'.
+            // We'll use a CSS class for the hover-pause or use the 'hover' variant if we were using variants,
+            // but for a simple loop, often CSS animation is smoother for the pause.
+            // Let's stick to Framer Motion for the movement but wrapper for pause.
+          >
+            {marqueeProducts.map((product, index) => (
+              <ProductCard
+                key={`${product.id}-${index}`}
+                product={product}
+                className="w-[260px] md:w-[320px] shrink-0 transition-opacity duration-300 hover:opacity-100"
+              />
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Hover Hint */}
+        <div className="text-center mt-8 text-xs uppercase tracking-widest text-gray-400 opacity-0 md:opacity-50">
+          Scrolls infinitely • Hover to shop
         </div>
       </div>
     </section>
   );
 }
+
+import { motion } from "framer-motion";
