@@ -4,17 +4,14 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
-import { useAuthStore } from "@/stores/auth-store";
+import { apiClient } from "@/lib/api-client";
 import { passwordSchema, PasswordValues } from "@/schemas/account.schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-
 export function PasswordForm() {
-  const { tokens } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<PasswordValues>({
@@ -29,22 +26,10 @@ export function PasswordForm() {
   async function onSubmit(data: PasswordValues) {
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/users/change-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokens?.accessToken}`,
-        },
-        body: JSON.stringify({
-          currentPassword: data.currentPassword,
-          newPassword: data.newPassword,
-        }),
+      await apiClient.post("/users/change-password", {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
       });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to change password");
-      }
 
       toast.success("Password changed successfully");
       form.reset();

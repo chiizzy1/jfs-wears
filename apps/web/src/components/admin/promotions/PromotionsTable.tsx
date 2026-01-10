@@ -1,13 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Promotion } from "@/lib/admin-api";
 import { DataTable } from "@/components/ui/data-table/DataTable";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Trash, Edit } from "lucide-react";
+import { formatDate } from "@/lib/format";
 
 interface PromotionsTableProps {
   data: Promotion[];
@@ -57,13 +55,7 @@ export function PromotionsTable({ data, isLoading, onEdit, onDelete }: Promotion
         accessorKey: "validTo",
         header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Expires</span>,
         cell: ({ row }) => (
-          <span className="text-xs text-muted-foreground uppercase tracking-wider">
-            {new Date(row.original.validTo).toLocaleDateString("en-NG", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
-          </span>
+          <span className="text-xs text-muted-foreground uppercase tracking-wider">{formatDate(row.original.validTo)}</span>
         ),
       },
       {

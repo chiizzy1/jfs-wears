@@ -264,6 +264,55 @@ export const apiClient = {
   delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     return request<T>(endpoint, { ...options, method: "DELETE" });
   },
+
+  /**
+   * Upload a file using FormData
+   * Does not set Content-Type header to allow browser to set multipart boundary
+   */
+  async upload<T>(endpoint: string, formData: FormData, options?: RequestOptions): Promise<T> {
+    const { timeout = 30000, retries = 0, retryDelay = 1000, token, ...otherOptions } = options || {};
+
+    const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
+
+    const headers: HeadersInit = {};
+    if (token) {
+      (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers,
+        body: formData,
+        signal: controller.signal,
+        credentials: "include",
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response);
+        throw new ApiError(response.status, errorMessage);
+      }
+
+      return await response.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw new ApiError(0, "Upload timed out");
+      }
+
+      if (error instanceof ApiError) {
+        throw error;
+      }
+
+      throw new ApiError(0, error instanceof Error ? error.message : "Upload failed");
+    }
+  },
 };
 
 // ========================================

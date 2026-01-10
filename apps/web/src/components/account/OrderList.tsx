@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
+import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
 interface Order {
   id: string;
@@ -27,25 +26,17 @@ interface Order {
 
 export function OrderList() {
   const router = useRouter();
-  const { isAuthenticated, tokens } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchOrders() {
-      if (!isAuthenticated || !tokens?.accessToken) return;
+      if (!isAuthenticated) return;
 
       try {
-        const res = await fetch(`${API_BASE_URL}/orders/my`, {
-          headers: {
-            Authorization: `Bearer ${tokens?.accessToken}`,
-          },
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setOrders(data);
-        }
+        const data = await apiClient.get<Order[]>("/orders/my");
+        setOrders(data);
       } catch (error) {
         console.error("Failed to fetch orders:", error);
       } finally {
@@ -54,7 +45,7 @@ export function OrderList() {
     }
 
     fetchOrders();
-  }, [isAuthenticated, tokens]);
+  }, [isAuthenticated]);
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {

@@ -3,18 +3,17 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { useAuthStore } from "@/stores/auth-store";
+import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Camera, Loader2, User } from "lucide-react";
 import toast from "react-hot-toast";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
 interface ProfileImageUploadProps {
   onImageUpdate?: (url: string) => void;
 }
 
 export function ProfileImageUpload({ onImageUpdate }: ProfileImageUploadProps) {
-  const { user, tokens, setUser } = useAuthStore();
+  const { user, setUser } = useAuthStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(user?.profileImage || null);
@@ -48,19 +47,7 @@ export function ProfileImageUpload({ onImageUpdate }: ProfileImageUploadProps) {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch(`${API_BASE_URL}/users/profile/image`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${tokens?.accessToken}`,
-        },
-        body: formData,
-      });
-
-      if (!res.ok) {
-        throw new Error("Upload failed");
-      }
-
-      const data = await res.json();
+      const data = await apiClient.upload<{ profileImage: string }>("/users/profile/image", formData);
 
       // Update local state and user store
       if (data.profileImage) {

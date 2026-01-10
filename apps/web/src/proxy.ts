@@ -1,10 +1,12 @@
 /**
- * Next.js Middleware for Route Protection
+ * Next.js Proxy for Route Protection
  *
  * Strategy: Lightweight checks with backend verification
  * - Reads auth_token cookie
  * - Checks expiration (no signature verification)
  * - Redirects unauthenticated users from protected routes
+ *
+ * NOTE: Renamed from middleware.ts to proxy.ts per Next.js 16+ convention
  */
 
 import { NextResponse } from "next/server";
@@ -48,7 +50,7 @@ function isAuthRoute(pathname: string): boolean {
   return AUTH_ROUTES.some((route) => pathname.startsWith(route));
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const accessToken = request.cookies.get("access_token")?.value;
 

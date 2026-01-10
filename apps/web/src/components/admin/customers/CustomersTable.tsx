@@ -4,10 +4,8 @@ import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { User } from "@/lib/admin-api";
 import { DataTable } from "@/components/ui/data-table/DataTable";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Trash } from "lucide-react";
+import { formatDate } from "@/lib/format";
 
 interface CustomersTableProps {
   data: User[];
@@ -43,13 +41,7 @@ export function CustomersTable({ data, isLoading, onDelete }: CustomersTableProp
         accessorKey: "createdAt",
         header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Joined</span>,
         cell: ({ row }) => (
-          <span className="text-xs text-muted-foreground uppercase tracking-wider">
-            {new Date(row.original.createdAt).toLocaleDateString("en-NG", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
-          </span>
+          <span className="text-xs text-muted-foreground uppercase tracking-wider">{formatDate(row.original.createdAt)}</span>
         ),
       },
       {

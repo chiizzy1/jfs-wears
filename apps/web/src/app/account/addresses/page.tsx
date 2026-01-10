@@ -4,10 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/stores/auth-store";
+import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
 interface Address {
   id: string;
@@ -23,7 +22,7 @@ interface Address {
 
 export default function AddressesPage() {
   const router = useRouter();
-  const { tokens, isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,13 +53,8 @@ export default function AddressesPage() {
 
   const loadAddresses = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/users/addresses`, {
-        headers: { Authorization: `Bearer ${tokens?.accessToken}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAddresses(data);
-      }
+      const data = await apiClient.get<Address[]>("/users/addresses");
+      setAddresses(data);
     } catch (error) {
       console.error("Failed to load addresses:", error);
     } finally {
@@ -71,19 +65,12 @@ export default function AddressesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const endpoint = editingId ? `${API_BASE_URL}/users/addresses/${editingId}` : `${API_BASE_URL}/users/addresses`;
-
     try {
-      const res = await fetch(endpoint, {
-        method: editingId ? "PUT" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokens?.accessToken}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!res.ok) throw new Error("Failed to save address");
+      if (editingId) {
+        await apiClient.put(`/users/addresses/${editingId}`, formData);
+      } else {
+        await apiClient.post("/users/addresses", formData);
+      }
 
       toast.success(editingId ? "Address updated" : "Address added");
       setShowForm(false);
@@ -99,13 +86,7 @@ export default function AddressesPage() {
     if (!confirm("Delete this address?")) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/users/addresses/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${tokens?.accessToken}` },
-      });
-
-      if (!res.ok) throw new Error("Failed to delete");
-
+      await apiClient.delete(`/users/addresses/${id}`);
       toast.success("Address deleted");
       loadAddresses();
     } catch (error) {

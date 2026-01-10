@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/stores/auth-store";
+import { apiClient } from "@/lib/api-client";
 import { profileSchema, ProfileValues } from "@/schemas/account.schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,10 +13,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Loader2 } from "lucide-react";
 import { ProfileImageUpload } from "./ProfileImageUpload";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-
 export function ProfileForm() {
-  const { user, tokens } = useAuthStore();
+  const { user } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -30,16 +29,7 @@ export function ProfileForm() {
   async function onSubmit(data: ProfileValues) {
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/users/profile`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokens?.accessToken}`,
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) throw new Error("Failed to update profile");
+      await apiClient.put("/users/profile", data);
 
       toast.success("Profile updated successfully");
       setIsEditing(false);

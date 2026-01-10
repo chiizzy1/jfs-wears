@@ -64,6 +64,25 @@ class AdminAPI {
     );
   }
 
+  async getRevenueByPeriod(period: "day" | "week" | "month" = "month") {
+    return this.request<{ date: string; revenue: number }[]>(`/analytics/revenue?period=${period}`);
+  }
+
+  async getOrdersByPeriod(period: "day" | "week" | "month" = "week") {
+    // Fetch recent orders and group by day for weekly chart
+    const orders = await this.getOrders({ limit: 100 });
+    const grouped = orders.reduce((acc, order) => {
+      const date = new Date(order.createdAt);
+      const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+      if (!acc[dayName]) acc[dayName] = 0;
+      acc[dayName]++;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    return days.map((day) => ({ day, orders: grouped[day] || 0 }));
+  }
+
   // Products
   async getProducts(params?: { category?: string; limit?: number; offset?: number }) {
     const search = new URLSearchParams();

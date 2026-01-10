@@ -6,7 +6,8 @@ import { DataTable } from "@/components/ui/data-table/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { Order } from "@/lib/admin-api";
 import { Button } from "@/components/ui/button";
-// import { Eye, Download } from "lucide-react"; // Icons removed for premium text-only approach
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatDate } from "@/lib/format";
 import Link from "next/link";
 
 export function OrdersTable() {
@@ -29,14 +30,6 @@ export function OrdersTable() {
   };
 
   const counts = getOrderCounts();
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-NG", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
 
   const columns: ColumnDef<Order>[] = [
     {
@@ -72,12 +65,12 @@ export function OrdersTable() {
     {
       accessorKey: "status",
       header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Status</span>,
-      cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      cell: ({ row }) => <StatusBadge status={row.original.status} type="order" />,
     },
     {
       accessorKey: "paymentStatus",
       header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Payment</span>,
-      cell: ({ row }) => <PaymentBadge status={row.original.paymentStatus} />,
+      cell: ({ row }) => <StatusBadge status={row.original.paymentStatus} type="payment" />,
     },
     {
       accessorKey: "createdAt",
@@ -144,39 +137,6 @@ export function OrdersTable() {
           <DataTable columns={columns} data={filteredOrders} />
         </div>
       )}
-    </div>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    PENDING: "bg-amber-500",
-    CONFIRMED: "bg-blue-500",
-    SHIPPED: "bg-purple-500",
-    DELIVERED: "bg-green-500",
-    CANCELLED: "bg-red-500",
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      <div className={`w-1.5 h-1.5 rounded-full ${styles[status] || "bg-gray-500"}`} />
-      <span className="text-xs uppercase tracking-widest font-medium text-muted-foreground">{status}</span>
-    </div>
-  );
-}
-
-function PaymentBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    PENDING: "bg-amber-500",
-    PAID: "bg-green-500",
-    FAILED: "bg-red-500",
-    REFUNDED: "bg-gray-500",
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      <div className={`w-1.5 h-1.5 rounded-full ${styles[status] || "bg-gray-500"}`} />
-      <span className="text-xs uppercase tracking-widest font-medium text-muted-foreground">{status}</span>
     </div>
   );
 }

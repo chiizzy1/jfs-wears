@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/stores/auth-store";
+import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
 interface Review {
   id: string;
@@ -38,7 +37,7 @@ interface ProductReviewsProps {
 }
 
 export default function ProductReviews({ productId, productName }: ProductReviewsProps) {
-  const { isAuthenticated, tokens } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [stats, setStats] = useState<ReviewStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,12 +51,9 @@ export default function ProductReviews({ productId, productName }: ProductReview
 
   const loadReviews = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/reviews/product/${productId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setReviews(data.reviews);
-        setStats(data.stats);
-      }
+      const data = await apiClient.get<{ reviews: Review[]; stats: ReviewStats }>(`/reviews/product/${productId}`);
+      setReviews(data.reviews);
+      setStats(data.stats);
     } catch (error) {
       console.error("Failed to load reviews:", error);
     } finally {
@@ -74,20 +70,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
 
     setIsSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/reviews/product/${productId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokens?.accessToken}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message);
-      }
-
+      await apiClient.post(`/reviews/product/${productId}`, formData);
       toast.success("Review submitted!");
       setShowForm(false);
       setFormData({ rating: 5, title: "", comment: "" });
