@@ -1,0 +1,121 @@
+# Airbills Frontend (v2) - Agent Instructions & Codebase Guide
+
+## 1. Tech Stack Overview
+
+- **Framework**: Next.js (App Router)
+- **Language**: TypeScript (Strict Mode)
+- **Styling**: Tailwind CSS v4 + Utility Classes (`cn` helper)
+- **UI Library**: Radix UI Primitives + Lucide React + Custom Shadcn-like components
+- **State Management**: Zustand (Global), React Query (Server State)
+- **Forms**: React Hook Form + Zod Resolution
+- **Animations**: GSAP OR Framer Motion
+- **Wallet Integration**: Solana Wallet Adapter (if it is a solana dapp)
+
+## 2. Project Structure
+
+The project follows a **Feature-First** architecture for components, keeping related logic close, while separating cross-cutting concerns (services, schemas).
+
+```
+src/
+├── app/                 # Next.js App Router pages
+├── components/
+│   ├── [feature]/       # Feature-specific components (e.g., bills, auth, dashboard)
+│   │   ├── [Feature]Form.tsx
+│   │   └── common/      # Feature-local shared components
+│   └── ui/              # Reusable UI primitives (Buttons, Inputs, etc.)
+├── hooks/               # Custom hooks (business logic & UI logic)
+├── lib/                 # Utilities and libraries (utils.ts, solanatx.ts)
+├── schemas/             # Zod validation schemas (Centralized)
+├── services/            # API interaction layer (Decoupled from UI)
+├── stores/              # Zustand global stores
+├── types/               # TypeScript type definitions (apiResponses.ts, etc.)
+└── utils/               # Helper functions
+```
+
+## 3. Development Patterns & Rules
+
+### A. Component Structure
+
+- **Pattern**: Functional Components with named exports (mostly) or default exports.
+- **Location**: Place feature code in `src/components/[feature]/`.
+- **Styling**: Use `className` prop with `cn(...)` utility for merging Tailwind classes.
+- **Rule**: Do not inline complex logic. Extract to custom hooks or services.
+
+### B. Forms & Validation (Strict Adherence)
+
+All forms **MUST** use `react-hook-form` paired with `zod`.
+
+1.  **Define Schema**: Create a schema in `src/schemas/[feature]FormSchema.ts`.
+
+    ```typescript
+    // src/schemas/exampleSchema.ts
+    import * as z from "zod";
+    export const exampleSchema = z.object({
+      field: z.string().min(1, "Required message"),
+    });
+    export type ExampleValues = z.infer<typeof exampleSchema>;
+    ```
+
+2.  **Use in Component**:
+
+    ```typescript
+    const form = useForm<ExampleValues>({
+      resolver: zodResolver(exampleSchema),
+      defaultValues: { ... },
+    });
+    ```
+
+3.  **UI Components**: Use the `Form` wrapper components (`FormField`, `FormItem`, etc.) from `@/components/ui/form`.
+
+### C. Service Layer (API)
+
+**NEVER** make API calls directly inside components (useEffect). Use the Service Layer pattern.
+
+1.  **Location**: `src/services/[feature]Service.ts`.
+2.  **Technique**: Use standard `fetch` with `async/await`.
+3.  **Environment**: Use `process.env.NEXT_PUBLIC_BACKEND_URL`.
+4.  **Type Safety**: Always type the return Promise with types from `@/types/apiResponses`.
+
+    ```typescript
+    // src/services/exampleService.ts
+    export async function doAction(data: InputData): Promise<ActionResponse> {
+      const response = await fetch(...);
+      if (!response.ok) throw new Error(...);
+      return await response.json();
+    }
+    ```
+
+### D. UI Component Pattern
+
+Reusable UI components (buttons, inputs) use `class-variance-authority` (cva) for managing variants.
+
+- **Location**: `src/components/ui/`.
+- **Pattern**:
+    ```typescript
+    const buttonVariants = cva("base-classes...", {
+      variants: {
+        variant: { default: "...", destructive: "..." },
+        size: { default: "...", sm: "..." }
+      },
+      defaultVariants: { ... }
+    });
+    ```
+
+## 4. Coding Standards
+
+- **TypeScript**: Strict mode is ON. Avoid `any`. Define interface for all props and data structures.
+- **Naming**:
+    - Files: `PascalCase.tsx` for components, `camelCase.ts` for logic.
+    - Folders: `kebab-case` or `camelCase` (consistency within parent).
+- **Imports**: Use aliases `@/components`, `@/services`, `@/lib` etc.
+- **Icons**: Use `lucide-react` or `react-icons` (check existing usage).
+
+## 5. Agent Workflow Checklist
+
+When implementing a new feature:
+
+1.  [ ] **Define Types**: Update `@/types` if new API responses are needed.
+2.  [ ] **Create Service**: Add methods to `src/services/` to handle data fetching.
+3.  [ ] **Create Schema**: Define Zod schema in `src/schemas/`.
+4.  [ ] **Build Component**: Create the UI in `src/components/[feature]/` using the schema and service.
+5.  [ ] **State**: If global state is needed, update/create a Zustand store in `src/stores/`.

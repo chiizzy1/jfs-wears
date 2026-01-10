@@ -1,0 +1,171 @@
+@import "tailwindcss";
+
+@theme {
+  /* Mason Garments-inspired Premium Color Palette */
+  --color-primary: #1c1c1c; /* Deep charcoal for text */
+  --color-secondary: #faf7f1; /* Warm cream background */
+  --color-accent: #1c1c1c; /* Black for buttons/CTAs */
+  --color-sale: #cc0000; /* Muted red for sale prices */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #cc0000;
+  --color-gray: #6b7280;
+  --color-muted: #a1a1aa;
+
+  /* Premium Typography */
+  --font-heading: "Hanken Grotesk", sans-serif;
+  --font-sans: "Instrument Sans", sans-serif;
+}
+
+/* 
+  Tailwind v4: --color-* creates bg-*, text-*, border-* utilities
+  --font-* creates font-* utilities
+*/
+
+@layer base {
+  body {
+    @apply bg-secondary text-primary font-sans;
+  }
+
+  /* Premium Typography Scale */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+    letter-spacing: 0.03em;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+}
+
+@layer components {
+  /* Premium Button - Black Rectangle, Uppercase, Wide Letter-Spacing */
+  .btn-primary {
+    @apply bg-black text-white px-8 py-4 uppercase text-sm font-medium transition-colors;
+    letter-spacing: 0.15em;
+  }
+  .btn-primary:hover {
+    @apply bg-[#333];
+  }
+
+  .btn-accent {
+    @apply bg-black text-white px-8 py-4 uppercase text-sm font-medium transition-colors;
+    letter-spacing: 0.15em;
+  }
+  .btn-accent:hover {
+    @apply bg-[#333];
+  }
+
+  .btn-outline {
+    @apply border border-black text-black px-8 py-4 uppercase text-sm font-medium transition-all bg-transparent;
+    letter-spacing: 0.15em;
+  }
+  .btn-outline:hover {
+    @apply bg-black text-white;
+  }
+
+  /* Container with generous whitespace */
+  .container-width {
+    @apply max-w-7xl mx-auto px-6 sm:px-8 lg:px-12;
+  }
+
+  /* Premium Link Style */
+  .link-premium {
+    @apply text-sm uppercase tracking-[0.15em] text-primary hover:opacity-70 transition-opacity;
+  }
+
+  /* Section Headers - Editorial Style */
+  .section-header {
+    @apply text-xs uppercase tracking-[0.2em] text-muted font-medium;
+  }
+}
+
+/* Premium Utility Classes */
+@layer utilities {
+  .tracking-premium {
+    letter-spacing: 0.15em;
+  }
+
+  .tracking-wide-premium {
+    letter-spacing: 0.2em;
+  }
+
+  .uppercase-premium {
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+}
+
+/* Modal Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.animate-slide-out-right {
+  animation: slideOutRight 0.3s ease-out;
+}

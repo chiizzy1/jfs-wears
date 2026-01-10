@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: jfs_wears_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: jfs_wears_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: jfs_user
+      POSTGRES_PASSWORD: jfs_password
+      POSTGRES_DB: jfswears
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  redis_data:
+  postgres_data:
