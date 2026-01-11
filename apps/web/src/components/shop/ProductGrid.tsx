@@ -15,7 +15,7 @@ export function ProductGrid({ products }: ProductGridProps) {
         </p>
 
         {/* Sort Select - keeping simple for now, could be a separate component */}
-        <select className="border border-gray-200 rounded-lg px-4 py-2 text-sm bg-white focus:outline-none focus:border-black cursor-pointer">
+        <select className="border border-gray-200 rounded-none px-4 py-2 text-sm bg-white focus:outline-none focus:border-black cursor-pointer">
           <option value="newest">Newest First</option>
           <option value="price-asc">Price: Low to High</option>
           <option value="price-desc">Price: High to Low</option>
@@ -30,7 +30,7 @@ export function ProductGrid({ products }: ProductGridProps) {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+        <div className="text-center py-20 bg-gray-50 rounded-none border border-dashed border-gray-200">
           <p className="text-gray-500 text-lg">No products found.</p>
           <Link href="/shop" className="text-black font-medium hover:underline mt-2 inline-block">
             Clear filters

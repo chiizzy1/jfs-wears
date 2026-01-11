@@ -51,7 +51,7 @@ function SidebarContent({ categories, currentCategory }: ShopSidebarProps) {
       <div>
         <h3 className="text-xs font-bold uppercase tracking-widest mb-6 text-black">Filter By</h3>
 
-        <Suspense fallback={<div className="h-20 animate-pulse bg-gray-50 rounded-lg" />}>
+        <Suspense fallback={<div className="h-20 animate-pulse bg-gray-50 rounded-none" />}>
           <PriceFilter />
         </Suspense>
       </div>

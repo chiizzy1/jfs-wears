@@ -5,7 +5,9 @@ import { useCartStore, CartState } from "@/stores/cart-store";
 import { useWishlistStore, WishlistState } from "@/stores/wishlist-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 /**
  * Premium Navigation Bar
@@ -21,19 +23,31 @@ export default function Navbar() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const pathname = usePathname();
+
+  // Routes that have a light background (requires dark navbar text)
+  const LIGHT_BG_ROUTES = ["/track", "/cart", "/wishlist", "/account", "/search"];
+  const isLightPage = LIGHT_BG_ROUTES.some((route) => pathname?.startsWith(route));
+
+  // Premium Scroll Motion
+  const { scrollY } = useScroll();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    return scrollY.on("change", (latest) => {
+      setIsScrolled(latest > 50);
+    });
+  }, [scrollY]);
+
+  const navHeight = useTransform(scrollY, [0, 100], ["5rem", "4rem"]);
+  const navBackground = useTransform(scrollY, [0, 100], ["rgba(255, 255, 255, 0)", "rgba(235, 229, 218, 0.9)"]);
+  const navBackdropBlur = useTransform(scrollY, [0, 100], ["blur(0px)", "blur(12px)"]);
+  const navBorderColor = useTransform(scrollY, [0, 100], ["rgba(255, 255, 255, 0)", "rgba(0, 0, 0, 0.05)"]);
 
   useEffect(() => {
     setMounted(true);
-
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Close menu when clicking outside
@@ -63,16 +77,20 @@ export default function Navbar() {
     }
   };
 
-  // Dynamic text color based on scroll state
-  const textColorClass = isScrolled ? "text-primary" : "text-white";
-  const borderColorClass = isScrolled ? "border-gray-200/50" : "border-transparent";
-  const bgClass = isScrolled ? "bg-secondary/90 backdrop-blur-md" : "bg-transparent";
+  // Dynamic text color based on scroll state or page background
+  const textColorClass = isScrolled || isLightPage ? "text-primary" : "text-white";
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out border-b ${bgClass} ${borderColorClass}`}
+    <motion.nav
+      style={{
+        height: navHeight,
+        backgroundColor: navBackground,
+        backdropFilter: navBackdropBlur,
+        borderColor: navBorderColor,
+      }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 border-b border-transparent`}
     >
-      <div className="container-width flex items-center justify-between h-20">
+      <div className="container-width flex items-center justify-between h-full">
         {/* Text-Only Logo - Premium Style */}
         <Link href="/" className="flex items-center group">
           <span
@@ -123,7 +141,7 @@ export default function Navbar() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search..."
                   className={`w-48 md:w-64 px-4 py-2 text-sm border-b bg-transparent focus:outline-none placeholder-current/50 ${
-                    isScrolled ? "border-primary" : "border-white"
+                    isScrolled || isLightPage ? "border-primary" : "border-white"
                   }`}
                   onBlur={() => !searchQuery && setShowSearch(false)}
                 />
@@ -180,7 +198,7 @@ export default function Navbar() {
             {mounted && wishlistCount > 0 && (
               <span
                 className={`absolute -top-1 -right-1 text-[10px] font-medium w-4 h-4 flex items-center justify-center ${
-                  isScrolled ? "bg-primary text-white" : "bg-white text-primary"
+                  isScrolled || isLightPage ? "bg-primary text-white" : "bg-white text-primary"
                 }`}
               >
                 {wishlistCount}
@@ -209,7 +227,7 @@ export default function Navbar() {
             {mounted && itemCount > 0 && (
               <span
                 className={`absolute -top-1 -right-1 text-[10px] font-medium w-4 h-4 flex items-center justify-center ${
-                  isScrolled ? "bg-primary text-white" : "bg-white text-primary"
+                  isScrolled || isLightPage ? "bg-primary text-white" : "bg-white text-primary"
                 }`}
               >
                 {itemCount}
@@ -226,7 +244,7 @@ export default function Navbar() {
               >
                 <div
                   className={`w-7 h-7 flex items-center justify-center font-medium text-xs ${
-                    isScrolled ? "bg-primary text-white" : "bg-white text-primary"
+                    isScrolled || isLightPage ? "bg-primary text-white" : "bg-white text-primary"
                   }`}
                 >
                   {user.name?.[0] || user.email[0].toUpperCase()}
@@ -279,17 +297,16 @@ export default function Navbar() {
               )}
             </div>
           ) : (
-            <Link
-              href="/login"
-              className={`hidden sm:flex px-6 py-2 text-xs uppercase tracking-[0.15em] transition-colors ${
-                isScrolled ? "bg-primary text-white hover:bg-primary/80" : "bg-white text-primary hover:bg-white/90"
-              }`}
+            <Button
+              variant={isScrolled || isLightPage ? "premium-dark" : "premium"}
+              className="hidden sm:flex px-6 py-2 h-auto"
+              onClick={() => router.push("/login")}
             >
               Login
-            </Link>
+            </Button>
           )}
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 }

@@ -14,9 +14,10 @@ const buttonVariants = cva(
         outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
         premium:
-          "group relative overflow-hidden bg-white text-black text-xs uppercase tracking-[0.2em] font-bold transition-colors duration-500 hover:text-white",
+          "group relative overflow-hidden bg-white text-black text-xs uppercase tracking-[0.2em] font-bold transition-colors duration-500 hover:text-white rounded-none",
+        "premium-dark":
+          "group relative overflow-hidden bg-black text-white text-xs uppercase tracking-[0.2em] font-bold transition-colors duration-500 hover:text-black rounded-none",
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -41,17 +42,19 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
 
-    // If premium variant, we need to inject the hover overlay div
-    // Note: If asChild is true, we hope the child handles children correctly, but Slot usually merges props.
-    // For simpler implementation, we'll just wrap the children if it's premium and NOT asChild.
-    // However, Radix Slot merges everything. We can't easily inject the div INSIDE the child component if we use Slot.
-    // But commonly users just duplicate standard button usage.
+    // Handle Premium Variants with Overlay
+    if ((variant === "premium" || variant === "premium-dark") && !asChild) {
+      const overlayColor = variant === "premium-dark" ? "bg-white" : "bg-black";
 
-    if (variant === "premium" && !asChild) {
       return (
         <Comp className={cn(buttonVariants({ variant, size: size || "premium", className }))} ref={ref} {...props}>
           <span className="relative z-10">{children}</span>
-          <div className="absolute inset-0 bg-black translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out" />
+          <div
+            className={cn(
+              "absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out",
+              overlayColor
+            )}
+          />
         </Comp>
       );
     }
