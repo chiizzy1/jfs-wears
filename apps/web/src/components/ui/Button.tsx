@@ -16,14 +16,14 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         premium:
-          "group relative overflow-hidden bg-white text-black text-xs uppercase tracking-[0.2em] font-medium transition-colors duration-500 border border-black/10 hover:border-black hover:text-white",
+          "group relative overflow-hidden bg-white text-black text-xs uppercase tracking-[0.2em] font-bold transition-colors duration-500 hover:text-white",
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
-        premium: "px-8 py-3", // specific padding for premium look
+        premium: "px-10 py-4", // Matches Hero Section padding
       },
     },
     defaultVariants: {

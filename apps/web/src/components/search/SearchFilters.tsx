@@ -43,7 +43,7 @@ export function SearchFilters({
         <div className="space-y-1">
           <button
             onClick={() => onUpdateFilter("category", "")}
-            className={`block text-sm w-full text-left px-3 py-2 rounded-md transition-colors ${
+            className={`block text-sm w-full text-left px-3 py-2 rounded-none transition-colors ${
               !activeCategory ? "bg-black text-white" : "hover:bg-gray-50 text-gray-700"
             }`}
           >
@@ -53,7 +53,7 @@ export function SearchFilters({
             <button
               key={cat.id}
               onClick={() => onUpdateFilter("category", cat.slug)}
-              className={`block text-sm w-full text-left px-3 py-2 rounded-md transition-colors ${
+              className={`block text-sm w-full text-left px-3 py-2 rounded-none transition-colors ${
                 activeCategory === cat.slug ? "bg-black text-white" : "hover:bg-gray-50 text-gray-700"
               }`}
             >
@@ -71,7 +71,7 @@ export function SearchFilters({
             <button
               key={g || "all"}
               onClick={() => onUpdateFilter("gender", g)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+              className={`px-3 py-1.5 text-xs font-medium rounded-none border transition-colors ${
                 activeGender === g
                   ? "bg-black text-white border-black"
                   : "bg-white text-gray-700 border-gray-200 hover:border-gray-300"
@@ -92,14 +92,14 @@ export function SearchFilters({
             placeholder="Min"
             value={localFilters.minPrice}
             onChange={(e) => setLocalFilters({ ...localFilters, minPrice: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-black bg-gray-50"
+            className="w-full px-3 py-2 border border-gray-200 rounded-none text-sm focus:outline-none focus:border-black bg-gray-50"
           />
           <input
             type="number"
             placeholder="Max"
             value={localFilters.maxPrice}
             onChange={(e) => setLocalFilters({ ...localFilters, maxPrice: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-black bg-gray-50"
+            className="w-full px-3 py-2 border border-gray-200 rounded-none text-sm focus:outline-none focus:border-black bg-gray-50"
           />
         </div>
         <Button variant="outline" size="sm" className="w-full text-xs" onClick={onApplyPriceFilter}>
@@ -113,7 +113,7 @@ export function SearchFilters({
         <select
           value={sortBy}
           onChange={(e) => onUpdateFilter("sort", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-black bg-white cursor-pointer"
+          className="w-full px-3 py-2 border border-gray-200 rounded-none text-sm focus:outline-none focus:border-black bg-white cursor-pointer"
         >
           <option value="newest">Newest</option>
           <option value="price-low">Price: Low to High</option>

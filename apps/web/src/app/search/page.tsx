@@ -61,8 +61,8 @@ function SearchContent() {
             {isLoading ? (
               <ProductGridSkeleton count={12} />
             ) : products.length === 0 ? (
-              <div className="bg-white rounded-2xl p-12 text-center border border-dashed border-gray-200">
-                <div className="w-16 h-16 mx-auto bg-gray-50 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white rounded-none p-12 text-center border border-dashed border-gray-200">
+                <div className="w-16 h-16 mx-auto bg-gray-50 rounded-none flex items-center justify-center mb-4">
                   <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
@@ -93,7 +93,7 @@ function SearchContent() {
                       <button
                         key={p}
                         onClick={() => updateFilter("page", p.toString())}
-                        className={`w-10 h-10 rounded-md font-medium transition-colors text-sm ${
+                        className={`w-10 h-10 rounded-none font-medium transition-colors text-sm ${
                           page === p ? "bg-black text-white" : "bg-white hover:bg-gray-50 text-gray-700 border border-gray-200"
                         }`}
                       >

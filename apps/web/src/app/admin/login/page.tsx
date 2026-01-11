@@ -7,14 +7,24 @@ import { useEffect } from "react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAdminAuth();
+  const { isAuthenticated, isLoading } = useAdminAuth();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/admin");
+    if (!isLoading && isAuthenticated) {
+      router.replace("/admin");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isLoading, router]);
 
+  // Show loading spinner while checking auth status
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black" />
+      </div>
+    );
+  }
+
+  // Already authenticated, redirect will happen via useEffect
   if (isAuthenticated) return null;
 
   return (

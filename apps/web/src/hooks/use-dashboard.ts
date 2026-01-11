@@ -41,40 +41,45 @@ export function useDashboard(): UseDashboardReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchDashboardData = useCallback(async () => {
+  const fetchDashboardData = useCallback(async (showToast = false) => {
     try {
       setIsLoading(true);
       setError(null);
 
       const [dashboardData, lowStockData, ordersData, revenueByPeriod, weeklyOrders] = await Promise.all([
-        adminAPI.getDashboard(),
-        adminAPI.getLowStock(10),
-        adminAPI.getOrders({ limit: 5 }),
-        adminAPI.getRevenueByPeriod("month"),
-        adminAPI.getOrdersByPeriod("week"),
+        adminAPI.getDashboard().catch(() => null),
+        adminAPI.getLowStock(10).catch(() => []),
+        adminAPI.getOrders({ limit: 5 }).catch(() => []),
+        adminAPI.getRevenueByPeriod("month").catch(() => []),
+        adminAPI.getOrdersByPeriod("week").catch(() => []),
       ]);
 
-      setDashboard(dashboardData);
-      setLowStock(lowStockData);
+      if (dashboardData) {
+        setDashboard(dashboardData);
+      }
+      setLowStock(lowStockData || []);
 
       // Handle orders response (could be array or paginated)
       const orders = Array.isArray(ordersData) ? ordersData : (ordersData as any).items || (ordersData as any).orders || [];
       setRecentOrders(orders.slice(0, 5));
 
       // Transform revenue data for chart (date to month abbreviation)
-      const transformedRevenue = revenueByPeriod.map((item) => {
+      const transformedRevenue = (revenueByPeriod || []).map((item) => {
         const date = new Date(item.date + "-01"); // Add day for parsing
         const month = date.toLocaleDateString("en-US", { month: "short" });
         return { month, revenue: item.revenue };
       });
       setRevenueData(transformedRevenue);
 
-      setWeeklyOrdersData(weeklyOrders);
+      setWeeklyOrdersData(weeklyOrders || []);
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Failed to fetch dashboard data");
       setError(error);
       console.error("[useDashboard] Error:", error);
-      toast.error("Failed to load dashboard data");
+      // Only show toast on manual refresh, not initial load
+      if (showToast) {
+        toast.error("Failed to load dashboard data");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -127,6 +132,6 @@ export function useDashboard(): UseDashboardReturn {
     stats,
     isLoading,
     error,
-    refetch: fetchDashboardData,
+    refetch: () => fetchDashboardData(true),
   };
 }

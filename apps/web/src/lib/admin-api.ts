@@ -1,31 +1,19 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
-// Admin API functions with authentication
+// Admin API functions with authentication (uses httpOnly cookies)
 class AdminAPI {
-  private token: string | null = null;
-
-  setToken(token: string) {
-    this.token = token;
-  }
-
-  clearToken() {
-    this.token = null;
-  }
-
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
-      ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
       ...options.headers,
     };
 
     const url = `${API_BASE_URL}${endpoint}`;
-    console.log(`[AdminAPI] ${options.method || "GET"} ${url}`);
-    console.log(`[AdminAPI] Token present: ${!!this.token}`);
 
     const res = await fetch(url, {
       ...options,
       headers,
+      credentials: "include", // Send httpOnly cookies
     });
 
     if (!res.ok) {
@@ -35,6 +23,29 @@ class AdminAPI {
     }
 
     return res.json();
+  }
+
+  // Generic HTTP methods for flexible endpoint access
+  async get<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint, { method: "GET" });
+  }
+
+  async post<T>(endpoint: string, data?: unknown): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: "POST",
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  async patch<T>(endpoint: string, data?: unknown): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: "PATCH",
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  async delete<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint, { method: "DELETE" });
   }
 
   // Auth
@@ -130,10 +141,8 @@ class AdminAPI {
 
     const res = await fetch(`${API_BASE_URL}/products/${productId}/upload-images`, {
       method: "POST",
-      headers: {
-        ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
-      },
       body: formData,
+      credentials: "include", // Send httpOnly cookies
     });
 
     if (!res.ok) {

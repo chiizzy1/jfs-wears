@@ -15,6 +15,8 @@ import type { NextRequest } from "next/server";
 // Protected route patterns
 const PROTECTED_ROUTES = ["/admin", "/account"];
 
+// Auth routes that authenticated users should be redirected AWAY from
+// NOTE: /admin/login is NOT included here - handled by client-side admin-auth
 const AUTH_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 /**
@@ -58,7 +60,8 @@ export function proxy(request: NextRequest) {
   const isAuthenticated = accessToken && !isTokenExpired(accessToken);
 
   // Protected routes - redirect to login if not authenticated
-  if (isProtectedRoute(pathname)) {
+  // Exception: /admin/login should be accessible to allow staff login
+  if (isProtectedRoute(pathname) && pathname !== "/admin/login") {
     if (!isAuthenticated) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);

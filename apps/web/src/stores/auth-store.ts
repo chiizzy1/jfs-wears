@@ -48,7 +48,7 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          // API will set httpOnly cookies, we just store user info
+          // Customer login only - staff must use /admin/login
           const data = await apiClient.post<AuthResponse>("/auth/login", { email, password });
           set({
             user: data.user,

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +34,10 @@ export function LoginForm() {
     try {
       await login(data.email, data.password);
       toast.success("Welcome back!");
-      router.push("/");
+      // Redirect to intended page or home, only preventing login/register loops
+      const redirectTo = searchParams.get("redirect") || "/";
+      const safeRedirect = redirectTo.includes("/login") || redirectTo.includes("/register") ? "/" : redirectTo;
+      router.replace(safeRedirect);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Login failed";
       toast.error(message);
@@ -131,7 +135,10 @@ export function LoginForm() {
       <button
         type="button"
         className="w-full px-4 py-3 border border-gray-200 flex items-center justify-center gap-3 hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700"
-        onClick={() => toast.error("Social login coming soon!")}
+        onClick={() => {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+          window.location.href = `${apiUrl}/auth/google`;
+        }}
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24">
           <path
@@ -160,6 +167,14 @@ export function LoginForm() {
         <Link href="/register" className="text-primary font-medium hover:underline underline-offset-4">
           Create one
         </Link>
+      </p>
+
+      {/* Staff Login Link */}
+      <p className="text-center text-xs text-muted-foreground/70 mt-4">
+        Staff member?{" "}
+        <a href="/admin/login" className="text-primary/70 hover:text-primary hover:underline underline-offset-4">
+          Admin Login
+        </a>
       </p>
     </div>
   );

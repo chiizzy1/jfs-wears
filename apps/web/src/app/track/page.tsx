@@ -148,9 +148,9 @@ function TrackContent() {
 
               {/* Progress Steps */}
               <div className="relative">
-                <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 rounded">
+                <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 rounded-none">
                   <div
-                    className="h-full bg-accent rounded transition-all duration-500"
+                    className="h-full bg-accent rounded-none transition-all duration-500"
                     style={{ width: `${Math.max(0, (currentStepIndex / (statusSteps.length - 1)) * 100)}%` }}
                   />
                 </div>
@@ -158,7 +158,7 @@ function TrackContent() {
                   {statusSteps.map((step, idx) => (
                     <div key={step.key} className="flex flex-col items-center">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-lg z-10 ${
+                        className={`w-10 h-10 rounded-none flex items-center justify-center text-lg z-10 ${
                           idx <= currentStepIndex ? "bg-accent text-white" : "bg-gray-200 text-gray-400"
                         }`}
                       >
@@ -173,7 +173,7 @@ function TrackContent() {
               </div>
 
               {order.status === "CANCELLED" && (
-                <div className="mt-6 bg-error/10 text-error rounded-lg p-3 text-center">This order has been cancelled</div>
+                <div className="mt-6 bg-error/10 text-error rounded-none p-3 text-center">This order has been cancelled</div>
               )}
             </div>
 

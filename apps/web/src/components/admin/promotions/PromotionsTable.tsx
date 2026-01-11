@@ -75,7 +75,7 @@ export function PromotionsTable({ data, isLoading, onEdit, onDelete }: Promotion
         cell: ({ row }) => {
           const promo = row.original;
           return (
-            <div className="flex justify-end gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="flex justify-end gap-4">
               <Button
                 variant="ghost"
                 className="h-auto p-0 text-xs uppercase tracking-widest hover:text-black hover:bg-transparent hover:underline underline-offset-4"

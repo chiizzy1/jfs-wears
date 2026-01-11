@@ -1,12 +1,19 @@
-import { Injectable, UnauthorizedException, ConflictException } from "@nestjs/common";
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import * as bcrypt from "bcrypt";
+import * as crypto from "crypto";
 import { PrismaService } from "../../prisma/prisma.service";
+import { EmailService } from "../email/email.service";
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwtService: JwtService, private configService: ConfigService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+    private configService: ConfigService,
+    private emailService: EmailService
+  ) {}
 
   // ============================================
   // CUSTOMER AUTH
@@ -23,13 +30,28 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
+    // Generate verification token (6-digit code for simplicity)
+    const verificationToken = crypto.randomInt(100000, 999999).toString();
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
     const user = await this.prisma.user.create({
       data: {
         email,
         passwordHash,
         name,
+        verificationToken,
+        verificationExpires,
+        isVerified: false,
       },
     });
+
+    // Send verification email
+    const frontendUrl = this.configService.get<string>("FRONTEND_URL") || "http://localhost:3000";
+    await this.emailService.sendVerificationEmail(
+      email,
+      verificationToken,
+      `${frontendUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`
+    );
 
     const tokens = await this.generateTokens(user.id, user.email, "customer");
 
@@ -38,9 +60,76 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
+        isVerified: user.isVerified,
       },
       tokens,
+      message: "Please check your email to verify your account",
     };
+  }
+
+  async verifyEmail(email: string, token: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new BadRequestException("Invalid verification request");
+    }
+
+    if (user.isVerified) {
+      return { message: "Email already verified" };
+    }
+
+    if (user.verificationToken !== token) {
+      throw new BadRequestException("Invalid verification code");
+    }
+
+    if (user.verificationExpires && user.verificationExpires < new Date()) {
+      throw new BadRequestException("Verification code has expired. Please request a new one.");
+    }
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isVerified: true,
+        verificationToken: null,
+        verificationExpires: null,
+      },
+    });
+
+    return { message: "Email verified successfully! You can now login." };
+  }
+
+  async resendVerificationEmail(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+
+    if (user.isVerified) {
+      return { message: "Email already verified" };
+    }
+
+    // Generate new verification token
+    const verificationToken = crypto.randomInt(100000, 999999).toString();
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { verificationToken, verificationExpires },
+    });
+
+    const frontendUrl = this.configService.get<string>("FRONTEND_URL") || "http://localhost:3000";
+    await this.emailService.sendVerificationEmail(
+      email,
+      verificationToken,
+      `${frontendUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`
+    );
+
+    return { message: "Verification email sent" };
   }
 
   async loginCustomer(email: string, password: string) {
@@ -58,6 +147,23 @@ export class AuthService {
       throw new UnauthorizedException("Invalid credentials");
     }
 
+    // Check if user is verified - allow login but include verification status
+    if (!user.isVerified) {
+      const tokens = await this.generateTokens(user.id, user.email, "customer");
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          phone: user.phone,
+          isVerified: false,
+        },
+        tokens,
+        requiresVerification: true,
+        message: "Please verify your email to access all features",
+      };
+    }
+
     const tokens = await this.generateTokens(user.id, user.email, "customer");
 
     return {
@@ -66,6 +172,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         phone: user.phone,
+        isVerified: true,
       },
       tokens,
     };
@@ -132,6 +239,46 @@ export class AuthService {
   }
 
   // ============================================
+  // GOOGLE OAUTH
+  // ============================================
+
+  async handleGoogleLogin(googleUser: { email: string; name: string; picture?: string }) {
+    // Find or create user
+    let user = await this.prisma.user.findUnique({
+      where: { email: googleUser.email },
+    });
+
+    if (!user) {
+      // Create new user from Google profile
+      user = await this.prisma.user.create({
+        data: {
+          email: googleUser.email,
+          name: googleUser.name,
+          profileImage: googleUser.picture,
+          isVerified: true, // Google accounts are verified
+        },
+      });
+    } else if (!user.profileImage && googleUser.picture) {
+      // Update profile image if missing
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: { profileImage: googleUser.picture },
+      });
+    }
+
+    const tokens = await this.generateTokens(user.id, user.email, "customer");
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+      tokens,
+    };
+  }
+
+  // ============================================
   // TOKEN MANAGEMENT
   // ============================================
 
@@ -147,18 +294,18 @@ export class AuthService {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret,
-        expiresIn: "15m",
+        expiresIn: "7d", // Extended from 15m for better UX - users stay logged in
       }),
       this.jwtService.signAsync(payload, {
         secret: refreshSecret,
-        expiresIn: "7d",
+        expiresIn: "30d", // Extended from 7d - 1 month session persistence
       }),
     ]);
 
     // Store refresh token hash
     const tokenHash = await bcrypt.hash(refreshToken, 10);
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
 
     await this.prisma.refreshToken.create({
       data: {

@@ -51,6 +51,28 @@ export class EmailService {
     );
   }
 
+  async sendVerificationEmail(to: string, code: string, verifyLink: string) {
+    await this.sendEmail(
+      to,
+      "Verify Your Email - JFS Wears",
+      `
+      <h1>Welcome to JFS Wears!</h1>
+      <p>Thank you for creating an account. Please verify your email address to complete registration.</p>
+      <p style="font-size: 32px; font-weight: bold; letter-spacing: 8px; text-align: center; padding: 20px; background: #f5f5f5; border-radius: 8px;">
+        ${code}
+      </p>
+      <p>Or click the button below:</p>
+      <p><a href="${verifyLink}" style="display:inline-block;padding:12px 24px;background:#000;color:white;text-decoration:none;border-radius:8px;">
+        Verify Email
+      </a></p>
+      <p>This code expires in 24 hours.</p>
+      <p>If you didn't create an account, ignore this email.</p>
+      <br>
+      <p>— The JFS Wears Team</p>
+    `
+    );
+  }
+
   async sendShippingNotification(to: string, orderNumber: string, trackingNumber?: string) {
     await this.sendEmail(
       to,

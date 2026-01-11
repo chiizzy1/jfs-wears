@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { apiClient, getErrorMessage } from "@/lib/api-client";
 import { ErrorFallback } from "@/components/ui/error-fallback";
 import { ArrowRight } from "lucide-react";
@@ -16,10 +15,8 @@ interface Category {
   imageUrl?: string;
 }
 
-// Fallback images for categories without images
-const fallbackImages: Record<string, string> = {
-  default: "/hero.png",
-};
+// Fallback image when category has no uploaded image
+const FALLBACK_IMAGE = "/hero.png";
 
 export default function CategoryGrid() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -31,7 +28,8 @@ export default function CategoryGrid() {
     setError(null);
     try {
       const data = await apiClient.get<Category[]>("/categories");
-      setCategories(data);
+      // Filter to only categories with images (admin-uploaded), or take first 3
+      setCategories(data.slice(0, 3));
     } catch (err) {
       console.error("Error fetching categories:", err);
       setError(getErrorMessage(err));
@@ -100,6 +98,7 @@ export default function CategoryGrid() {
     );
   }
 
+  // First category is the main large one
   const mainCategory = categories[0];
   const sideCategories = categories.slice(1, 3);
 
@@ -113,7 +112,7 @@ export default function CategoryGrid() {
           <div className="lg:col-span-8 relative group overflow-hidden h-[400px] md:h-full">
             <Link href={`/shop?category=${mainCategory.slug}`} className="block w-full h-full">
               <Image
-                src={mainCategory.imageUrl || fallbackImages.default}
+                src={mainCategory.imageUrl || FALLBACK_IMAGE}
                 alt={mainCategory.name}
                 fill
                 className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
@@ -142,7 +141,7 @@ export default function CategoryGrid() {
               <div key={cat.id} className="relative flex-1 group overflow-hidden min-h-[300px]">
                 <Link href={`/shop?category=${cat.slug}`} className="block w-full h-full">
                   <Image
-                    src={cat.imageUrl || fallbackImages.default}
+                    src={cat.imageUrl || FALLBACK_IMAGE}
                     alt={cat.name}
                     fill
                     className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"

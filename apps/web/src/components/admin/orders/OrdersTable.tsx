@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatDate } from "@/lib/format";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 export function OrdersTable() {
   const [statusFilter, setStatusFilter] = useState("all");
@@ -29,19 +30,60 @@ export function OrdersTable() {
     };
   };
 
+  const exportToCSV = () => {
+    if (filteredOrders.length === 0) {
+      toast.error("No orders to export");
+      return;
+    }
+
+    // CSV headers
+    const headers = ["Order Number", "Customer", "Email", "Items", "Total", "Status", "Payment", "Date"];
+
+    // CSV rows
+    const rows = filteredOrders.map((order) => [
+      order.orderNumber || order.id.slice(0, 12),
+      order.user?.name || "Guest",
+      order.user?.email || "-",
+      order.items?.length || 0,
+      `₦${order.total.toLocaleString()}`,
+      order.status,
+      order.paymentStatus,
+      formatDate(order.createdAt),
+    ]);
+
+    // Combine into CSV string
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")),
+    ].join("\n");
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `orders-${statusFilter}-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success(`Exported ${filteredOrders.length} orders`);
+  };
+
   const counts = getOrderCounts();
 
   const columns: ColumnDef<Order>[] = [
     {
       accessorKey: "orderNumber",
-      header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Order</span>,
+      header: () => <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">Order</span>,
       cell: ({ row }) => (
         <span className="font-medium font-mono text-xs">{row.original.orderNumber || row.original.id.slice(0, 12)}</span>
       ),
     },
     {
       accessorKey: "user.name",
-      header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Customer</span>,
+      header: () => <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">Customer</span>,
       cell: ({ row }) => (
         <div>
           <p className="font-medium text-sm text-primary uppercase tracking-wide">{row.original.user?.name || "Guest"}</p>
@@ -52,7 +94,7 @@ export function OrdersTable() {
     {
       accessorFn: (row) => row.items?.length || 0,
       id: "itemsCount",
-      header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Items</span>,
+      header: () => <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">Items</span>,
       cell: ({ row }) => (
         <span className="text-sm font-medium text-muted-foreground tabular-nums">{row.original.items?.length || 0}</span>
       ),
@@ -82,7 +124,7 @@ export function OrdersTable() {
     {
       id: "actions",
       cell: ({ row }) => (
-        <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="flex justify-end">
           <Link
             href={`/admin/orders/${row.original.id}`}
             className="text-xs uppercase tracking-widest hover:text-black hover:underline underline-offset-4"
@@ -122,7 +164,7 @@ export function OrdersTable() {
         </div>
 
         {/* Toolbar */}
-        <Button variant="premium" size="sm" className="h-9 px-6 text-[10px]">
+        <Button variant="premium" size="sm" className="h-9 px-6 text-[10px]" onClick={exportToCSV}>
           Export CSV
         </Button>
       </div>

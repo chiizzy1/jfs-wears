@@ -266,9 +266,10 @@ export default function Navbar() {
                   </Link>
                   <hr className="my-2 border-gray-100" />
                   <button
-                    onClick={() => {
-                      logout();
+                    onClick={async () => {
+                      await logout();
                       setShowUserMenu(false);
+                      router.push("/");
                     }}
                     className="w-full text-left px-4 py-2 text-xs uppercase tracking-widest text-sale hover:bg-gray-50 transition-colors"
                   >

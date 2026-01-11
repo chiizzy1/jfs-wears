@@ -60,6 +60,30 @@ export class UploadController {
   }
 
   /**
+   * Upload storefront media (image or video) for CMS
+   * POST /upload/storefront
+   * Supports: JPEG, PNG, WebP, GIF, MP4, WebM
+   */
+  @Post("storefront")
+  @UseInterceptors(FileInterceptor("file"))
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        file: {
+          type: "string",
+          format: "binary",
+          description: "Image (JPEG, PNG, WebP, GIF) or Video (MP4, WebM) file",
+        },
+      },
+    },
+  })
+  async uploadStorefrontMedia(@UploadedFile() file: Express.Multer.File) {
+    return this.cloudinaryService.uploadStorefrontMedia(file);
+  }
+
+  /**
    * Delete an image by its public ID
    * DELETE /upload/:publicId
    */

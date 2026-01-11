@@ -76,6 +76,77 @@ export class CloudinaryService {
   }
 
   /**
+   * Upload a video to Cloudinary
+   * @param file - Express multer file object (video)
+   * @param folder - Cloudinary folder to store the video
+   */
+  async uploadVideo(file: Express.Multer.File, folder: string = "jfswears/storefront"): Promise<CloudinaryUploadResult> {
+    if (!file) {
+      throw new BadRequestException("No file provided");
+    }
+
+    // Validate video types
+    const allowedMimeTypes = ["video/mp4", "video/webm", "video/quicktime", "video/x-msvideo"];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException(`Invalid video type. Allowed types: ${allowedMimeTypes.join(", ")}`);
+    }
+
+    // Max video size: 100MB
+    const maxSize = 100 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new BadRequestException("Video size exceeds 100MB limit");
+    }
+
+    return new Promise<CloudinaryUploadResult>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder,
+          resource_type: "video",
+          eager: [
+            { format: "mp4", video_codec: "h264" }, // Ensure browser-compatible format
+          ],
+        },
+        (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
+          if (error) {
+            this.logger.error(`Cloudinary video upload failed: ${error.message}`);
+            reject(new BadRequestException(`Video upload failed: ${error.message}`));
+          } else if (result) {
+            this.logger.log(`Video uploaded successfully: ${result.public_id}`);
+            resolve({
+              url: result.url,
+              secureUrl: result.secure_url,
+              publicId: result.public_id,
+              format: result.format,
+              width: result.width,
+              height: result.height,
+              bytes: result.bytes,
+            });
+          }
+        }
+      );
+
+      streamifier.createReadStream(file.buffer).pipe(uploadStream);
+    });
+  }
+
+  /**
+   * Upload storefront media (image or video)
+   * @param file - Express multer file object
+   */
+  async uploadStorefrontMedia(file: Express.Multer.File): Promise<CloudinaryUploadResult & { mediaType: "IMAGE" | "VIDEO" }> {
+    const isVideo = file.mimetype.startsWith("video/");
+    const folder = "jfswears/storefront";
+
+    if (isVideo) {
+      const result = await this.uploadVideo(file, folder);
+      return { ...result, mediaType: "VIDEO" };
+    } else {
+      const result = await this.uploadImage(file, folder);
+      return { ...result, mediaType: "IMAGE" };
+    }
+  }
+
+  /**
    * Upload multiple images to Cloudinary
    * @param files - Array of Express multer file objects
    * @param folder - Cloudinary folder to store the images

@@ -1,4 +1,0 @@
-src/components/admin/customers/CustomersTable.tsx(53,18): error TS2322: Type '"secondary" | "success"' is not assignable to type '"default" | "destructive" | "outline" | "secondary" | null | undefined'.
-  Type '"success"' is not assignable to type '"default" | "destructive" | "outline" | "secondary" | null | undefined'.
-src/components/admin/promotions/PromotionsTable.tsx(71,18): error TS2322: Type '"secondary" | "success"' is not assignable to type '"default" | "destructive" | "outline" | "secondary" | null | undefined'.
-  Type '"success"' is not assignable to type '"default" | "destructive" | "outline" | "secondary" | null | undefined'.

@@ -19,6 +19,7 @@ import { ReviewsModule } from "./modules/reviews/reviews.module";
 import { WishlistModule } from "./modules/wishlist/wishlist.module";
 import { EmailModule } from "./modules/email/email.module";
 import { SettingsModule } from "./modules/settings/settings.module";
+import { StorefrontModule } from "./modules/storefront/storefront.module";
 import { AllExceptionsFilter } from "./common/filters/http-exception.filter";
 import { HealthController } from "./modules/health/health.controller";
 import { CacheModule } from "@nestjs/cache-manager";
@@ -81,6 +82,7 @@ import * as redisStore from "cache-manager-redis-store";
     ReviewsModule,
     WishlistModule,
     SettingsModule,
+    StorefrontModule,
   ],
   controllers: [HealthController],
   providers: [

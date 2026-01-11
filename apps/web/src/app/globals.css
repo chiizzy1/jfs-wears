@@ -2,29 +2,128 @@
 
 @theme {
   /* Mason Garments-inspired Premium Color Palette */
-  --color-primary: #1c1c1c; /* Deep charcoal for text */
-  --color-secondary: #faf7f1; /* Warm cream background */
-  --color-accent: #1c1c1c; /* Black for buttons/CTAs */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Premium specific colors */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
   --color-sale: #cc0000; /* Muted red for sale prices */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #cc0000;
-  --color-gray: #6b7280;
-  --color-muted: #a1a1aa;
 
   /* Premium Typography */
   --font-heading: "Hanken Grotesk", sans-serif;
   --font-sans: "Instrument Sans", sans-serif;
 }
 
-/* 
-  Tailwind v4: --color-* creates bg-*, text-*, border-* utilities
-  --font-* creates font-* utilities
-*/
-
 @layer base {
+  :root {
+    /* Base: Warm Cream & Deep Charcoal */
+    --background: #faf7f1;
+    --foreground: #1c1c1c;
+
+    /* Card & Popover: White for contrast against Cream */
+    --card: #ffffff;
+    --card-foreground: #1c1c1c;
+    --popover: #ffffff;
+    --popover-foreground: #1c1c1c;
+
+    /* Primary: Deep Charcoal */
+    --primary: #1c1c1c;
+    --primary-foreground: #ffffff;
+
+    /* Secondary: Slightly darker cream for buttons/sections */
+    --secondary: #ebe5da;
+    --secondary-foreground: #1c1c1c;
+
+    /* Muted: Soft Gray */
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a;
+
+    /* Accent: Black for hover states (text must be white) */
+    --accent: #1c1c1c;
+    --accent-foreground: #ffffff;
+
+    /* Destructive */
+    --destructive: #ef4444;
+    --destructive-foreground: #fafafa;
+
+    /* Borders */
+    --border: #e4e4e7;
+    --input: #e4e4e7;
+    --ring: #1c1c1c;
+
+    --radius: 0px; /* Force 0 radius variable just in case */
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Dark Mode specific overrides */
+    --background: #1c1c1c;
+    --foreground: #faf7f1;
+    --card: #27272a;
+    --card-foreground: #faf7f1;
+    --popover: #27272a;
+    --popover-foreground: #faf7f1;
+    --primary: #faf7f1;
+    --primary-foreground: #1c1c1c;
+    --secondary: #27272a;
+    --secondary-foreground: #faf7f1;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    --accent: #faf7f1;
+    --accent-foreground: #1c1c1c;
+    --destructive: #7f1d1d;
+    --destructive-foreground: #faf7f1;
+    --border: #27272a;
+    --input: #27272a;
+    --ring: #d4d4d8;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
   body {
-    @apply bg-secondary text-primary font-sans;
+    @apply bg-background text-foreground font-sans;
   }
 
   /* Premium Typography Scale */
@@ -43,11 +142,9 @@
     @apply text-4xl md:text-5xl lg:text-6xl;
     letter-spacing: 0.03em;
   }
-
   h2 {
     @apply text-3xl md:text-4xl;
   }
-
   h3 {
     @apply text-2xl md:text-3xl;
   }
@@ -56,27 +153,21 @@
 @layer components {
   /* Premium Button - Black Rectangle, Uppercase, Wide Letter-Spacing */
   .btn-primary {
-    @apply bg-black text-white px-8 py-4 uppercase text-sm font-medium transition-colors;
+    @apply bg-primary text-primary-foreground px-8 py-4 uppercase text-sm font-medium transition-colors;
     letter-spacing: 0.15em;
   }
   .btn-primary:hover {
-    @apply bg-[#333];
+    @apply bg-accent/90;
   }
 
   .btn-accent {
-    @apply bg-black text-white px-8 py-4 uppercase text-sm font-medium transition-colors;
+    @apply bg-accent text-accent-foreground px-8 py-4 uppercase text-sm font-medium transition-colors;
     letter-spacing: 0.15em;
-  }
-  .btn-accent:hover {
-    @apply bg-[#333];
   }
 
   .btn-outline {
-    @apply border border-black text-black px-8 py-4 uppercase text-sm font-medium transition-all bg-transparent;
+    @apply border border-input bg-transparent hover:bg-accent hover:text-accent-foreground px-8 py-4 uppercase text-sm font-medium transition-colors;
     letter-spacing: 0.15em;
-  }
-  .btn-outline:hover {
-    @apply bg-black text-white;
   }
 
   /* Container with generous whitespace */
@@ -91,7 +182,7 @@
 
   /* Section Headers - Editorial Style */
   .section-header {
-    @apply text-xs uppercase tracking-[0.2em] text-muted font-medium;
+    @apply text-xs uppercase tracking-[0.2em] text-muted-foreground font-medium;
   }
 }
 
@@ -100,18 +191,16 @@
   .tracking-premium {
     letter-spacing: 0.15em;
   }
-
   .tracking-wide-premium {
     letter-spacing: 0.2em;
   }
-
   .uppercase-premium {
     text-transform: uppercase;
     letter-spacing: 0.15em;
   }
 }
 
-/* Modal Animations */
+/* Base Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -120,76 +209,20 @@
     opacity: 1;
   }
 }
-
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.95) translateY(10px);
+    transform: scale(0.95);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideOutRight {
-  from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(100%);
+    transform: scale(1);
   }
 }
 
 .animate-fade-in {
   animation: fadeIn 0.2s ease-out;
 }
-
 .animate-scale-in {
-  animation: scaleIn 0.3s ease-out;
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 0.3s ease-out;
-}
-
-.animate-slide-out-right {
-  animation: slideOutRight 0.3s ease-out;
-}
-
-@layer base {
-  :root {
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
+  animation: scaleIn 0.2s ease-out;
 }

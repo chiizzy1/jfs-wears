@@ -7,7 +7,7 @@ import { AdminAuthProvider, useAdminAuth } from "@/lib/admin-auth";
 import { Toaster } from "react-hot-toast";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -39,6 +39,15 @@ const navItems = [
           strokeWidth={2}
           d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
         />
+      </svg>
+    ),
+  },
+  {
+    label: "Categories",
+    href: "/admin/categories",
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
       </svg>
     ),
   },
@@ -94,6 +103,20 @@ const navItems = [
           strokeLinejoin="round"
           strokeWidth={2}
           d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+        />
+      </svg>
+    ),
+  },
+  {
+    label: "Storefront",
+    href: "/admin/storefront",
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
         />
       </svg>
     ),
@@ -173,12 +196,26 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, isLoading, isAuthenticated, logout } = useAdminAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Skip auth check for login page
+  // Handle redirect for unauthenticated users (except on login page)
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && pathname !== "/admin/login") {
+      router.replace("/admin/login");
+    }
+  }, [isLoading, isAuthenticated, pathname, router]);
+
+  // Handle redirect for authenticated users on login page
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && pathname === "/admin/login") {
+      router.replace("/admin");
+    }
+  }, [isLoading, isAuthenticated, pathname, router]);
+
+  // Skip auth check for login page - let it render immediately
   if (pathname === "/admin/login") {
     return <>{children}</>;
   }
 
-  // Show loading state
+  // Show loading state while checking auth
   if (isLoading) {
     return (
       <div className="min-h-screen bg-secondary flex items-center justify-center">
@@ -190,10 +227,16 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Redirect to login if not authenticated
+  // Show redirecting state when not authenticated
   if (!isAuthenticated) {
-    router.push("/admin/login");
-    return null;
+    return (
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-black border-t-transparent animate-spin mx-auto mb-4"></div>
+          <p className="text-muted text-sm">Redirecting to login...</p>
+        </div>
+      </div>
+    );
   }
 
   const handleLogout = () => {

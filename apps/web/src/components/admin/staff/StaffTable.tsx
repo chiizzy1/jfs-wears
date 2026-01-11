@@ -53,12 +53,22 @@ export function StaffTable() {
         cell: ({ row }) => {
           const staffMember = row.original;
           return (
-            <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="flex justify-end gap-4">
               <Button
                 variant="ghost"
-                className="h-auto p-0 text-xs uppercase tracking-widest hover:text-red-600 hover:bg-transparent"
+                className="h-auto p-0 text-xs uppercase tracking-widest hover:text-black hover:bg-transparent hover:underline underline-offset-4"
                 onClick={() => {
-                  if (confirm("Are you sure you want to delete this staff member?")) {
+                  // TODO: Implement edit modal
+                  alert(`Edit ${staffMember.name} - Feature coming soon`);
+                }}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="ghost"
+                className="h-auto p-0 text-xs uppercase tracking-widest hover:text-red-600 hover:bg-transparent text-gray-400"
+                onClick={() => {
+                  if (confirm(`Are you sure you want to delete ${staffMember.name}?`)) {
                     deleteStaff.mutate(staffMember.id);
                   }
                 }}

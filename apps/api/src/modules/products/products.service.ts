@@ -26,8 +26,27 @@ export class ProductsService {
       deletedAt: null, // Filter out soft-deleted items
     };
 
+    // Support filtering by category ID or slug
     if (categoryId) {
-      where.categoryId = categoryId;
+      // Check if it's a UUID (cuid) or a slug
+      const isUuid =
+        /^c[a-z0-9]{24,}$/i.test(categoryId) ||
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(categoryId);
+
+      if (isUuid) {
+        where.categoryId = categoryId;
+      } else {
+        // It's a slug - find the category first
+        const category = await this.prisma.category.findFirst({
+          where: { slug: categoryId },
+        });
+        if (category) {
+          where.categoryId = category.id;
+        } else {
+          // Category not found by slug - return empty results
+          return { items: [], total: 0, page, limit, totalPages: 0 };
+        }
+      }
     }
 
     if (search) {

@@ -1,4 +1,5 @@
 import { Controller, Post, Body, UseGuards, Get, Request, Res, HttpCode, HttpStatus } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 import { Response } from "express";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
@@ -15,8 +16,8 @@ const COOKIE_OPTIONS = {
 };
 
 // Cookie expiry times
-const ACCESS_TOKEN_MAX_AGE = 15 * 60 * 1000; // 15 minutes
-const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
+const ACCESS_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days - matches JWT for seamless UX
+const REFRESH_TOKEN_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -86,6 +87,22 @@ export class AuthController {
   }
 
   // ============================================
+  // EMAIL VERIFICATION
+  // ============================================
+
+  @Post("verify-email")
+  @HttpCode(HttpStatus.OK)
+  async verifyEmail(@Body() body: { email: string; token: string }) {
+    return this.authService.verifyEmail(body.email, body.token);
+  }
+
+  @Post("resend-verification")
+  @HttpCode(HttpStatus.OK)
+  async resendVerification(@Body() body: { email: string }) {
+    return this.authService.resendVerificationEmail(body.email);
+  }
+
+  // ============================================
   // PASSWORD RESET
   // ============================================
 
@@ -115,5 +132,32 @@ export class AuthController {
   async staffLogout(@Res({ passthrough: true }) res: Response) {
     this.clearAuthCookies(res);
     return { message: "Logged out successfully" };
+  }
+
+  // ============================================
+  // GOOGLE OAUTH
+  // ============================================
+
+  @Get("google")
+  @UseGuards(AuthGuard("google"))
+  async googleAuth() {
+    // Passport handles redirect to Google
+  }
+
+  @Get("google/callback")
+  @UseGuards(AuthGuard("google"))
+  async googleAuthCallback(@Request() req: any, @Res() res: Response) {
+    try {
+      // Handle the Google user data
+      const result = await this.authService.handleGoogleLogin(req.user);
+      this.setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken);
+
+      // Redirect to frontend with success
+      const frontendUrl = this.configService.get<string>("FRONTEND_URL") || "http://localhost:3000";
+      res.redirect(`${frontendUrl}/?login=success`);
+    } catch (error) {
+      const frontendUrl = this.configService.get<string>("FRONTEND_URL") || "http://localhost:3000";
+      res.redirect(`${frontendUrl}/login?error=google_auth_failed`);
+    }
   }
 }

@@ -1,9 +1,10 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { adminAPI } from "@/lib/admin-api";
+import { apiClient } from "@/lib/api-client";
 
 interface AdminUser {
+  id: string;
   email: string;
   name: string;
   role: string;
@@ -14,7 +15,7 @@ interface AdminAuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
@@ -23,40 +24,37 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Check for existing session on mount
   useEffect(() => {
-    // Check for existing session
-    const token = localStorage.getItem("admin_token");
-    const userData = localStorage.getItem("admin_user");
-
-    if (token && userData) {
-      adminAPI.setToken(token);
-      setUser(JSON.parse(userData));
-    }
-    setIsLoading(false);
+    const checkAuth = async () => {
+      try {
+        // Try to get current user from API - cookie will be sent automatically
+        const userData = await apiClient.get<AdminUser>("/auth/me");
+        if (userData && userData.role && ["ADMIN", "MANAGER", "STAFF"].includes(userData.role)) {
+          setUser(userData);
+        }
+      } catch {
+        // Not authenticated or not a staff member
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await adminAPI.login(email, password);
-
-    // Store tokens - the backend returns { user, tokens: { accessToken, refreshToken } }
-    localStorage.setItem("admin_token", response.tokens.accessToken);
-    adminAPI.setToken(response.tokens.accessToken);
-
-    // Use the actual user data from the response
-    const userData: AdminUser = {
-      email: response.user.email,
-      name: response.user.name,
-      role: response.user.role,
-    };
-
-    localStorage.setItem("admin_user", JSON.stringify(userData));
-    setUser(userData);
+    // Try staff login endpoint
+    const response = await apiClient.post<{ user: AdminUser }>("/auth/staff/login", { email, password });
+    setUser(response.user);
   };
 
-  const logout = () => {
-    localStorage.removeItem("admin_token");
-    localStorage.removeItem("admin_user");
-    adminAPI.clearToken();
+  const logout = async () => {
+    try {
+      await apiClient.post("/auth/logout", {});
+    } catch {
+      // Ignore logout errors
+    }
     setUser(null);
   };
 

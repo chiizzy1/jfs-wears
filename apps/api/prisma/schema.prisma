@@ -15,16 +15,18 @@ datasource db {
 // ============================================
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  phone         String?   @unique
-  name          String?
-  passwordHash  String?
-  profileImage  String?   // URL to user's profile image
-  isVerified    Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
+  id                    String    @id @default(cuid())
+  email                 String    @unique
+  phone                 String?   @unique
+  name                  String?
+  passwordHash          String?
+  profileImage          String?   // URL to user's profile image
+  isVerified            Boolean   @default(false)
+  verificationToken     String?   // Token for email verification
+  verificationExpires   DateTime? // Token expiry time
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  deletedAt             DateTime?
 
   addresses     Address[]
   orders        Order[]
@@ -125,7 +127,9 @@ model Category {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  products    Product[]
+  products           Product[]
+  heroSlides         StorefrontHero[]
+  storefrontSections StorefrontSection[]
 
   @@map("categories")
 }
@@ -139,6 +143,7 @@ model Product {
   categoryId  String
   category    Category @relation(fields: [categoryId], references: [id])
   
+  tags        String[] @default([]) // For "latest", "new", etc.
   gender      Gender   @default(UNISEX)
   isActive    Boolean  @default(true)
   isFeatured  Boolean  @default(false)
@@ -146,12 +151,13 @@ model Product {
   updatedAt   DateTime @updatedAt
   deletedAt   DateTime?
 
-  variants      ProductVariant[]
-  images        ProductImage[]
-  reviews       Review[]
-  cartItems     CartItem[]
-  wishlistItems WishlistItem[]
-  orderItems    OrderItem[]
+  variants        ProductVariant[]
+  images          ProductImage[]
+  reviews         Review[]
+  cartItems       CartItem[]
+  wishlistItems   WishlistItem[]
+  orderItems      OrderItem[]
+  heroSlides      StorefrontHero[]
 
   @@map("products")
   @@index([slug])
@@ -430,3 +436,78 @@ model StoreSettings {
 
   @@map("store_settings")
 }
+
+// ============================================
+// STOREFRONT CMS
+// ============================================
+
+model StorefrontHero {
+  id           String    @id @default(cuid())
+  headline     String
+  subheadline  String?
+  ctaText      String?   @default("Shop Now")
+  ctaLink      String?   // Custom link, or auto-generate from relations
+
+  // Media
+  mediaUrl     String
+  mediaType    MediaType @default(IMAGE)
+  thumbnailUrl String?   // For video previews
+
+  // Optional Relations (polymorphic-like)
+  productId    String?
+  product      Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  
+  categoryId   String?
+  category     Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  // Display
+  order        Int       @default(0)
+  isActive     Boolean   @default(true)
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("storefront_heroes")
+  @@index([order])
+  @@index([isActive])
+}
+
+model StorefrontSection {
+  id          String      @id @default(cuid())
+  title       String
+  subtitle    String?
+
+  type        SectionType @default(FEATURED)
+  
+  // For CATEGORY type: which category to show products from
+  categoryId  String?
+  category    Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  // Optional custom media for the section (e.g., hero image for "Hoodies" section)
+  mediaUrl    String?
+  mediaType   MediaType?
+
+  // Display
+  order       Int         @default(0)
+  isActive    Boolean     @default(true)
+  maxProducts Int         @default(10) // Limit products per section
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("storefront_sections")
+  @@index([order])
+  @@index([isActive])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum SectionType {
+  FEATURED   // Shows featured/latest products
+  CATEGORY   // Shows products from a specific category
+  COLLECTION // Future: custom curated collection
+}
+

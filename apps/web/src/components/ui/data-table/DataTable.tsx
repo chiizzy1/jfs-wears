@@ -57,7 +57,7 @@ export function DataTable<TData, TValue>({ columns, data, searchKey }: DataTable
           />
         </div>
       )}
-      <div className="rounded-md border">
+      <div className="rounded-none border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

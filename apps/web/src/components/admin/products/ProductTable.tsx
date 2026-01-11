@@ -36,7 +36,7 @@ export function ProductTable() {
   const columns: ColumnDef<Product>[] = [
     {
       accessorKey: "name",
-      header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Product</span>,
+      header: () => <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">Product</span>,
       cell: ({ row }) => {
         const product = row.original;
         const image = product.images?.find((img) => img.isMain) || product.images?.[0];
@@ -67,14 +67,14 @@ export function ProductTable() {
     },
     {
       accessorKey: "category.name",
-      header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Category</span>,
+      header: () => <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">Category</span>,
       cell: ({ row }) => (
         <span className="text-sm font-medium uppercase tracking-wide">{row.original.category?.name || "—"}</span>
       ),
     },
     {
       accessorKey: "basePrice",
-      header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Price</span>,
+      header: () => <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">Price</span>,
       cell: ({ row }) => {
         const price = row.original.basePrice || row.original.price || 0;
         return <span className="text-sm font-medium">₦{price.toLocaleString()}</span>;
@@ -82,7 +82,7 @@ export function ProductTable() {
     },
     {
       accessorKey: "stock",
-      header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Stock</span>,
+      header: () => <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">Stock</span>,
       cell: ({ row }) => {
         const totalStock = row.original.variants?.reduce((sum, v) => sum + v.stock, 0) || 0;
         return <span className="text-sm font-mono">{totalStock}</span>;
@@ -90,7 +90,7 @@ export function ProductTable() {
     },
     {
       accessorKey: "status",
-      header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Status</span>,
+      header: () => <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">Status</span>,
       cell: ({ row }) => {
         const status = getStockStatus(row.original);
         const colors: Record<string, string> = {
@@ -111,7 +111,7 @@ export function ProductTable() {
       cell: ({ row }) => {
         const product = row.original;
         return (
-          <div className="flex justify-end gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="flex justify-end gap-4">
             <Link
               href={`/admin/products/${product.id}`}
               className="text-xs uppercase tracking-widest hover:text-black hover:underline underline-offset-4"
