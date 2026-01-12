@@ -87,13 +87,13 @@ export function DashboardView() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (
           <div key={stat.label} className="bg-white p-6 border border-gray-100 hover:border-gray-200 transition-colors">
-            <p className="text-xs uppercase tracking-[0.15em] text-muted font-medium mb-3">{stat.label}</p>
+            <p className="text-xs uppercase tracking-[0.15em] text-gray-500 font-medium mb-3">{stat.label}</p>
             <p className="text-3xl font-light tracking-tight">{stat.value}</p>
             <div className="flex items-center gap-2 mt-2">
               <span className={`text-xs font-medium ${stat.trend === "up" ? "text-green-600" : "text-red-600"}`}>
                 {stat.change}
               </span>
-              <span className="text-xs text-muted">{stat.subtext}</span>
+              <span className="text-xs text-gray-500">{stat.subtext}</span>
             </div>
           </div>
         ))}
@@ -104,7 +104,7 @@ export function DashboardView() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
           <div>
             <h2 className="text-xs uppercase tracking-[0.15em] font-medium">Revenue Overview</h2>
-            <p className="text-muted text-sm mt-1">
+            <p className="text-gray-500 text-sm mt-1">
               {revenueData.length > 0 ? "Revenue from confirmed orders" : "No revenue data available"}
             </p>
             <p className="text-xs text-gray-400 mt-1">
@@ -199,7 +199,7 @@ export function DashboardView() {
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-full flex items-center justify-center text-muted">No revenue data to display</div>
+            <div className="h-full flex items-center justify-center text-gray-500">No revenue data to display</div>
           )}
         </div>
       </div>
@@ -225,7 +225,7 @@ export function DashboardView() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-muted text-sm">No orders this week</div>
+              <div className="h-full flex items-center justify-center text-gray-500 text-sm">No orders this week</div>
             )}
           </div>
         </div>
@@ -243,7 +243,7 @@ export function DashboardView() {
           </div>
           <div className="p-6">
             {recentOrders.length === 0 ? (
-              <p className="text-muted text-center py-8">No orders yet</p>
+              <p className="text-gray-500 text-center py-8">No orders yet</p>
             ) : (
               <div className="space-y-3">
                 {/* Header - hidden on mobile */}
@@ -260,19 +260,19 @@ export function DashboardView() {
                     className="flex flex-col sm:grid sm:grid-cols-4 gap-2 sm:gap-4 py-3 border-b border-gray-50 last:border-0"
                   >
                     <div className="flex justify-between sm:block">
-                      <span className="text-xs text-muted sm:hidden">Order:</span>
+                      <span className="text-xs text-gray-500 sm:hidden">Order:</span>
                       <span className="font-medium text-sm">{order.orderNumber || order.id.slice(0, 8)}</span>
                     </div>
                     <div className="flex justify-between sm:block">
-                      <span className="text-xs text-muted sm:hidden">Customer:</span>
-                      <span className="text-sm text-muted">{order.user?.name || "Guest"}</span>
+                      <span className="text-xs text-gray-500 sm:hidden">Customer:</span>
+                      <span className="text-sm text-gray-600">{order.user?.name || "Guest"}</span>
                     </div>
                     <div className="flex justify-between sm:block">
-                      <span className="text-xs text-muted sm:hidden">Amount:</span>
+                      <span className="text-xs text-gray-500 sm:hidden">Amount:</span>
                       <span className="text-sm font-medium">{formatCurrency(order.total, false)}</span>
                     </div>
                     <div className="flex justify-between sm:block">
-                      <span className="text-xs text-muted sm:hidden">Status:</span>
+                      <span className="text-xs text-gray-500 sm:hidden">Status:</span>
                       <StatusBadge status={order.status} variant="badge" />
                     </div>
                   </div>
@@ -309,7 +309,7 @@ export function DashboardView() {
                 </div>
               ))
             ) : (
-              <p className="text-muted text-center py-8">No sales data yet</p>
+              <p className="text-gray-500 text-center py-8">No sales data yet</p>
             )}
           </div>
         </div>
@@ -340,7 +340,7 @@ export function DashboardView() {
                 </div>
               ))
             ) : (
-              <p className="text-muted text-center py-8">All products in stock</p>
+              <p className="text-gray-500 text-center py-8">All products in stock</p>
             )}
           </div>
         </div>

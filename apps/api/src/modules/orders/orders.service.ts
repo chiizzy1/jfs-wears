@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
+import { Injectable, BadRequestException, NotFoundException, Inject, forwardRef } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 import { OrderQueryDto, OrderStatus, CreateOrderDto, ShippingAddressDto, UpdateTrackingDto } from "./dto/orders.dto";
 import { SettingsService } from "../settings/settings.service";
@@ -6,10 +6,17 @@ import { Prisma, PaymentStatus as PrismaPaymentStatus, OrderStatus as PrismaOrde
 import { Decimal } from "@prisma/client/runtime/library";
 import { EmailService } from "../email/email.service";
 import { sanitizeText } from "../../common/utils/sanitize.util";
+import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService, private emailService: EmailService, private settingsService: SettingsService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+    private settingsService: SettingsService,
+    @Inject(forwardRef(() => NotificationsService))
+    private notificationsService: NotificationsService
+  ) {}
 
   async create(userId: string | null, data: CreateOrderDto) {
     // Generate order number: JFS-YYYYMMDD-XXXXXX
@@ -104,6 +111,11 @@ export class OrdersService {
         .sendOrderConfirmation(email, typedOrder.orderNumber, typedOrder.items, Number(typedOrder.total))
         .catch((err) => console.error("Failed to send order confirmation:", err));
     }
+
+    // Create admin notification for new order (non-blocking)
+    this.notificationsService
+      .notifyNewOrder(typedOrder.orderNumber, typedOrder.id, Number(typedOrder.total))
+      .catch((err) => console.error("Failed to create order notification:", err));
 
     return order;
   }

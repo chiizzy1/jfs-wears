@@ -8,6 +8,8 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu, X } from "lucide-react";
 
 /**
  * Premium Navigation Bar
@@ -23,6 +25,7 @@ export default function Navbar() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
@@ -105,14 +108,130 @@ export default function Navbar() {
       className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 border-b border-transparent`}
     >
       <div className="container-width flex items-center justify-between h-full">
-        {/* Text-Only Logo - Premium Style */}
-        <Link href="/" className="flex items-center group">
-          <span
-            className={`text-lg tracking-[0.2em] uppercase font-medium transition-colors duration-300 ${textColorClass} group-hover:opacity-80`}
-          >
-            JFS WEARS
-          </span>
-        </Link>
+        {/* Left Side: Mobile Menu + Logo */}
+        <div className="flex items-center gap-4">
+          {/* Mobile Hamburger Menu */}
+          <div className="md:hidden">
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <button className={`p-2 -ml-2 hover:opacity-60 transition-opacity ${textColorClass}`} aria-label="Open menu">
+                  <Menu className="w-6 h-6" strokeWidth={1} />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-80 bg-white">
+                <div className="flex flex-col h-full">
+                  {/* Header */}
+                  <div className="p-6 border-b border-gray-100">
+                    <span className="text-lg tracking-[0.2em] uppercase font-medium text-primary">JFS WEARS</span>
+                  </div>
+
+                  {/* Navigation Links */}
+                  <nav className="flex-1 p-6">
+                    <ul className="space-y-1">
+                      <li>
+                        <Link
+                          href="/shop"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block py-3 text-sm uppercase tracking-[0.15em] text-primary hover:opacity-60 transition-opacity border-b border-gray-50"
+                        >
+                          Shop All
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/shop?gender=men"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block py-3 text-sm uppercase tracking-[0.15em] text-primary hover:opacity-60 transition-opacity border-b border-gray-50"
+                        >
+                          Men
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/shop?gender=women"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block py-3 text-sm uppercase tracking-[0.15em] text-primary hover:opacity-60 transition-opacity border-b border-gray-50"
+                        >
+                          Women
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/story"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block py-3 text-sm uppercase tracking-[0.15em] text-primary hover:opacity-60 transition-opacity border-b border-gray-50"
+                        >
+                          Our Story
+                        </Link>
+                      </li>
+                    </ul>
+                  </nav>
+
+                  {/* Account Section */}
+                  <div className="p-6 border-t border-gray-100 bg-secondary">
+                    {mounted && isAuthenticated && user ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+                          <div className="w-10 h-10 bg-primary text-white flex items-center justify-center font-medium">
+                            {user.name?.[0] || user.email[0].toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">{user.name || "Account"}</p>
+                            <p className="text-xs text-gray-500">{user.email}</p>
+                          </div>
+                        </div>
+                        <Link
+                          href="/account"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block py-2 text-xs uppercase tracking-widest text-primary hover:opacity-60 transition-opacity"
+                        >
+                          My Account
+                        </Link>
+                        <Link
+                          href="/account/orders"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block py-2 text-xs uppercase tracking-widest text-primary hover:opacity-60 transition-opacity"
+                        >
+                          My Orders
+                        </Link>
+                        <button
+                          onClick={async () => {
+                            await logout();
+                            setIsMobileMenuOpen(false);
+                            router.push("/");
+                          }}
+                          className="block py-2 text-xs uppercase tracking-widest text-sale hover:opacity-60 transition-opacity"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="premium-dark"
+                        className="w-full py-3"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          router.push("/login");
+                        }}
+                      >
+                        Login / Register
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          {/* Text-Only Logo - Premium Style */}
+          <Link href="/" className="flex items-center group">
+            <span
+              className={`text-lg tracking-[0.2em] uppercase font-medium transition-colors duration-300 ${textColorClass} group-hover:opacity-80`}
+            >
+              JFS WEARS
+            </span>
+          </Link>
+        </div>
 
         {/* Desktop Links - Wide Letter-Spacing */}
         <div className="hidden md:flex items-center space-x-10">
@@ -311,13 +430,33 @@ export default function Navbar() {
               )}
             </div>
           ) : (
-            <Button
-              variant={isScrolled || isLightPage ? "premium-dark" : "premium"}
-              className="hidden sm:flex px-6 py-2 h-auto"
-              onClick={() => router.push("/login")}
-            >
-              Login
-            </Button>
+            <>
+              {/* Mobile User Icon */}
+              <Link href="/login" className={`sm:hidden p-2 hover:opacity-60 transition-opacity`} aria-label="Login">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </Link>
+              {/* Desktop Login Button */}
+              <Button
+                variant={isScrolled || isLightPage ? "premium-dark" : "premium"}
+                className="hidden sm:flex px-6 py-2 h-auto"
+                onClick={() => router.push("/login")}
+              >
+                Login
+              </Button>
+            </>
           )}
         </div>
       </div>

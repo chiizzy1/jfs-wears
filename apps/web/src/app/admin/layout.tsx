@@ -8,6 +8,7 @@ import { Toaster } from "react-hot-toast";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { useState } from "react";
+import { NotificationDropdown } from "@/components/admin/notifications/NotificationDropdown";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -192,11 +193,11 @@ function AdminSidebarContent({ pathname }: { pathname: string }) {
       <div className="p-6 border-b border-gray-100">
         <Link href="/admin" className="block">
           <span className="text-lg tracking-[0.2em] uppercase font-medium text-primary">JFS WEARS</span>
-          <p className="text-xs text-muted mt-1 tracking-widest uppercase">Admin Panel</p>
+          <p className="text-xs text-gray-500 mt-1 tracking-widest uppercase">Admin Panel</p>
         </Link>
       </div>
 
-      <nav className="p-4 flex-1">
+      <nav className="p-4 flex-1 overflow-y-auto">
         <ul className="space-y-1">
           {navItems.map((item) => (
             <li key={item.href}>
@@ -217,7 +218,7 @@ function AdminSidebarContent({ pathname }: { pathname: string }) {
       <div className="p-4 border-t border-gray-100">
         <Link
           href="/"
-          className="flex items-center gap-2 px-4 py-3 text-xs uppercase tracking-widest text-muted hover:text-primary transition-colors"
+          className="flex items-center gap-2 px-4 py-3 text-xs uppercase tracking-widest text-gray-500 hover:text-primary transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -248,7 +249,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen bg-secondary flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-black border-t-transparent animate-spin mx-auto mb-4"></div>
-          <p className="text-muted text-sm">Loading...</p>
+          <p className="text-gray-500 text-sm">Loading...</p>
         </div>
       </div>
     );
@@ -287,23 +288,14 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                 </Sheet>
               </div>
 
-              <h1 className="text-xs sm:text-sm uppercase tracking-[0.2em] font-medium text-muted truncate max-w-[150px] sm:max-w-none">
+              <h1 className="text-xs sm:text-sm uppercase tracking-[0.2em] font-medium text-gray-700 truncate max-w-[150px] sm:max-w-none">
                 {navItems.find((item) => item.href === pathname)?.label || "Dashboard"}
               </h1>
             </div>
 
             <div className="flex items-center gap-4">
               {/* Notifications */}
-              <button className="relative p-2 hover:bg-gray-50 transition-colors">
-                <svg className="w-5 h-5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                  />
-                </svg>
-                <span className="absolute top-1 right-1 w-2 h-2 bg-sale"></span>
-              </button>
+              <NotificationDropdown />
               {/* Profile */}
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 sm:w-9 sm:h-9 bg-black flex items-center justify-center text-white font-medium text-sm sm:text-base">
@@ -313,7 +305,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                   <p className="text-sm font-medium">{user?.name || "Admin"}</p>
                   <button
                     onClick={() => setShowLogoutConfirm(true)}
-                    className="text-xs text-muted hover:text-sale transition-colors"
+                    className="text-xs text-gray-500 hover:text-sale transition-colors"
                   >
                     Sign Out
                   </button>

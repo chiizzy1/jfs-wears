@@ -61,7 +61,7 @@ function SheetOverlay({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
         data-slot="sheet-overlay"
         className={cn("fixed inset-0 z-50 bg-black/50", className)}
         {...props}
@@ -105,7 +105,7 @@ function SheetContent({
                 initial={initial}
                 animate={animate}
                 exit={exit}
-                transition={{ type: "spring", damping: 30, stiffness: 350 }}
+                transition={{ type: "spring", damping: 25, stiffness: 200, mass: 0.5 }}
                 data-slot="sheet-content"
                 className={cn(
                   "bg-background fixed z-50 flex flex-col gap-4 shadow-lg",

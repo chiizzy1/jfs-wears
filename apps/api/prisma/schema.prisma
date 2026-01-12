@@ -84,6 +84,7 @@ model Staff {
   @@map("staff")
   refreshTokens RefreshToken[]
   auditLogs     AuditLog[]
+  notifications Notification[]
 }
 
 enum StaffRole {
@@ -642,4 +643,42 @@ enum AuditAction {
   // System actions
   SETTINGS_UPDATE
   EXPORT_DATA
+}
+
+// ============================================
+// ADMIN NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String
+  link      String?          // Deep link to related page (e.g., /admin/orders/abc123)
+  
+  // Target staff (null = broadcast to all admins)
+  staffId   String?
+  staff     Staff?           @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  
+  // Read status
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+  
+  // Additional context
+  metadata  Json?            // e.g., { orderId, orderNumber, productName }
+  
+  createdAt DateTime         @default(now())
+
+  @@map("notifications")
+  @@index([staffId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  ORDER_NEW
+  ORDER_STATUS
+  REVIEW_NEW
+  LOW_STOCK
+  STAFF_LOGIN
 }

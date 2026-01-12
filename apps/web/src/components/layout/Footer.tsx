@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 /**
  * Premium Footer
@@ -81,12 +82,9 @@ export default function Footer() {
               placeholder="Enter your email"
               className="w-full px-4 py-3 text-sm border border-gray-300 bg-transparent focus:outline-none focus:border-black transition-colors"
             />
-            <button
-              type="submit"
-              className="bg-black text-white px-6 py-3 text-xs uppercase tracking-[0.15em] hover:bg-[#333] transition-colors"
-            >
+            <Button variant="premium-dark" size="default" type="submit" className="w-full py-3">
               Subscribe
-            </button>
+            </Button>
           </form>
         </div>
       </div>
