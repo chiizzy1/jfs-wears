@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
-import { OrderQueryDto, OrderStatus, CreateOrderDto, ShippingAddressDto } from "./dto/orders.dto";
+import { OrderQueryDto, OrderStatus, CreateOrderDto, ShippingAddressDto, UpdateTrackingDto } from "./dto/orders.dto";
 import { SettingsService } from "../settings/settings.service";
 import { Prisma, PaymentStatus as PrismaPaymentStatus, OrderStatus as PrismaOrderStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
@@ -156,9 +156,46 @@ export class OrdersService {
   }
 
   async updateStatus(id: string, status: OrderStatus) {
+    // Fetch current order to get existing status history
+    const order = await this.prisma.order.findUnique({ where: { id } });
+    if (!order) {
+      throw new NotFoundException(`Order not found: ${id}`);
+    }
+
+    // Append new status to history
+    const currentHistory = (order.statusHistory as Array<{ status: string; timestamp: string }>) || [];
+    const newHistoryEntry = {
+      status: status,
+      timestamp: new Date().toISOString(),
+    };
+    const updatedHistory = [...currentHistory, newHistoryEntry];
+
     return this.prisma.order.update({
       where: { id },
-      data: { status: status as PrismaOrderStatus },
+      data: {
+        status: status as PrismaOrderStatus,
+        statusHistory: updatedHistory,
+      },
+    });
+  }
+
+  async updateTracking(id: string, data: UpdateTrackingDto) {
+    const updateData: Record<string, unknown> = {};
+
+    if (data.estimatedDeliveryDate) {
+      updateData.estimatedDeliveryDate = new Date(data.estimatedDeliveryDate);
+    }
+    if (data.trackingNumber !== undefined) {
+      updateData.trackingNumber = data.trackingNumber;
+    }
+    if (data.carrierName !== undefined) {
+      updateData.carrierName = data.carrierName;
+    }
+
+    return this.prisma.order.update({
+      where: { id },
+      data: updateData,
+      include: { items: true, shippingZone: true },
     });
   }
 

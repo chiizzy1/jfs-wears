@@ -1,12 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { ChartPeriod } from "@/constants/dashboard.constants";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+
+// Store opening date - months before this cannot be selected
+const STORE_OPENING_DATE = new Date(2026, 0, 1); // January 1, 2026
+
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 /**
  * Admin Dashboard View Component
@@ -17,6 +35,43 @@ export function DashboardView() {
   const { dashboard, lowStock, recentOrders, revenueData, weeklyOrdersData, stats, isLoading } = useDashboard();
 
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("year");
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+
+  // Generate available years (from store opening to current year)
+  const availableYears = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const startYear = STORE_OPENING_DATE.getFullYear();
+    const years: number[] = [];
+    for (let y = startYear; y <= currentYear; y++) {
+      years.push(y);
+    }
+    return years;
+  }, []);
+
+  // Generate available months for the selected year (respecting store opening date)
+  const availableMonths = useMemo(() => {
+    const currentDate = new Date();
+    const storeOpeningYear = STORE_OPENING_DATE.getFullYear();
+    const storeOpeningMonth = STORE_OPENING_DATE.getMonth();
+
+    return MONTHS.map((name, index) => {
+      // Disable months before store opening
+      const isBeforeStoreOpening =
+        selectedYear < storeOpeningYear || (selectedYear === storeOpeningYear && index < storeOpeningMonth);
+
+      // Disable future months
+      const isFutureMonth =
+        selectedYear > currentDate.getFullYear() ||
+        (selectedYear === currentDate.getFullYear() && index > currentDate.getMonth());
+
+      return {
+        name,
+        index,
+        disabled: isBeforeStoreOpening || isFutureMonth,
+      };
+    });
+  }, [selectedYear]);
 
   if (isLoading) {
     return (
@@ -46,30 +101,64 @@ export function DashboardView() {
 
       {/* Revenue Chart with Recharts */}
       <div className="bg-white p-8 border border-gray-100">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
           <div>
             <h2 className="text-xs uppercase tracking-[0.15em] font-medium">Revenue Overview</h2>
             <p className="text-muted text-sm mt-1">
               {revenueData.length > 0 ? "Revenue from confirmed orders" : "No revenue data available"}
             </p>
+            <p className="text-xs text-gray-400 mt-1">
+              Data available from {MONTHS[STORE_OPENING_DATE.getMonth()]} {STORE_OPENING_DATE.getFullYear()}
+            </p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setChartPeriod("year")}
-              className={`px-4 py-2 text-xs uppercase tracking-widest transition-colors ${
-                chartPeriod === "year" ? "bg-black text-white" : "border border-gray-200 hover:border-black"
-              }`}
-            >
-              Year
-            </button>
-            <button
-              onClick={() => setChartPeriod("month")}
-              className={`px-4 py-2 text-xs uppercase tracking-widest transition-colors ${
-                chartPeriod === "month" ? "bg-black text-white" : "border border-gray-200 hover:border-black"
-              }`}
-            >
-              Month
-            </button>
+          <div className="flex flex-wrap gap-2 items-center">
+            {/* Period Toggle */}
+            <div className="flex gap-1">
+              <button
+                onClick={() => setChartPeriod("year")}
+                className={`px-4 py-2 text-xs uppercase tracking-widest transition-colors cursor-pointer ${
+                  chartPeriod === "year" ? "bg-black text-white" : "border border-gray-200 hover:border-black"
+                }`}
+              >
+                Year
+              </button>
+              <button
+                onClick={() => setChartPeriod("month")}
+                className={`px-4 py-2 text-xs uppercase tracking-widest transition-colors cursor-pointer ${
+                  chartPeriod === "month" ? "bg-black text-white" : "border border-gray-200 hover:border-black"
+                }`}
+              >
+                Month
+              </button>
+            </div>
+
+            {/* Month Selector (only show when viewing by month) */}
+            {chartPeriod === "month" && (
+              <div className="flex gap-2">
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                  className="px-3 py-2 text-xs border border-gray-200 bg-white uppercase tracking-widest cursor-pointer hover:border-black transition-colors"
+                >
+                  {availableMonths.map(({ name, index, disabled }) => (
+                    <option key={index} value={index} disabled={disabled}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                  className="px-3 py-2 text-xs border border-gray-200 bg-white uppercase tracking-widest cursor-pointer hover:border-black transition-colors"
+                >
+                  {availableYears.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         </div>
         <div className="h-72">
@@ -85,6 +174,7 @@ export function DashboardView() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                 <YAxis
+                  domain={[100000, "auto"]}
                   tickFormatter={(value) => formatCurrency(value)}
                   tick={{ fontSize: 11 }}
                   tickLine={false}
@@ -123,7 +213,7 @@ export function DashboardView() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={weeklyOrdersData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                   <XAxis dataKey="day" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                  <YAxis domain={[0, 10]} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                   <Tooltip
                     contentStyle={{
                       border: "1px solid #e5e5e5",

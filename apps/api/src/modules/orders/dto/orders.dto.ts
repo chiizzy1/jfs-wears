@@ -110,3 +110,20 @@ export class CreateOrderDto {
   @Type(() => ShippingAddressDto)
   shippingAddress: ShippingAddressDto;
 }
+
+export class UpdateTrackingDto {
+  @ApiPropertyOptional({ example: "2026-01-15T10:00:00Z", description: "Estimated delivery date" })
+  @IsString()
+  @IsOptional()
+  estimatedDeliveryDate?: string;
+
+  @ApiPropertyOptional({ example: "GIG12345678", description: "Carrier tracking number" })
+  @IsString()
+  @IsOptional()
+  trackingNumber?: string;
+
+  @ApiPropertyOptional({ example: "GIG Logistics", description: "Carrier name" })
+  @IsString()
+  @IsOptional()
+  carrierName?: string;
+}

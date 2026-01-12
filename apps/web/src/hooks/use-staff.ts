@@ -28,6 +28,17 @@ export function useStaff() {
     },
   });
 
+  const updateStaff = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateStaffDto> }) => staffService.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: STAFF_KEYS.lists() });
+      toast.success("Staff member updated successfully");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+
   const deleteStaff = useMutation({
     mutationFn: (id: string) => staffService.delete(id),
     onSuccess: () => {
@@ -45,6 +56,7 @@ export function useStaff() {
     isError: staffQuery.isError,
     error: staffQuery.error,
     createStaff,
+    updateStaff,
     deleteStaff,
   };
 }

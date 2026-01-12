@@ -2,7 +2,7 @@ import { Controller, Get, Put, Post, Param, Query, Body, UseGuards, Request } fr
 import { OrdersService } from "./orders.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard, Roles } from "../auth/guards/roles.guard";
-import { OrderQueryDto, UpdateOrderStatusDto, CreateOrderDto } from "./dto/orders.dto";
+import { OrderQueryDto, UpdateOrderStatusDto, CreateOrderDto, UpdateTrackingDto } from "./dto/orders.dto";
 import { ApiTags } from "@nestjs/swagger";
 
 @ApiTags("Orders")
@@ -49,5 +49,12 @@ export class OrdersController {
   @Roles("ADMIN", "MANAGER", "STAFF")
   async updateStatus(@Param("id") id: string, @Body() updateDto: UpdateOrderStatusDto) {
     return this.ordersService.updateStatus(id, updateDto.status);
+  }
+
+  @Put(":id/tracking")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("ADMIN", "MANAGER", "STAFF")
+  async updateTracking(@Param("id") id: string, @Body() updateDto: UpdateTrackingDto) {
+    return this.ordersService.updateTracking(id, updateDto);
   }
 }

@@ -1,15 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Staff } from "@/lib/admin-api";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { useStaff } from "@/hooks/use-staff";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { EditStaffModal } from "./EditStaffModal";
 
 export function StaffTable() {
   const { staff, isLoading, deleteStaff } = useStaff();
+  const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
 
   const columns = useMemo<ColumnDef<Staff>[]>(
     () => [
@@ -57,10 +58,7 @@ export function StaffTable() {
               <Button
                 variant="ghost"
                 className="h-auto p-0 text-xs uppercase tracking-widest hover:text-black hover:bg-transparent hover:underline underline-offset-4"
-                onClick={() => {
-                  // TODO: Implement edit modal
-                  alert(`Edit ${staffMember.name} - Feature coming soon`);
-                }}
+                onClick={() => setEditingStaff(staffMember)}
               >
                 Edit
               </Button>
@@ -88,5 +86,10 @@ export function StaffTable() {
     return <div>Loading staff...</div>;
   }
 
-  return <DataTable columns={columns} data={staff} searchKey="name" />;
+  return (
+    <>
+      <DataTable columns={columns} data={staff} searchKey="name" />
+      <EditStaffModal isOpen={!!editingStaff} onClose={() => setEditingStaff(null)} staff={editingStaff} />
+    </>
+  );
 }

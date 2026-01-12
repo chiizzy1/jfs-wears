@@ -336,6 +336,142 @@ async function main() {
   });
   console.log(`   ✅ Customer created: ${customer.email}`);
 
+  // Create a test order for tracking page testing
+  console.log("\n📦 Creating test order for tracking...");
+  const lagosZone = await prisma.shippingZone.findFirst({ where: { name: "Lagos" } });
+  const hoodie = await prisma.product.findFirst({
+    where: { slug: "premium-streetwear-hoodie" },
+    include: { variants: true },
+  });
+  const tshirt = await prisma.product.findFirst({
+    where: { slug: "classic-cotton-tshirt" },
+    include: { variants: true },
+  });
+
+  if (lagosZone && hoodie && tshirt && hoodie.variants[0] && tshirt.variants[0]) {
+    const testOrder = await prisma.order.create({
+      data: {
+        orderNumber: "JFS-TRACK-001",
+        userId: customer.id,
+        status: "SHIPPED",
+        paymentStatus: "PAID",
+        paymentMethod: "BANK_TRANSFER",
+        shippingAddress: {
+          firstName: "John",
+          lastName: "Doe",
+          address: "123 Victoria Island",
+          city: "Lagos",
+          state: "Lagos",
+        },
+        shippingZoneId: lagosZone.id,
+        shippingFee: 1500,
+        subtotal: 23500,
+        total: 25000,
+        estimatedDeliveryDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
+        trackingNumber: "GIG-1234567890",
+        carrierName: "GIG Logistics",
+        statusHistory: [
+          { status: "PENDING", timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+          { status: "CONFIRMED", timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+          { status: "PROCESSING", timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
+          { status: "SHIPPED", timestamp: new Date().toISOString() },
+        ],
+        items: {
+          create: [
+            {
+              productId: hoodie.id,
+              variantId: hoodie.variants[0].id,
+              productName: "Premium Streetwear Hoodie",
+              variantSize: "L",
+              variantColor: "Black",
+              quantity: 1,
+              unitPrice: 15000,
+              total: 15000,
+            },
+            {
+              productId: tshirt.id,
+              variantId: tshirt.variants[0].id,
+              productName: "Classic Cotton T-Shirt",
+              variantSize: "M",
+              variantColor: "White",
+              quantity: 1,
+              unitPrice: 8500,
+              total: 8500,
+            },
+          ],
+        },
+      },
+    });
+    console.log(`   ✅ Test order created: ${testOrder.orderNumber}`);
+
+    // Create 20 more test orders for dashboard testing
+    console.log("\n📦 Creating 20 additional test orders...");
+    const statuses = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"] as const;
+    const paymentStatuses = ["PAID", "PENDING"] as const;
+
+    for (let i = 2; i <= 21; i++) {
+      const orderStatus = statuses[Math.floor(Math.random() * statuses.length)];
+      const paymentStatus = orderStatus === "PENDING" ? "PENDING" : "PAID";
+      const daysAgo = Math.floor(Math.random() * 30); // Random date in last 30 days
+      const orderDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+
+      // Higher value orders (35K - 85K range)
+      const baseAmount = 35000 + Math.floor(Math.random() * 50000);
+      const shippingFee = 1500 + Math.floor(Math.random() * 3000);
+      const total = baseAmount + shippingFee;
+
+      await prisma.order.create({
+        data: {
+          orderNumber: `JFS-TEST-${String(i).padStart(3, "0")}`,
+          userId: customer.id,
+          status: orderStatus,
+          paymentStatus: paymentStatus,
+          paymentMethod: "BANK_TRANSFER",
+          shippingAddress: {
+            firstName: "Test",
+            lastName: `Customer ${i}`,
+            address: `${i * 10} Test Street`,
+            city: "Lagos",
+            state: "Lagos",
+          },
+          shippingZoneId: lagosZone.id,
+          shippingFee: shippingFee,
+          subtotal: baseAmount,
+          total: total,
+          createdAt: orderDate,
+          updatedAt: orderDate,
+          items: {
+            create: [
+              {
+                productId: hoodie.id,
+                variantId: hoodie.variants[Math.floor(Math.random() * hoodie.variants.length)].id,
+                productName: "Premium Streetwear Hoodie",
+                variantSize: ["S", "M", "L"][Math.floor(Math.random() * 3)],
+                variantColor: ["Black", "Grey"][Math.floor(Math.random() * 2)],
+                quantity: 1 + Math.floor(Math.random() * 3),
+                unitPrice: 15000,
+                total: 15000 * (1 + Math.floor(Math.random() * 3)),
+              },
+              {
+                productId: tshirt.id,
+                variantId: tshirt.variants[Math.floor(Math.random() * tshirt.variants.length)].id,
+                productName: "Classic Cotton T-Shirt",
+                variantSize: ["S", "M", "L"][Math.floor(Math.random() * 3)],
+                variantColor: ["White", "Black"][Math.floor(Math.random() * 2)],
+                quantity: 1 + Math.floor(Math.random() * 2),
+                unitPrice: 8500,
+                total: 8500 * (1 + Math.floor(Math.random() * 2)),
+              },
+            ],
+          },
+        },
+      });
+    }
+    console.log("   ✅ Created 20 additional test orders");
+  } else {
+    console.log("   ⚠️ Could not create test order - missing products or shipping zone");
+  }
+
   console.log("\n✨ Database seeding completed!\n");
   console.log("=".repeat(50));
   console.log("📋 Demo Credentials:");

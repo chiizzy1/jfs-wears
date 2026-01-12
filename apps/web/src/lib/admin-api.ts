@@ -231,6 +231,13 @@ class AdminAPI {
     });
   }
 
+  async updateStaff(id: string, data: Partial<CreateStaffDto>) {
+    return this.request<Staff>(`/staff/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
   async deleteStaff(id: string) {
     return this.request<void>(`/staff/${id}`, { method: "DELETE" });
   }
