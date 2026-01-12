@@ -28,8 +28,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   const [showSizeGuide, setShowSizeGuide] = useState(false);
 
   // Get unique sizes and colors from variants
-  const sizes = useMemo(() => [...new Set(product.variants.map((v) => v.size).filter(Boolean))], [product.variants]);
-  const colors = useMemo(() => [...new Set(product.variants.map((v) => v.color).filter(Boolean))], [product.variants]);
+  const sizes = useMemo(
+    () => [...new Set(product.variants.map((v) => v.size).filter((s): s is string => !!s))],
+    [product.variants]
+  );
+  const colors = useMemo(
+    () => [...new Set(product.variants.map((v) => v.color).filter((c): c is string => !!c))],
+    [product.variants]
+  );
 
   // Get color groups for color-based image switching
   const colorGroups = useMemo(() => {
@@ -54,11 +60,64 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     return product.images;
   }, [selectedColor, colorGroups, product.images]);
 
-  // Get color hex for swatches
+  // Common color name to hex mapping for fallback
+  const colorNameToHex: Record<string, string> = {
+    black: "#000000",
+    white: "#ffffff",
+    red: "#dc2626",
+    blue: "#2563eb",
+    navy: "#1e3a5a",
+    "navy blue": "#1e3a5a",
+    green: "#16a34a",
+    yellow: "#eab308",
+    orange: "#ea580c",
+    purple: "#9333ea",
+    pink: "#ec4899",
+    brown: "#78350f",
+    gray: "#6b7280",
+    grey: "#6b7280",
+    beige: "#d4c4a8",
+    cream: "#f5f5dc",
+    olive: "#556b2f",
+    maroon: "#800000",
+    burgundy: "#800020",
+    teal: "#0d9488",
+    turquoise: "#40e0d0",
+    gold: "#d4af37",
+    silver: "#c0c0c0",
+    charcoal: "#36454f",
+    khaki: "#c3b091",
+    tan: "#d2b48c",
+    coral: "#ff7f50",
+    salmon: "#fa8072",
+    lavender: "#e6e6fa",
+    mint: "#98fb98",
+    peach: "#ffcba4",
+    rust: "#b7410e",
+    ivory: "#fffff0",
+    sand: "#c2b280",
+    wine: "#722f37",
+    forest: "#228b22",
+    "forest green": "#228b22",
+    camel: "#c19a6b",
+    chocolate: "#7b3f00",
+    coffee: "#6f4e37",
+    denim: "#1560bd",
+    stone: "#928e85",
+    oatmeal: "#d8cab8",
+    ash: "#b2beb5",
+  };
+
+  // Get color hex for swatches with fallback
   const getColorHex = useCallback(
     (colorName: string) => {
+      // First try to get from colorGroups
       const colorGroup = colorGroups.find((cg) => cg.colorName.toLowerCase() === colorName.toLowerCase());
-      return colorGroup?.colorHex;
+      if (colorGroup?.colorHex) {
+        return colorGroup.colorHex;
+      }
+      // Fallback to color name mapping
+      return colorNameToHex[colorName.toLowerCase()] || "#cccccc";
     },
     [colorGroups]
   );
@@ -176,7 +235,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </div>
 
         {/* Description */}
-        <p className="text-muted leading-relaxed">{product.description}</p>
+        <p className="text-muted-foreground leading-relaxed">{product.description}</p>
 
         {/* Color Selector - Visual Swatches with Smooth Transitions */}
         {colors.length > 0 && (

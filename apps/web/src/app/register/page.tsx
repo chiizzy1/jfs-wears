@@ -42,7 +42,7 @@ function RegisterPageContent() {
   if (isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-secondary flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-secondary flex items-center justify-center pt-24 pb-12 px-4">
       <RegisterForm />
     </div>
   );

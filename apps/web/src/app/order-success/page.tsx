@@ -23,7 +23,7 @@ function OrderSuccessContent() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-secondary py-12">
+    <div className="min-h-screen bg-secondary pt-24 pb-12">
       <div className="container-width max-w-2xl">
         <div className="bg-white p-10 md:p-16 text-center border border-gray-100">
           {/* Success Icon */}

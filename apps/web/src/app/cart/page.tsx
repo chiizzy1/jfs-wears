@@ -31,7 +31,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary py-12">
+    <div className="min-h-screen bg-secondary pt-24 pb-12">
       <div className="container-width">
         <h1 className="text-3xl font-medium tracking-[0.02em] mb-12">Shopping Cart</h1>
 

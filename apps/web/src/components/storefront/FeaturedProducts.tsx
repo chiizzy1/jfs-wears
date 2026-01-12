@@ -54,6 +54,7 @@ function mapApiProduct(item: ApiProduct): Product {
     })),
     isActive: item.isActive,
     isFeatured: item.isFeatured,
+    colorGroups: [],
   };
 }
 

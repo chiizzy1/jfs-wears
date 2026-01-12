@@ -180,8 +180,8 @@ export function ProductFormV2({ categories, sizePresets, colorPresets, onSubmit,
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8">
         {/* Basic Info */}
-        <div className="bg-white p-6 rounded-lg border shadow-sm space-y-4">
-          <h2 className="text-lg font-semibold uppercase tracking-wide">Product Information</h2>
+        <div className="bg-white p-6 space-y-4">
+          <h2 className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-medium">Product Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -292,7 +292,7 @@ export function ProductFormV2({ categories, sizePresets, colorPresets, onSubmit,
               control={form.control}
               name="isFeatured"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
                   <FormControl>
                     <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                   </FormControl>
@@ -307,8 +307,8 @@ export function ProductFormV2({ categories, sizePresets, colorPresets, onSubmit,
         </div>
 
         {/* Size Selection */}
-        <div className="bg-white p-6 rounded-lg border shadow-sm space-y-4">
-          <h2 className="text-lg font-semibold uppercase tracking-wide">Sizes</h2>
+        <div className="bg-white p-6 space-y-4">
+          <h2 className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-medium">Sizes</h2>
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <label className="text-sm font-medium">Size Preset:</label>
@@ -336,10 +336,8 @@ export function ProductFormV2({ categories, sizePresets, colorPresets, onSubmit,
                       type="button"
                       onClick={() => toggleSize(size)}
                       className={cn(
-                        "px-4 py-2 rounded-md border text-sm font-medium transition-all",
-                        selectedSizes.includes(size)
-                          ? "bg-black text-white border-black"
-                          : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
+                        "px-4 py-2 text-sm font-medium transition-all",
+                        selectedSizes.includes(size) ? "bg-black text-white" : "bg-white text-gray-700 hover:bg-gray-50"
                       )}
                     >
                       {size}
@@ -358,8 +356,8 @@ export function ProductFormV2({ categories, sizePresets, colorPresets, onSubmit,
         </div>
 
         {/* Color Selection with Images */}
-        <div className="bg-white p-6 rounded-lg border shadow-sm space-y-4">
-          <h2 className="text-lg font-semibold uppercase tracking-wide">Colors & Images</h2>
+        <div className="bg-white p-6 space-y-4">
+          <h2 className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-medium">Colors & Images</h2>
 
           {/* Color Preset Swatches */}
           <div className="space-y-2">
@@ -374,13 +372,11 @@ export function ProductFormV2({ categories, sizePresets, colorPresets, onSubmit,
                     onClick={() => addColorFromPreset(preset)}
                     disabled={isSelected}
                     className={cn(
-                      "relative flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-all",
-                      isSelected
-                        ? "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed"
-                        : "bg-white border-gray-300 hover:border-black"
+                      "relative flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-all",
+                      isSelected ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-gray-50"
                     )}
                   >
-                    <span className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: preset.hexCode }} />
+                    <span className="w-4 h-4" style={{ backgroundColor: preset.hexCode }} />
                     {preset.name}
                     {isSelected && <Check className="w-3 h-3" />}
                   </button>
@@ -425,13 +421,13 @@ export function ProductFormV2({ categories, sizePresets, colorPresets, onSubmit,
             {colorGroups.map((colorGroup, colorIndex) => (
               <div
                 key={colorGroup.id}
-                className="p-4 rounded-lg border-2 border-dashed"
-                style={{ borderColor: form.getValues(`colorGroups.${colorIndex}.colorHex`) || "#e5e7eb" }}
+                className="p-4"
+                style={{ borderLeft: `3px solid ${form.getValues(`colorGroups.${colorIndex}.colorHex`) || "#e5e7eb"}` }}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span
-                      className="w-6 h-6 rounded-full border"
+                      className="w-6 h-6"
                       style={{ backgroundColor: form.getValues(`colorGroups.${colorIndex}.colorHex`) || "#ccc" }}
                     />
                     <span className="font-medium">{form.getValues(`colorGroups.${colorIndex}.colorName`)}</span>
@@ -450,21 +446,21 @@ export function ProductFormV2({ categories, sizePresets, colorPresets, onSubmit,
                 {/* Images for this color */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {(form.getValues(`colorGroups.${colorIndex}.images`) || []).map((img, imgIndex) => (
-                    <div key={imgIndex} className="relative aspect-square bg-gray-100 rounded-md overflow-hidden group">
+                    <div key={imgIndex} className="relative aspect-square bg-gray-100 overflow-hidden group">
                       <Image src={img.preview} alt={`${colorGroup.colorName} ${imgIndex}`} fill className="object-cover" />
                       <button
                         type="button"
                         onClick={() => removeImage(colorIndex, imgIndex)}
-                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-2 right-2 p-1 bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <X className="w-4 h-4" />
                       </button>
                       {img.isMain && (
-                        <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-black text-white text-xs rounded">Main</span>
+                        <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-black text-white text-xs">Main</span>
                       )}
                     </div>
                   ))}
-                  <label className="flex flex-col items-center justify-center aspect-square border-2 border-dashed rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
+                  <label className="flex flex-col items-center justify-center aspect-square border-2 border-dashed cursor-pointer hover:bg-gray-50 transition-colors">
                     <ImageIcon className="w-6 h-6 text-gray-400 mb-1" />
                     <span className="text-xs text-gray-500">Add Images</span>
                     <input
@@ -490,8 +486,8 @@ export function ProductFormV2({ categories, sizePresets, colorPresets, onSubmit,
 
         {/* Variant Preview */}
         {selectedSizes.length > 0 && selectedColors.length > 0 && (
-          <div className="bg-gray-50 p-6 rounded-lg border space-y-4">
-            <h2 className="text-lg font-semibold uppercase tracking-wide">Variant Preview</h2>
+          <div className="bg-gray-50 p-6 space-y-4">
+            <h2 className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-medium">Variant Preview</h2>
             <p className="text-sm text-gray-600">
               {selectedSizes.length} sizes × {selectedColors.length} colors = {selectedSizes.length * selectedColors.length}{" "}
               variants will be created
@@ -499,11 +495,8 @@ export function ProductFormV2({ categories, sizePresets, colorPresets, onSubmit,
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {selectedColors.slice(0, 4).map((color) =>
                 selectedSizes.slice(0, 3).map((size) => (
-                  <div
-                    key={`${color.colorName}-${size}`}
-                    className="flex items-center gap-2 px-3 py-2 bg-white rounded border text-sm"
-                  >
-                    <span className="w-3 h-3 rounded-full" style={{ backgroundColor: color.colorHex || "#ccc" }} />
+                  <div key={`${color.colorName}-${size}`} className="flex items-center gap-2 px-3 py-2 bg-white text-sm">
+                    <span className="w-3 h-3" style={{ backgroundColor: color.colorHex || "#ccc" }} />
                     <span>{color.colorName}</span>
                     <span className="text-gray-400">·</span>
                     <span>{size}</span>
@@ -514,7 +507,7 @@ export function ProductFormV2({ categories, sizePresets, colorPresets, onSubmit,
                 ))
               )}
               {selectedSizes.length * selectedColors.length > 12 && (
-                <div className="flex items-center justify-center px-3 py-2 bg-gray-100 rounded border text-sm text-gray-500">
+                <div className="flex items-center justify-center px-3 py-2 bg-gray-100 text-sm text-gray-500">
                   +{selectedSizes.length * selectedColors.length - 12} more...
                 </div>
               )}

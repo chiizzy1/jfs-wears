@@ -28,7 +28,7 @@ function SearchContent() {
   const hasActiveFilters = !!(category || gender || localFilters.minPrice || localFilters.maxPrice);
 
   return (
-    <div className="min-h-screen bg-secondary py-8">
+    <div className="min-h-screen bg-secondary pt-24 pb-8">
       <div className="container-width">
         {/* Header */}
         <div className="mb-12 border-b border-gray-100 pb-6">
@@ -115,7 +115,7 @@ export default function SearchPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-secondary py-8">
+        <div className="min-h-screen bg-secondary pt-24 pb-8">
           <div className="container-width">
             <ProductGridSkeleton count={12} />
           </div>

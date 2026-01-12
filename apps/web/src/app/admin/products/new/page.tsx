@@ -96,7 +96,7 @@ export default function AddProductPage() {
       </div>
 
       {/* Form */}
-      <div className="max-w-4xl">
+      <div>
         <ProductFormV2
           categories={categories}
           sizePresets={sizePresets}

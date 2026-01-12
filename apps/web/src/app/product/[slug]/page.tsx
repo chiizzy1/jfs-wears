@@ -20,7 +20,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const primaryImage = product.images.find((img) => img.isPrimary)?.url || product.images[0]?.url || "";
 
   return (
-    <div className="min-h-screen bg-secondary py-8">
+    <div className="min-h-screen bg-secondary pt-24 pb-8">
       <div className="container-width">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-500 mb-8">

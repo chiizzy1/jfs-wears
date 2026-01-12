@@ -28,7 +28,21 @@ export default function Navbar() {
   const pathname = usePathname();
 
   // Routes that have a light background (requires dark navbar text)
-  const LIGHT_BG_ROUTES = ["/track", "/cart", "/wishlist", "/account", "/search"];
+  const LIGHT_BG_ROUTES = [
+    "/track",
+    "/cart",
+    "/wishlist",
+    "/account",
+    "/search",
+    "/product",
+    "/checkout",
+    "/order-success",
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/reset-password",
+    "/verify-email",
+  ];
   const isLightPage = LIGHT_BG_ROUTES.some((route) => pathname?.startsWith(route));
 
   // Premium Scroll Motion

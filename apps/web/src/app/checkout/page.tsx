@@ -79,7 +79,7 @@ export default function CheckoutPage() {
   const availableStates = Array.from(new Set(shippingZones.flatMap((z) => z.states))).sort();
 
   return (
-    <div className="min-h-screen bg-secondary py-12">
+    <div className="min-h-screen bg-secondary pt-24 pb-12">
       <div className="container-width">
         <h1 className="text-3xl font-medium mb-10 tracking-[0.02em]">Checkout</h1>
 

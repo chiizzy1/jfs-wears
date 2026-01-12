@@ -31,7 +31,7 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary py-12">
+    <div className="min-h-screen bg-secondary pt-24 pb-12">
       <div className="container-width max-w-4xl">
         <h1 className="text-3xl font-medium mb-10 tracking-[0.02em]">My Account</h1>
 

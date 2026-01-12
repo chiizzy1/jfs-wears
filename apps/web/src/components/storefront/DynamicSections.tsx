@@ -49,6 +49,7 @@ function mapSectionProduct(item: SectionProduct) {
     variants: [{ id: "default", sku: "default", stock: 100, price: Number(item.basePrice) }],
     isActive: true,
     isFeatured: false,
+    colorGroups: [],
   };
 }
 
