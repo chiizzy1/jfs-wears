@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Plus, Trash2, GripVertical, Image as ImageIcon, Video, Eye, EyeOff, Edit2, X } from "lucide-react";
 
 interface StorefrontHero {
@@ -48,6 +49,7 @@ interface Category {
 }
 
 export default function StorefrontPage() {
+  const { confirm } = useConfirm();
   const [activeTab, setActiveTab] = useState<"heroes" | "categories" | "carousels">("heroes");
   const [heroes, setHeroes] = useState<StorefrontHero[]>([]);
   const [sections, setSections] = useState<StorefrontSection[]>([]);
@@ -103,7 +105,14 @@ export default function StorefrontPage() {
   };
 
   const deleteHero = async (id: string) => {
-    if (!confirm("Delete this hero slide?")) return;
+    const ok = await confirm({
+      title: "Delete Hero Slide",
+      message: "Are you sure you want to delete this hero slide? This action cannot be undone.",
+      confirmLabel: "Delete",
+      variant: "danger",
+      icon: "delete",
+    });
+    if (!ok) return;
     try {
       await adminAPI.delete(`/admin/storefront/heroes/${id}`);
       setHeroes((prev) => prev.filter((h) => h.id !== id));
@@ -114,7 +123,14 @@ export default function StorefrontPage() {
   };
 
   const deleteSection = async (id: string) => {
-    if (!confirm("Delete this section?")) return;
+    const ok = await confirm({
+      title: "Delete Section",
+      message: "Are you sure you want to delete this content section? This action cannot be undone.",
+      confirmLabel: "Delete",
+      variant: "danger",
+      icon: "delete",
+    });
+    if (!ok) return;
     try {
       await adminAPI.delete(`/admin/storefront/sections/${id}`);
       setSections((prev) => prev.filter((s) => s.id !== id));

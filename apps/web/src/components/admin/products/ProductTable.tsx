@@ -7,7 +7,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Product } from "@/lib/admin-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react"; // Removed unused icons
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,6 +16,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export function ProductTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; product: Product | null }>({
+    isOpen: false,
+    product: null,
+  });
   const { products, categories, isLoading, deleteProduct } = useProducts();
 
   // Helper for stock status
@@ -32,6 +37,12 @@ export function ProductTable() {
         return matchesSearch && matchesCategory;
       })
     : [];
+
+  const handleDeleteConfirm = () => {
+    if (deleteConfirm.product) {
+      deleteProduct(deleteConfirm.product.id);
+    }
+  };
 
   const columns: ColumnDef<Product>[] = [
     {
@@ -119,11 +130,7 @@ export function ProductTable() {
               Edit
             </Link>
             <button
-              onClick={() => {
-                if (confirm(`Delete ${product.name}?`)) {
-                  deleteProduct(product.id);
-                }
-              }}
+              onClick={() => setDeleteConfirm({ isOpen: true, product })}
               className="text-xs uppercase tracking-widest text-red-500 hover:text-red-600 hover:underline underline-offset-4"
             >
               Delete
@@ -180,10 +187,21 @@ export function ProductTable() {
         </div>
       ) : (
         <div className="rounded-none border-t border-gray-100">
-          {/* Note: Use a custom table renderer or clean wrapper if DataTable imposes styles. Assuming standard shadcn table passed in props. */}
           <DataTable columns={columns} data={filteredProducts} />
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, product: null })}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${deleteConfirm.product?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        icon="delete"
+      />
     </div>
   );
 }

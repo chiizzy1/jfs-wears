@@ -91,9 +91,9 @@ export default function FeaturedProducts() {
   }, []);
 
   const SectionHeader = () => (
-    <div className="container-width text-center mb-12">
+    <div className="container-width mb-12">
       <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Trending Now</h2>
-      <p className="text-gray-500 max-w-2xl mx-auto text-sm md:text-base">
+      <p className="text-gray-500 max-w-2xl text-sm md:text-base">
         Discover the pieces everyone is talking about. Limited edition drops and bestsellers.
       </p>
     </div>
@@ -149,7 +149,7 @@ export default function FeaturedProducts() {
 
         {/* Embla Carousel */}
         <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex touch-pan-y gap-4 md:gap-6 px-4">
+          <div className="flex touch-pan-y gap-0.5 px-4">
             {marqueeProducts.map((product, index) => (
               <div key={`${product.id}-${index}`} className="flex-[0_0_260px] md:flex-[0_0_320px] min-w-0">
                 <ProductCard product={product} className="transition-opacity duration-300 hover:opacity-100" />

@@ -6,11 +6,22 @@ import { DataTable } from "@/components/ui/data-table/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { useStaff } from "@/hooks/use-staff";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EditStaffModal } from "./EditStaffModal";
 
 export function StaffTable() {
   const { staff, isLoading, deleteStaff } = useStaff();
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; staff: Staff | null }>({
+    isOpen: false,
+    staff: null,
+  });
+
+  const handleDeleteConfirm = () => {
+    if (deleteConfirm.staff) {
+      deleteStaff.mutate(deleteConfirm.staff.id);
+    }
+  };
 
   const columns = useMemo<ColumnDef<Staff>[]>(
     () => [
@@ -65,11 +76,7 @@ export function StaffTable() {
               <Button
                 variant="ghost"
                 className="h-auto p-0 text-xs uppercase tracking-widest hover:text-red-600 hover:bg-transparent text-gray-400"
-                onClick={() => {
-                  if (confirm(`Are you sure you want to delete ${staffMember.name}?`)) {
-                    deleteStaff.mutate(staffMember.id);
-                  }
-                }}
+                onClick={() => setDeleteConfirm({ isOpen: true, staff: staffMember })}
                 disabled={deleteStaff.isPending}
               >
                 Delete
@@ -90,6 +97,18 @@ export function StaffTable() {
     <>
       <DataTable columns={columns} data={staff} searchKey="name" />
       <EditStaffModal isOpen={!!editingStaff} onClose={() => setEditingStaff(null)} staff={editingStaff} />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, staff: null })}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Staff Member"
+        message={`Are you sure you want to delete "${deleteConfirm.staff?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        icon="delete"
+      />
     </>
   );
 }

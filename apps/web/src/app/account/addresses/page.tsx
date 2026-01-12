@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuthStore } from "@/stores/auth-store";
 import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import toast from "react-hot-toast";
 
 interface Address {
@@ -28,6 +29,10 @@ export default function AddressesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; id: string }>({
+    isOpen: false,
+    id: "",
+  });
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -82,11 +87,13 @@ export default function AddressesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this address?")) return;
+  const handleDeleteClick = (id: string) => {
+    setDeleteConfirm({ isOpen: true, id });
+  };
 
+  const handleDeleteConfirm = async () => {
     try {
-      await apiClient.delete(`/users/addresses/${id}`);
+      await apiClient.delete(`/users/addresses/${deleteConfirm.id}`);
       toast.success("Address deleted");
       loadAddresses();
     } catch (error) {
@@ -284,7 +291,7 @@ export default function AddressesPage() {
                     <button onClick={() => handleEdit(addr)} className="text-sm text-accent hover:underline">
                       Edit
                     </button>
-                    <button onClick={() => handleDelete(addr.id)} className="text-sm text-error hover:underline">
+                    <button onClick={() => handleDeleteClick(addr.id)} className="text-sm text-error hover:underline">
                       Delete
                     </button>
                   </div>
@@ -294,6 +301,18 @@ export default function AddressesPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, id: "" })}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Address"
+        message="Are you sure you want to delete this address? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        icon="delete"
+      />
     </div>
   );
 }

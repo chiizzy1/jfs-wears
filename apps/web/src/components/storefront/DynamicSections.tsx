@@ -5,7 +5,6 @@ import ProductCard from "./ProductCard";
 import { apiClient, getErrorMessage } from "@/lib/api-client";
 import useEmblaCarousel from "embla-carousel-react";
 import AutoScroll from "embla-carousel-auto-scroll";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface SectionProduct {
   id: string;
@@ -46,15 +45,16 @@ function mapSectionProduct(item: SectionProduct) {
     categoryId: item.category?.id || "",
     category: item.category || undefined,
     images: item.image ? [{ id: "1", url: item.image, isPrimary: true }] : [],
-    variants: [],
+    // Provide a default variant with stock to avoid "Sold Out" display
+    variants: [{ id: "default", sku: "default", stock: 100, price: Number(item.basePrice) }],
     isActive: true,
     isFeatured: false,
   };
 }
 
-// Single Section Carousel
+// Single Section Carousel - Matches "Trending Now" styling exactly
 function SectionCarousel({ section }: { section: StorefrontSection }) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, dragFree: true }, [
+  const [emblaRef] = useEmblaCarousel({ loop: true, dragFree: true }, [
     AutoScroll({
       playOnInit: true,
       stopOnInteraction: false,
@@ -63,57 +63,41 @@ function SectionCarousel({ section }: { section: StorefrontSection }) {
     }),
   ]);
 
-  const scrollPrev = () => emblaApi?.scrollPrev();
-  const scrollNext = () => emblaApi?.scrollNext();
-
   if (section.products.length === 0) {
-    return null; // Don't render empty sections
+    return null;
   }
 
-  // Duplicate products for smooth infinite scroll
-  const displayProducts = [...section.products, ...section.products, ...section.products];
+  // Duplicate products for smooth infinite scroll (same as Trending Now)
+  const marqueeProducts = [...section.products, ...section.products, ...section.products];
 
   return (
-    <section className="py-16 bg-white overflow-hidden">
-      {/* Section Header */}
-      <div className="container-width mb-8">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">{section.title}</h2>
-            {section.subtitle && <p className="text-gray-500 mt-1 text-sm md:text-base">{section.subtitle}</p>}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={scrollPrev}
-              className="p-2 border border-gray-200 hover:border-black transition-colors"
-              aria-label="Previous"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={scrollNext}
-              className="p-2 border border-gray-200 hover:border-black transition-colors"
-              aria-label="Next"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+    <section className="py-24 bg-[#F8F6F3] overflow-hidden">
+      {/* Section Header - Left Aligned */}
+      <div className="container-width mb-12">
+        <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">{section.title}</h2>
+        {section.subtitle && <p className="text-gray-500 max-w-2xl text-sm md:text-base">{section.subtitle}</p>}
       </div>
 
-      {/* Carousel */}
+      {/* Carousel - Same as Trending Now */}
       <div className="relative w-full">
-        <div className="absolute left-0 top-0 bottom-0 w-8 md:w-16 z-10 bg-gradient-to-r from-white to-transparent pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-8 md:w-16 z-10 bg-gradient-to-l from-white to-transparent pointer-events-none" />
+        {/* Gradient Masks */}
+        <div className="absolute left-0 top-0 bottom-0 w-8 md:w-32 z-10 bg-linear-to-r from-[#F8F6F3] to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-8 md:w-32 z-10 bg-linear-to-l from-[#F8F6F3] to-transparent pointer-events-none" />
 
+        {/* Embla Carousel */}
         <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex touch-pan-y gap-4 md:gap-6 px-4">
-            {displayProducts.map((product, index) => (
-              <div key={`${product.id}-${index}`} className="flex-[0_0_260px] md:flex-[0_0_300px] min-w-0">
-                <ProductCard product={mapSectionProduct(product)} />
+          <div className="flex touch-pan-y gap-0.5 px-4">
+            {marqueeProducts.map((product, index) => (
+              <div key={`${product.id}-${index}`} className="flex-[0_0_260px] md:flex-[0_0_320px] min-w-0">
+                <ProductCard product={mapSectionProduct(product)} className="transition-opacity duration-300 hover:opacity-100" />
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Scrolls infinitely text - Same as Trending Now */}
+        <div className="text-center mt-8 text-xs uppercase tracking-widest text-gray-400 opacity-50">
+          Scrolls <span className="hidden md:inline">infinitely</span> • Drag to explore
         </div>
       </div>
     </section>
@@ -146,12 +130,12 @@ export default function DynamicSections() {
 
   if (loading) {
     return (
-      <div className="py-16">
+      <div className="py-24 bg-[#F8F6F3]">
         <div className="container-width">
-          <div className="h-8 w-48 bg-gray-200 animate-pulse mb-8" />
+          <div className="h-8 w-48 bg-gray-200 animate-pulse mb-12" />
           <div className="flex gap-4 overflow-hidden">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="min-w-[260px] aspect-[3/4] bg-gray-100 animate-pulse" />
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="min-w-[280px] md:min-w-[340px] rounded-none aspect-3/4 animate-pulse bg-gray-200" />
             ))}
           </div>
         </div>
@@ -160,7 +144,7 @@ export default function DynamicSections() {
   }
 
   if (error || sections.length === 0) {
-    return null; // Don't show error, just hide if no sections
+    return null;
   }
 
   return (

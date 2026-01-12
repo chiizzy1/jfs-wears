@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { AdminAuthProvider, useAdminAuth } from "@/lib/admin-auth";
+import { ConfirmProvider, ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Toaster } from "react-hot-toast";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -136,13 +136,29 @@ const navItems = [
       </svg>
     ),
   },
+  {
+    label: "My Profile",
+    href: "/admin/profile",
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+        />
+      </svg>
+    ),
+  },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <AdminAuthProvider>
-      <Toaster position="top-right" />
-      <AdminLayoutContent>{children}</AdminLayoutContent>
+      <ConfirmProvider>
+        <Toaster position="top-right" />
+        <AdminLayoutContent>{children}</AdminLayoutContent>
+      </ConfirmProvider>
     </AdminAuthProvider>
   );
 }
@@ -195,27 +211,15 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, isLoading, isAuthenticated, logout } = useAdminAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  // Handle redirect for unauthenticated users (except on login page)
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated && pathname !== "/admin/login") {
-      router.replace("/admin/login");
-    }
-  }, [isLoading, isAuthenticated, pathname, router]);
-
-  // Handle redirect for authenticated users on login page
-  useEffect(() => {
-    if (!isLoading && isAuthenticated && pathname === "/admin/login") {
-      router.replace("/admin");
-    }
-  }, [isLoading, isAuthenticated, pathname, router]);
-
-  // Skip auth check for login page - let it render immediately
+  // Login page - just render children without any admin chrome
   if (pathname === "/admin/login") {
     return <>{children}</>;
   }
 
-  // Show loading state while checking auth
+  // For all other admin pages, show loading state while auth is checking
+  // (Middleware handles redirects, but we need to wait for client-side auth context)
   if (isLoading) {
     return (
       <div className="min-h-screen bg-secondary flex items-center justify-center">
@@ -227,21 +231,10 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Show redirecting state when not authenticated
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-secondary flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-black border-t-transparent animate-spin mx-auto mb-4"></div>
-          <p className="text-muted text-sm">Redirecting to login...</p>
-        </div>
-      </div>
-    );
-  }
-
   const handleLogout = () => {
     logout();
     router.push("/admin/login");
+    setShowLogoutConfirm(false);
   };
 
   return (
@@ -295,7 +288,10 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                 </div>
                 <div className="hidden sm:block">
                   <p className="text-sm font-medium">{user?.name || "Admin"}</p>
-                  <button onClick={handleLogout} className="text-xs text-muted hover:text-sale transition-colors">
+                  <button
+                    onClick={() => setShowLogoutConfirm(true)}
+                    className="text-xs text-muted hover:text-sale transition-colors"
+                  >
                     Sign Out
                   </button>
                 </div>
@@ -307,6 +303,18 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Page Content */}
         <div className="p-4 sm:p-8">{children}</div>
       </main>
+
+      {/* Sign Out Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleLogout}
+        title="Sign Out"
+        message="Are you sure you want to sign out of the admin panel?"
+        confirmLabel="Sign Out"
+        variant="default"
+        icon="logout"
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { usePromotions } from "@/hooks/use-promotions";
 import { PromotionsTable } from "@/components/admin/promotions/PromotionsTable";
 import { AddPromotionModal } from "@/components/admin/promotions/AddPromotionModal";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Plus } from "lucide-react";
 import { Promotion } from "@/lib/admin-api";
 import { CreatePromotionDto } from "@/lib/admin-api";
@@ -14,6 +15,11 @@ export default function PromotionsPage() {
   const { promotions, isLoading, createPromotion, updatePromotion, deletePromotion } = usePromotions();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<Promotion | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; id: string; code: string }>({
+    isOpen: false,
+    id: "",
+    code: "",
+  });
 
   const handleCreate = (data: PromotionFormValues) => {
     // Transform string dates to ISO for API
@@ -52,8 +58,12 @@ export default function PromotionsPage() {
   };
 
   const handleDelete = (id: string, code: string) => {
-    if (confirm(`Are you sure you want to delete promotion "${code}"?`)) {
-      deletePromotion.mutate(id);
+    setDeleteConfirm({ isOpen: true, id, code });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteConfirm.id) {
+      deletePromotion.mutate(deleteConfirm.id);
     }
   };
 
@@ -110,6 +120,18 @@ export default function PromotionsPage() {
         onSubmit={editingPromotion ? handleUpdate : handleCreate}
         initialData={editingPromotion}
         isSubmitting={createPromotion.isPending || updatePromotion.isPending}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, id: "", code: "" })}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Promotion"
+        message={`Are you sure you want to delete the promotion "${deleteConfirm.code}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        icon="delete"
       />
     </div>
   );

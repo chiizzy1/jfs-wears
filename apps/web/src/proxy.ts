@@ -1,12 +1,11 @@
 /**
- * Next.js Proxy for Route Protection
+ * Next.js Proxy for Route Protection (Next.js 16+)
  *
  * Strategy: Lightweight checks with backend verification
- * - Reads auth_token cookie
+ * - Reads access_token cookie
  * - Checks expiration (no signature verification)
  * - Redirects unauthenticated users from protected routes
- *
- * NOTE: Renamed from middleware.ts to proxy.ts per Next.js 16+ convention
+ * - Redirects authenticated users away from login pages
  */
 
 import { NextResponse } from "next/server";
@@ -16,8 +15,7 @@ import type { NextRequest } from "next/server";
 const PROTECTED_ROUTES = ["/admin", "/account"];
 
 // Auth routes that authenticated users should be redirected AWAY from
-// NOTE: /admin/login is NOT included here - handled by client-side admin-auth
-const AUTH_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password"];
+const AUTH_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password", "/admin/login"];
 
 /**
  * Check if a JWT token is expired (without signature verification)
@@ -52,27 +50,32 @@ function isAuthRoute(pathname: string): boolean {
   return AUTH_ROUTES.some((route) => pathname.startsWith(route));
 }
 
-export function proxy(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const accessToken = request.cookies.get("access_token")?.value;
 
   // Check if user is authenticated (has valid, non-expired token)
   const isAuthenticated = accessToken && !isTokenExpired(accessToken);
 
-  // Protected routes - redirect to login if not authenticated
+  // Protected routes - redirect to appropriate login if not authenticated
   // Exception: /admin/login should be accessible to allow staff login
   if (isProtectedRoute(pathname) && pathname !== "/admin/login") {
     if (!isAuthenticated) {
+      // Admin routes redirect to admin login
+      if (pathname.startsWith("/admin")) {
+        return NextResponse.redirect(new URL("/admin/login", request.url));
+      }
+      // Customer routes (like /account) redirect to customer login
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
     }
   }
 
-  // Auth routes - redirect to home/account if already authenticated
+  // Auth routes - redirect authenticated users to appropriate dashboard
   if (isAuthRoute(pathname)) {
     if (isAuthenticated) {
-      // Check if admin or customer based on token
+      // Check if admin or customer based on token payload
       try {
         const parts = accessToken!.split(".");
         const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
@@ -85,13 +88,7 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  // Add header to indicate auth status (useful for client components)
-  const response = NextResponse.next();
-  if (!isAuthenticated && isProtectedRoute(pathname)) {
-    response.headers.set("X-Auth-Invalid", "true");
-  }
-
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {

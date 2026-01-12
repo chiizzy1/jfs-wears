@@ -8,6 +8,7 @@ interface AdminUser {
   email: string;
   name: string;
   role: string;
+  profileImage?: string;
 }
 
 interface AdminAuthContextType {

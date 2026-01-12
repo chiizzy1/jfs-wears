@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Plus, Trash2, Pencil, Loader2, AlertTriangle, Image as ImageIcon } from "lucide-react";
+import { Plus, Trash2, Pencil, Loader2, Image as ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { apiClient } from "@/lib/api-client";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
@@ -31,6 +32,10 @@ export default function CategoriesPage() {
   const [formData, setFormData] = useState({ name: "", slug: "", description: "", imageUrl: "" });
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; category: Category | null }>({
+    isOpen: false,
+    category: null,
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function loadCategories() {
@@ -144,7 +149,7 @@ export default function CategoriesPage() {
     }
   }
 
-  async function handleDelete(category: Category) {
+  function handleDeleteClick(category: Category) {
     const productCount = category._count?.products || 0;
 
     // Warn if category has products
@@ -156,16 +161,17 @@ export default function CategoriesPage() {
       return;
     }
 
-    if (!confirm(`Are you sure you want to delete "${category.name}"? This cannot be undone.`)) {
-      return;
-    }
+    setDeleteConfirm({ isOpen: true, category });
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteConfirm.category) return;
 
     try {
-      await apiClient.delete(`/categories/${category.id}`);
+      await apiClient.delete(`/categories/${deleteConfirm.category.id}`);
       toast.success("Category deleted");
       loadCategories();
     } catch (error: any) {
-      // Show the actual error message from the API
       const message = error?.message || "Failed to delete category";
       toast.error(message);
     }
@@ -260,7 +266,7 @@ export default function CategoriesPage() {
                         <Pencil className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(category)}
+                        onClick={() => handleDeleteClick(category)}
                         className="p-2 text-muted-foreground hover:text-red-600 transition-colors"
                         title="Delete"
                       >
@@ -364,6 +370,17 @@ export default function CategoriesPage() {
           </div>
         </div>
       )}
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, category: null })}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Category"
+        message={`Are you sure you want to delete "${deleteConfirm.category?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        icon="delete"
+      />
     </div>
   );
 }

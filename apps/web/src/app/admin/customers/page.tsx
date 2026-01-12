@@ -1,14 +1,25 @@
 "use client";
 
+import { useState } from "react";
 import { useCustomers } from "@/hooks/use-customers";
 import { CustomersTable } from "@/components/admin/customers/CustomersTable";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function CustomersPage() {
   const { customers, isLoading, deleteCustomer } = useCustomers();
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; id: string; name: string }>({
+    isOpen: false,
+    id: "",
+    name: "",
+  });
 
   const handleDelete = (id: string, name: string) => {
-    if (confirm(`Are you sure you want to deactivate customer "${name}"?`)) {
-      deleteCustomer(id);
+    setDeleteConfirm({ isOpen: true, id, name });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteConfirm.id) {
+      deleteCustomer(deleteConfirm.id);
     }
   };
 
@@ -43,6 +54,18 @@ export default function CustomersPage() {
 
       {/* Table */}
       <CustomersTable data={customers} isLoading={isLoading} onDelete={handleDelete} />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, id: "", name: "" })}
+        onConfirm={handleDeleteConfirm}
+        title="Deactivate Customer"
+        message={`Are you sure you want to deactivate customer "${deleteConfirm.name}"? They will no longer be able to access their account.`}
+        confirmLabel="Deactivate"
+        variant="warning"
+        icon="warning"
+      />
     </div>
   );
 }

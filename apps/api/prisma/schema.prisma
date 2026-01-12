@@ -74,6 +74,7 @@ model Staff {
   email        String    @unique
   name         String
   passwordHash String
+  profileImage String?   // URL to staff profile image
   role         StaffRole @default(STAFF)
   isActive     Boolean   @default(true)
   createdAt    DateTime  @default(now())
