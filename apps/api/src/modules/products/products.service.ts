@@ -71,8 +71,12 @@ export class ProductsService {
         where,
         include: {
           category: true,
-          variants: { where: { isActive: true } },
+          variants: { where: { isActive: true }, include: { colorGroup: true } },
           images: { orderBy: { position: "asc" } },
+          colorGroups: {
+            orderBy: { position: "asc" },
+            include: { images: { orderBy: { position: "asc" } } },
+          },
         },
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
@@ -99,8 +103,12 @@ export class ProductsService {
       },
       include: {
         category: true,
-        variants: { where: { isActive: true } },
+        variants: { where: { isActive: true }, include: { colorGroup: true } },
         images: { orderBy: { position: "asc" } },
+        colorGroups: {
+          orderBy: { position: "asc" },
+          include: { images: { orderBy: { position: "asc" } } },
+        },
       },
     });
   }
@@ -110,8 +118,12 @@ export class ProductsService {
       where: { id },
       include: {
         category: true,
-        variants: true,
+        variants: { include: { colorGroup: true } },
         images: { orderBy: { position: "asc" } },
+        colorGroups: {
+          orderBy: { position: "asc" },
+          include: { images: { orderBy: { position: "asc" } } },
+        },
       },
     });
   }
@@ -142,8 +154,9 @@ export class ProductsService {
       },
       include: {
         category: true,
-        variants: true,
+        variants: { include: { colorGroup: true } },
         images: true,
+        colorGroups: { include: { images: true } },
       },
     });
   }
@@ -154,8 +167,9 @@ export class ProductsService {
       data,
       include: {
         category: true,
-        variants: true,
+        variants: { include: { colorGroup: true } },
         images: true,
+        colorGroups: { include: { images: true } },
       },
     });
   }
@@ -210,7 +224,11 @@ export class ProductsService {
       where: { isActive: true, isFeatured: true },
       include: {
         images: { where: { isMain: true } },
-        variants: { where: { isActive: true } },
+        variants: { where: { isActive: true }, include: { colorGroup: true } },
+        colorGroups: {
+          orderBy: { position: "asc" },
+          include: { images: { where: { isMain: true } } },
+        },
       },
       take: limit,
     });

@@ -38,6 +38,15 @@ export class ProductsController {
     return this.productsService.getFeatured(limit ? parseInt(limit) : 8);
   }
 
+  // Admin: Get product by ID (must be before :slug route)
+  @Get("id/:id")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("ADMIN", "MANAGER", "STAFF")
+  async findById(@Param("id") id: string) {
+    return this.productsService.findById(id);
+  }
+
+  // Storefront: Get product by slug
   @Get(":slug")
   @CacheTTL(300)
   async findBySlug(@Param("slug") slug: string) {

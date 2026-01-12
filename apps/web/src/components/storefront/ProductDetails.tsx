@@ -1,39 +1,97 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Product } from "@/lib/api";
+import { Product, ColorGroup } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import AddToCartButton from "./AddToCartButton";
 import SizeGuideModal from "./SizeGuideModal";
 import { useWishlistStore } from "@/stores/wishlist-store";
 import toast from "react-hot-toast";
+import { cn } from "@/lib/utils";
 
 interface ProductDetailsProps {
   product: Product;
 }
 
 /**
- * Premium Product Details
+ * Premium Product Details with Color-Based Image Switching
  *
- * Mason Garments-inspired: Split layout, clean size selector, minimal badges
+ * Features fluid transitions when switching colors
  */
 export default function ProductDetails({ product }: ProductDetailsProps) {
   const [selectedSize, setSelectedSize] = useState<string | undefined>();
   const [selectedColor, setSelectedColor] = useState<string | undefined>();
-  const [activeImage, setActiveImage] = useState(product.images.find((img) => img.isPrimary)?.url || product.images[0]?.url);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [showSizeGuide, setShowSizeGuide] = useState(false);
 
-  // Get unique sizes and colors
+  // Get unique sizes and colors from variants
   const sizes = useMemo(() => [...new Set(product.variants.map((v) => v.size).filter(Boolean))], [product.variants]);
   const colors = useMemo(() => [...new Set(product.variants.map((v) => v.color).filter(Boolean))], [product.variants]);
+
+  // Get color groups for color-based image switching
+  const colorGroups = useMemo(() => {
+    // Use colorGroups if available, otherwise fall back to empty
+    return product.colorGroups || [];
+  }, [product.colorGroups]);
+
+  // Get current images based on selected color
+  const currentImages = useMemo(() => {
+    if (selectedColor && colorGroups.length > 0) {
+      const colorGroup = colorGroups.find((cg) => cg.colorName.toLowerCase() === selectedColor.toLowerCase());
+      if (colorGroup && colorGroup.images.length > 0) {
+        return colorGroup.images.map((img) => ({
+          id: img.id,
+          url: img.url,
+          alt: img.alt,
+          isPrimary: img.isMain,
+        }));
+      }
+    }
+    // Fall back to product.images if no color-specific images
+    return product.images;
+  }, [selectedColor, colorGroups, product.images]);
+
+  // Get color hex for swatches
+  const getColorHex = useCallback(
+    (colorName: string) => {
+      const colorGroup = colorGroups.find((cg) => cg.colorName.toLowerCase() === colorName.toLowerCase());
+      return colorGroup?.colorHex;
+    },
+    [colorGroups]
+  );
+
+  // Active image URL
+  const activeImage = currentImages[activeImageIndex]?.url || currentImages[0]?.url;
 
   // Set defaults if only one option exists
   useEffect(() => {
     if (sizes.length === 1) setSelectedSize(sizes[0]);
     if (colors.length === 1) setSelectedColor(colors[0]);
-  }, [sizes, colors]);
+    if (colors.length > 0 && !selectedColor) setSelectedColor(colors[0]);
+  }, [sizes, colors, selectedColor]);
+
+  // Handle color change with smooth transition
+  const handleColorChange = useCallback(
+    (color: string) => {
+      if (color === selectedColor) return;
+
+      setIsTransitioning(true);
+
+      // Fade out, change color, fade in
+      setTimeout(() => {
+        setSelectedColor(color);
+        setActiveImageIndex(0); // Reset to first image of new color
+
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 150);
+      }, 150);
+    },
+    [selectedColor]
+  );
 
   const currentVariant = useMemo(() => {
     return product.variants.find((v) => {
@@ -48,11 +106,18 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-      {/* Image Gallery - No rounded corners */}
+      {/* Image Gallery with Smooth Transitions */}
       <div className="space-y-4">
         <div className="relative aspect-square bg-secondary overflow-hidden">
           {activeImage ? (
-            <Image src={activeImage} alt={product.name} fill className="object-cover" priority />
+            <div
+              className={cn(
+                "relative w-full h-full transition-all duration-300 ease-out",
+                isTransitioning ? "opacity-0 scale-[1.02]" : "opacity-100 scale-100"
+              )}
+            >
+              <Image src={activeImage} alt={product.name} fill className="object-cover" priority />
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted">No Image</div>
           )}
@@ -62,16 +127,25 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           )}
         </div>
 
-        {/* Thumbnail Gallery - Clean squares */}
-        {product.images.length > 1 && (
+        {/* Thumbnail Gallery - Smooth selection */}
+        {currentImages.length > 1 && (
           <div className="flex gap-3 overflow-x-auto pb-2">
-            {product.images.map((img) => (
+            {currentImages.map((img, index) => (
               <button
                 key={img.id}
-                onClick={() => setActiveImage(img.url)}
-                className={`relative w-20 h-20 overflow-hidden shrink-0 border ${
-                  activeImage === img.url ? "border-black" : "border-transparent hover:border-gray-300"
-                }`}
+                onClick={() => {
+                  setIsTransitioning(true);
+                  setTimeout(() => {
+                    setActiveImageIndex(index);
+                    setTimeout(() => setIsTransitioning(false), 150);
+                  }, 150);
+                }}
+                className={cn(
+                  "relative w-20 h-20 overflow-hidden shrink-0 border-2 transition-all duration-200",
+                  activeImageIndex === index
+                    ? "border-black scale-105"
+                    : "border-transparent hover:border-gray-300 hover:scale-105"
+                )}
               >
                 <Image src={img.url} alt={img.alt || ""} fill className="object-cover" />
               </button>
@@ -80,7 +154,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         )}
       </div>
 
-      {/* Product Info - Clean typography */}
+      {/* Product Info */}
       <div className="space-y-8">
         {/* Category */}
         {product.category && (
@@ -104,7 +178,54 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         {/* Description */}
         <p className="text-muted leading-relaxed">{product.description}</p>
 
-        {/* Size Selector - Clean grid */}
+        {/* Color Selector - Visual Swatches with Smooth Transitions */}
+        {colors.length > 0 && (
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <h3 className="text-xs uppercase tracking-[0.15em] font-medium">Color</h3>
+              {selectedColor && <span className="text-xs text-muted capitalize">{selectedColor}</span>}
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {colors.map((color) => {
+                const hexColor = getColorHex(color);
+                const isSelected = selectedColor === color;
+
+                return (
+                  <button
+                    key={color}
+                    onClick={() => handleColorChange(color)}
+                    title={color}
+                    className={cn(
+                      "relative w-10 h-10 rounded-full border-2 transition-all duration-200 ease-out",
+                      isSelected
+                        ? "border-black scale-110 ring-2 ring-black ring-offset-2"
+                        : "border-gray-300 hover:border-gray-500 hover:scale-105"
+                    )}
+                    style={{
+                      backgroundColor: hexColor || "#cccccc",
+                    }}
+                  >
+                    {/* Checkmark for selected */}
+                    {isSelected && (
+                      <span
+                        className={cn(
+                          "absolute inset-0 flex items-center justify-center",
+                          hexColor && isLightColor(hexColor) ? "text-black" : "text-white"
+                        )}
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Size Selector */}
         {sizes.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -121,9 +242,10 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 <button
                   key={size}
                   onClick={() => setSelectedSize(size)}
-                  className={`min-w-[48px] h-12 px-4 border text-sm font-medium transition-colors ${
+                  className={cn(
+                    "min-w-[48px] h-12 px-4 border text-sm font-medium transition-all duration-200",
                     selectedSize === size ? "border-black bg-black text-white" : "border-gray-300 hover:border-black"
-                  }`}
+                  )}
                 >
                   {size}
                 </button>
@@ -132,27 +254,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </div>
         )}
 
-        {/* Color Selector */}
-        {colors.length > 0 && (
-          <div>
-            <h3 className="text-xs uppercase tracking-[0.15em] font-medium mb-4">Color</h3>
-            <div className="flex flex-wrap gap-2">
-              {colors.map((color) => (
-                <button
-                  key={color}
-                  onClick={() => setSelectedColor(color)}
-                  className={`px-4 h-12 border text-sm font-medium transition-colors ${
-                    selectedColor === color ? "border-black bg-black text-white" : "border-gray-300 hover:border-black"
-                  }`}
-                >
-                  {color}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Stock Status - Minimal */}
+        {/* Stock Status */}
         {currentVariant && (
           <div>
             {currentVariant.stock === 0 ? (
@@ -176,7 +278,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           <WishlistButton product={product} />
         </div>
 
-        {/* Trust Indicators - Minimal */}
+        {/* Trust Indicators */}
         <div className="grid grid-cols-2 gap-6 pt-8 border-t border-gray-200">
           <div className="flex items-center gap-3">
             <svg className="w-5 h-5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
@@ -199,7 +301,18 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   );
 }
 
-// WishlistButton Component - Premium style
+// Helper to determine if a color is light (for checkmark visibility)
+function isLightColor(hex: string): boolean {
+  const c = hex.replace("#", "");
+  const rgb = parseInt(c, 16);
+  const r = (rgb >> 16) & 0xff;
+  const g = (rgb >> 8) & 0xff;
+  const b = (rgb >> 0) & 0xff;
+  const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+  return luma > 186;
+}
+
+// WishlistButton Component
 function WishlistButton({ product }: { product: Product }) {
   const { addItem, removeItem, isInWishlist } = useWishlistStore();
   const inWishlist = isInWishlist(product.id);
@@ -224,7 +337,7 @@ function WishlistButton({ product }: { product: Product }) {
   return (
     <Button variant="outline" size="lg" onClick={handleToggle} className="px-6">
       <svg
-        className={`w-5 h-5 transition-colors ${inWishlist ? "fill-black text-black" : ""}`}
+        className={cn("w-5 h-5 transition-colors", inWishlist && "fill-black text-black")}
         fill={inWishlist ? "currentColor" : "none"}
         viewBox="0 0 24 24"
         stroke="currentColor"

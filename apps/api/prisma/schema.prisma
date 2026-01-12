@@ -83,6 +83,7 @@ model Staff {
 
   @@map("staff")
   refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]
 }
 
 enum StaffRole {
@@ -153,7 +154,8 @@ model Product {
   deletedAt   DateTime?
 
   variants        ProductVariant[]
-  images          ProductImage[]
+  images          ProductImage[]    // Legacy - kept for backward compatibility
+  colorGroups     ColorGroup[]      // New: color-based image grouping
   reviews         Review[]
   cartItems       CartItem[]
   wishlistItems   WishlistItem[]
@@ -172,13 +174,55 @@ enum Gender {
   UNISEX
 }
 
+// Color grouping for a product - each color has its own images
+model ColorGroup {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  colorName   String   // e.g., "Navy Blue", "Black"
+  colorHex    String?  // e.g., "#1a237e" for visual swatch
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  images      VariantImage[]
+  variants    ProductVariant[]
+  
+  @@unique([productId, colorName])
+  @@map("color_groups")
+  @@index([productId])
+}
+
+// Images linked to color groups (not products directly)
+model VariantImage {
+  id           String     @id @default(cuid())
+  colorGroupId String
+  colorGroup   ColorGroup @relation(fields: [colorGroupId], references: [id], onDelete: Cascade)
+  
+  url          String
+  altText      String?
+  position     Int        @default(0)
+  isMain       Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  
+  @@map("variant_images")
+  @@index([colorGroupId])
+}
+
+
+
 model ProductVariant {
   id              String   @id @default(cuid())
   productId       String
   product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   
+  // Link to color group for color-based image display
+  colorGroupId    String?
+  colorGroup      ColorGroup? @relation(fields: [colorGroupId], references: [id], onDelete: SetNull)
+  
   size            String?
-  color           String?
+  color           String?  // Deprecated: Use colorGroup.colorName instead. Kept for backward compatibility.
   sku             String   @unique
   stock           Int      @default(0)
   priceAdjustment Decimal  @default(0) @db.Decimal(10, 2)
@@ -190,9 +234,10 @@ model ProductVariant {
   cartItems   CartItem[]
   orderItems  OrderItem[]
 
-  @@unique([productId, size, color])
+  @@unique([productId, size, colorGroupId])
   @@map("product_variants")
   @@index([sku])
+  @@index([colorGroupId])
 }
 
 model ProductImage {
@@ -208,6 +253,31 @@ model ProductImage {
 
   @@map("product_images")
 }
+
+// Reusable size presets (e.g., "Clothing Sizes", "Pants Waist Sizes")
+model SizePreset {
+  id        String   @id @default(cuid())
+  name      String   @unique  // e.g., "Clothing Sizes", "Pants Waist Sizes"
+  category  String   // e.g., "CLOTHING", "SHOES", "ACCESSORIES"
+  sizes     String[] // e.g., ["XS", "S", "M", "L", "XL", "XXL"]
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("size_presets")
+}
+
+// Global reusable color presets
+model ColorPreset {
+  id        String   @id @default(cuid())
+  name      String   @unique  // e.g., "Navy Blue", "Black"
+  hexCode   String   // e.g., "#1a237e"
+  createdAt DateTime @default(now())
+  
+  @@map("color_presets")
+}
+
+
 
 model Review {
   id        String   @id @default(cuid())
@@ -519,3 +589,57 @@ enum SectionType {
   COLLECTION // Future: custom curated collection
 }
 
+// ============================================
+// AUDIT LOG
+// ============================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  
+  // Who performed the action
+  staffId     String?
+  staff       Staff?   @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  staffEmail  String?  // Snapshot in case staff is deleted
+  staffName   String?  // Snapshot in case staff is deleted
+  
+  // What action was performed
+  action      AuditAction
+  entity      String              // e.g., "Product", "Order", "Staff", "Promotion"
+  entityId    String?             // ID of the affected entity
+  
+  // Details
+  description String              // Human-readable description
+  metadata    Json?               // Additional data (before/after values, etc.)
+  ipAddress   String?             // Client IP address
+  userAgent   String?             // Browser/client info
+  
+  createdAt   DateTime @default(now())
+
+  @@map("audit_logs")
+  @@index([staffId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+}
+
+enum AuditAction {
+  // Auth actions
+  LOGIN
+  LOGOUT
+  PASSWORD_CHANGE
+  
+  // CRUD actions
+  CREATE
+  UPDATE
+  DELETE
+  RESTORE
+  
+  // Order actions
+  ORDER_STATUS_UPDATE
+  ORDER_CANCEL
+  ORDER_REFUND
+  
+  // System actions
+  SETTINGS_UPDATE
+  EXPORT_DATA
+}

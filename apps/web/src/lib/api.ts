@@ -5,6 +5,20 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+export interface ColorGroupImage {
+  id: string;
+  url: string;
+  alt?: string;
+  isMain: boolean;
+}
+
+export interface ColorGroup {
+  id: string;
+  colorName: string;
+  colorHex?: string;
+  images: ColorGroupImage[];
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -24,6 +38,7 @@ export interface Product {
     alt?: string;
     isPrimary: boolean;
   }[];
+  colorGroups: ColorGroup[];
   variants: {
     id: string;
     sku: string;
@@ -54,6 +69,12 @@ interface ApiProduct {
   categoryId: string;
   category?: { id: string; name: string; slug: string };
   images?: Array<{ id: string; url: string; altText?: string; isMain?: boolean }>;
+  colorGroups?: Array<{
+    id: string;
+    colorName: string;
+    colorHex?: string;
+    images: Array<{ id: string; url: string; altText?: string; isMain?: boolean }>;
+  }>;
   variants?: Array<{
     id: string;
     sku: string;
@@ -87,6 +108,17 @@ function mapApiProduct(apiProduct: ApiProduct): Product {
       url: img.url,
       alt: img.altText || undefined,
       isPrimary: img.isMain || false,
+    })),
+    colorGroups: (apiProduct.colorGroups || []).map((cg) => ({
+      id: cg.id,
+      colorName: cg.colorName,
+      colorHex: cg.colorHex,
+      images: (cg.images || []).map((img) => ({
+        id: img.id,
+        url: img.url,
+        alt: img.altText || undefined,
+        isMain: img.isMain || false,
+      })),
     })),
     variants: (apiProduct.variants || []).map((v) => ({
       id: v.id,

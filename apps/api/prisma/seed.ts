@@ -12,12 +12,16 @@ async function main() {
     await prisma.orderItem.deleteMany();
     await prisma.order.deleteMany();
     await prisma.cartItem.deleteMany();
+    await prisma.variantImage.deleteMany();
     await prisma.productImage.deleteMany();
     await prisma.productVariant.deleteMany();
+    await prisma.colorGroup.deleteMany();
     await prisma.product.deleteMany();
     await prisma.category.deleteMany();
     await prisma.promotion.deleteMany();
     await prisma.shippingZone.deleteMany();
+    await prisma.sizePreset.deleteMany();
+    await prisma.colorPreset.deleteMany();
     await prisma.staff.deleteMany();
     await prisma.user.deleteMany();
   } catch (error) {
@@ -51,7 +55,49 @@ async function main() {
   });
   console.log(`   ✅ Manager created: ${manager.email}`);
 
+  // Create Size Presets
+  console.log("\n📏 Creating size presets...");
+  await prisma.sizePreset.createMany({
+    data: [
+      { name: "Clothing Sizes", category: "CLOTHING", sizes: ["XS", "S", "M", "L", "XL", "XXL"], isDefault: true },
+      { name: "Pants Waist Sizes", category: "PANTS", sizes: ["28", "29", "30", "31", "32", "33", "34", "36", "38", "40"] },
+      { name: "Shoe Sizes (US)", category: "SHOES", sizes: ["6", "7", "8", "9", "10", "11", "12", "13"] },
+      { name: "One Size", category: "ACCESSORIES", sizes: ["One Size"] },
+    ],
+  });
+  console.log("   ✅ Created 4 size presets");
+
+  // Create Color Presets
+  console.log("\n🎨 Creating color presets...");
+  await prisma.colorPreset.createMany({
+    data: [
+      { name: "Black", hexCode: "#000000" },
+      { name: "White", hexCode: "#FFFFFF" },
+      { name: "Navy Blue", hexCode: "#1a237e" },
+      { name: "Royal Blue", hexCode: "#4169E1" },
+      { name: "Dark Blue", hexCode: "#00008B" },
+      { name: "Light Gray", hexCode: "#D3D3D3" },
+      { name: "Dark Gray", hexCode: "#A9A9A9" },
+      { name: "Charcoal", hexCode: "#333333" },
+      { name: "Red", hexCode: "#DC2626" },
+      { name: "Burgundy", hexCode: "#800020" },
+      { name: "Green", hexCode: "#16A34A" },
+      { name: "Olive", hexCode: "#808000" },
+      { name: "Khaki", hexCode: "#C3B091" },
+      { name: "Beige", hexCode: "#F5F5DC" },
+      { name: "Cream", hexCode: "#FFFDD0" },
+      { name: "Brown", hexCode: "#8B4513" },
+      { name: "Tan", hexCode: "#D2B48C" },
+      { name: "Pink", hexCode: "#FFC0CB" },
+      { name: "Purple", hexCode: "#7C3AED" },
+      { name: "Orange", hexCode: "#F97316" },
+      { name: "Yellow", hexCode: "#FACC15" },
+    ],
+  });
+  console.log("   ✅ Created 21 color presets");
+
   // Create Categories
+
   console.log("\n📁 Creating categories...");
   const categories = await Promise.all([
     prisma.category.create({

@@ -111,7 +111,7 @@ class AdminAPI {
   }
 
   async getProduct(id: string) {
-    return this.request<Product>(`/products/${id}`);
+    return this.request<Product>(`/products/id/${id}`);
   }
 
   async createProduct(data: CreateProductDto) {
@@ -258,6 +258,66 @@ class AdminAPI {
       body: JSON.stringify(data),
     });
   }
+
+  // Presets
+  async getSizePresets() {
+    return this.request<SizePreset[]>("/products/presets/sizes");
+  }
+
+  async getColorPresets() {
+    return this.request<ColorPreset[]>("/products/presets/colors");
+  }
+
+  async createSizePreset(data: { name: string; category: string; sizes: string[]; isDefault?: boolean }) {
+    return this.request<SizePreset>("/products/presets/sizes", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async createColorPreset(data: { name: string; hexCode: string }) {
+    return this.request<ColorPreset>("/products/presets/colors", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Color Groups (Product-specific)
+  async getColorGroups(productId: string) {
+    return this.request<ColorGroup[]>(`/products/${productId}/color-groups`);
+  }
+
+  async createColorGroup(productId: string, data: { colorName: string; colorHex?: string }) {
+    return this.request<ColorGroup>(`/products/${productId}/color-groups`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteColorGroup(productId: string, colorGroupId: string) {
+    return this.request<void>(`/products/${productId}/color-groups/${colorGroupId}`, { method: "DELETE" });
+  }
+
+  // Color Group Images Upload (multipart/form-data)
+  async uploadColorGroupImages(productId: string, colorGroupId: string, files: File[]): Promise<UploadResult> {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    const res = await fetch(`${API_BASE_URL}/products/${productId}/color-groups/${colorGroupId}/upload-images`, {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: "Upload failed" }));
+      throw new Error(error.message || `HTTP ${res.status}`);
+    }
+
+    return res.json();
+  }
 }
 
 // Types
@@ -356,6 +416,38 @@ export interface Staff {
   name: string;
   role: string;
   isActive: boolean;
+}
+
+export interface SizePreset {
+  id: string;
+  name: string;
+  category: string;
+  sizes: string[];
+  isDefault: boolean;
+}
+
+export interface ColorPreset {
+  id: string;
+  name: string;
+  hexCode: string;
+}
+
+export interface ColorGroup {
+  id: string;
+  productId: string;
+  colorName: string;
+  colorHex?: string;
+  position: number;
+  images: VariantImage[];
+}
+
+export interface VariantImage {
+  id: string;
+  colorGroupId: string;
+  url: string;
+  altText?: string;
+  position: number;
+  isMain: boolean;
 }
 
 export interface CreateVariantDto {

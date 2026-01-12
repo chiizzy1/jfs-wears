@@ -20,6 +20,7 @@ import { WishlistModule } from "./modules/wishlist/wishlist.module";
 import { EmailModule } from "./modules/email/email.module";
 import { SettingsModule } from "./modules/settings/settings.module";
 import { StorefrontModule } from "./modules/storefront/storefront.module";
+import { AuditLogModule } from "./modules/audit-log/audit-log.module";
 import { AllExceptionsFilter } from "./common/filters/http-exception.filter";
 import { HealthController } from "./modules/health/health.controller";
 import { CacheModule } from "@nestjs/cache-manager";
@@ -83,6 +84,7 @@ import * as redisStore from "cache-manager-redis-store";
     WishlistModule,
     SettingsModule,
     StorefrontModule,
+    AuditLogModule,
   ],
   controllers: [HealthController],
   providers: [

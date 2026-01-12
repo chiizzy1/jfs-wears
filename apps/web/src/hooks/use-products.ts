@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { productsService } from "@/services/products.service";
 import { toast } from "react-hot-toast";
 import { getErrorMessage } from "@/lib/api-client";
+import { adminAPI } from "@/lib/admin-api";
 
 export const useProducts = (params?: { category?: string }) => {
   const queryClient = useQueryClient();
@@ -14,6 +15,16 @@ export const useProducts = (params?: { category?: string }) => {
   const categoriesQuery = useQuery({
     queryKey: ["categories"],
     queryFn: () => productsService.getCategories(),
+  });
+
+  const sizePresetsQuery = useQuery({
+    queryKey: ["sizePresets"],
+    queryFn: () => adminAPI.getSizePresets(),
+  });
+
+  const colorPresetsQuery = useQuery({
+    queryKey: ["colorPresets"],
+    queryFn: () => adminAPI.getColorPresets(),
   });
 
   const deleteProductMutation = useMutation({
@@ -55,9 +66,27 @@ export const useProducts = (params?: { category?: string }) => {
     },
   });
 
+  const createColorGroupMutation = useMutation({
+    mutationFn: ({ productId, data }: { productId: string; data: { colorName: string; colorHex?: string } }) =>
+      adminAPI.createColorGroup(productId, data),
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+
+  const uploadColorGroupImagesMutation = useMutation({
+    mutationFn: ({ productId, colorGroupId, files }: { productId: string; colorGroupId: string; files: File[] }) =>
+      adminAPI.uploadColorGroupImages(productId, colorGroupId, files),
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+
   return {
     products: productsQuery.data || [],
     categories: categoriesQuery.data || [],
+    sizePresets: sizePresetsQuery.data || [],
+    colorPresets: colorPresetsQuery.data || [],
     isLoading: productsQuery.isLoading || categoriesQuery.isLoading,
     isError: productsQuery.isError || categoriesQuery.isError,
     deleteProduct: deleteProductMutation.mutateAsync,
@@ -68,6 +97,8 @@ export const useProducts = (params?: { category?: string }) => {
     isUpdating: updateProductMutation.isPending,
     uploadImages: uploadImagesMutation.mutateAsync,
     isUploading: uploadImagesMutation.isPending,
+    createColorGroup: createColorGroupMutation.mutateAsync,
+    uploadColorGroupImages: uploadColorGroupImagesMutation.mutateAsync,
   };
 };
 
