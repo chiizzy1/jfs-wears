@@ -118,7 +118,7 @@ export function ErrorFallback({
             {onRetry && (
               <button
                 onClick={onRetry}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors font-medium"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-accent text-white hover:bg-accent/90 transition-colors font-medium"
               >
                 <RefreshIcon className="w-4 h-4" />
                 {retryText}
@@ -127,7 +127,7 @@ export function ErrorFallback({
             {showHomeLink && (
               <a
                 href="/"
-                className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
               >
                 Go to Home
               </a>
@@ -143,7 +143,7 @@ export function ErrorFallback({
   // ========================================
   if (variant === "card") {
     return (
-      <div className={cn("bg-white rounded-2xl p-6 shadow-sm border border-gray-100", className)}>
+      <div className={cn("bg-white p-6 shadow-sm border border-gray-100", className)}>
         <div className="text-center">
           <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-error/10 flex items-center justify-center">
             <AlertCircleIcon className="w-6 h-6 text-error" />
@@ -153,7 +153,7 @@ export function ErrorFallback({
           {onRetry && (
             <button
               onClick={onRetry}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-medium"
             >
               <RefreshIcon className="w-4 h-4" />
               {retryText}
@@ -168,11 +168,11 @@ export function ErrorFallback({
   // Inline Variant
   // ========================================
   return (
-    <div className={cn("flex items-center gap-3 p-4 rounded-xl bg-error/10 text-error", className)}>
+    <div className={cn("flex items-center gap-3 p-4 bg-error/10 text-error", className)}>
       <AlertCircleIcon className="w-5 h-5 shrink-0" />
       <p className="text-sm flex-1">{description}</p>
       {onRetry && (
-        <button onClick={onRetry} className="shrink-0 p-1.5 rounded-lg hover:bg-error/20 transition-colors" title={retryText}>
+        <button onClick={onRetry} className="shrink-0 p-1.5 hover:bg-error/20 transition-colors" title={retryText}>
           <RefreshIcon className="w-4 h-4" />
         </button>
       )}
@@ -213,7 +213,7 @@ export function EmptyState({
       {action && (
         <button
           onClick={action.onClick}
-          className="inline-flex items-center px-4 py-2 text-sm bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors font-medium"
+          className="inline-flex items-center px-4 py-2 text-sm bg-accent text-white hover:bg-accent/90 transition-colors font-medium"
         >
           {action.label}
         </button>

@@ -163,7 +163,7 @@ export default function AddressesPage() {
 
         {/* Address Form */}
         {showForm && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
+          <div className="bg-white p-6 shadow-sm mb-6">
             <h2 className="font-semibold mb-4">{editingId ? "Edit Address" : "New Address"}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -173,7 +173,7 @@ export default function AddressesPage() {
                   required
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-accent"
+                  className="px-4 py-3 border border-gray-200 focus:outline-none focus:border-accent"
                 />
                 <input
                   type="text"
@@ -181,7 +181,7 @@ export default function AddressesPage() {
                   required
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-accent"
+                  className="px-4 py-3 border border-gray-200 focus:outline-none focus:border-accent"
                 />
               </div>
               <input
@@ -207,7 +207,7 @@ export default function AddressesPage() {
                   required
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-accent"
+                  className="px-4 py-3 border border-gray-200 focus:outline-none focus:border-accent"
                 />
                 <input
                   type="text"
@@ -215,7 +215,7 @@ export default function AddressesPage() {
                   required
                   value={formData.state}
                   onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-accent"
+                  className="px-4 py-3 border border-gray-200 focus:outline-none focus:border-accent"
                 />
               </div>
               <input
@@ -257,11 +257,11 @@ export default function AddressesPage() {
         {isLoading ? (
           <div className="animate-pulse space-y-4">
             {[1, 2].map((i) => (
-              <div key={i} className="bg-white rounded-2xl h-32" />
+              <div key={i} className="bg-white h-32" />
             ))}
           </div>
         ) : addresses.length === 0 ? (
-          <div className="bg-white rounded-2xl p-12 text-center">
+          <div className="bg-white p-12 text-center">
             <p className="text-gray-500 mb-4">No saved addresses yet</p>
             <Button variant="secondary" onClick={() => setShowForm(true)}>
               Add Your First Address
@@ -270,7 +270,7 @@ export default function AddressesPage() {
         ) : (
           <div className="space-y-4">
             {addresses.map((addr) => (
-              <div key={addr.id} className="bg-white rounded-2xl p-6 shadow-sm">
+              <div key={addr.id} className="bg-white p-6 shadow-sm">
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2 mb-2">

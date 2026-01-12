@@ -61,11 +61,11 @@ export default function SizeGuideModal({ isOpen, onClose, category }: SizeGuideM
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden pointer-events-auto animate-scale-in">
+        <div className="bg-white shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col pointer-events-auto animate-scale-in">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
             <h2 className="text-xl font-bold">Size Guide</h2>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 transition-colors">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -78,7 +78,7 @@ export default function SizeGuideModal({ isOpen, onClose, category }: SizeGuideM
               <button
                 key={key}
                 onClick={() => setActiveTab(key as keyof typeof sizeCharts)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                className={`px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
                   activeTab === key ? "bg-primary text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
@@ -87,49 +87,52 @@ export default function SizeGuideModal({ isOpen, onClose, category }: SizeGuideM
             ))}
           </div>
 
-          {/* Chart */}
-          <div className="p-6 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  {currentChart.headers.map((header) => (
-                    <th key={header} className="text-left py-3 px-4 font-semibold text-gray-700">
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {currentChart.rows.map((row, idx) => (
-                  <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
-                    {row.map((cell, cellIdx) => (
-                      <td key={cellIdx} className="py-3 px-4">
-                        {cell}
-                      </td>
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto">
+            {/* Chart */}
+            <div className="p-6 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    {currentChart.headers.map((header) => (
+                      <th key={header} className="text-left py-3 px-4 font-semibold text-gray-700">
+                        {header}
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {currentChart.rows.map((row, idx) => (
+                    <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+                      {row.map((cell, cellIdx) => (
+                        <td key={cellIdx} className="py-3 px-4">
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          {/* How to Measure */}
-          <div className="p-6 bg-gray-50 border-t border-gray-100">
-            <h3 className="font-semibold mb-2">How to Measure</h3>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>
-                • <strong>Chest:</strong> Measure around the fullest part of your chest
-              </li>
-              <li>
-                • <strong>Waist:</strong> Measure around your natural waistline
-              </li>
-              <li>
-                • <strong>Hip:</strong> Measure around the fullest part of your hips
-              </li>
-              <li>
-                • <strong>Inseam:</strong> Measure from the crotch to the bottom of your leg
-              </li>
-            </ul>
+            {/* How to Measure */}
+            <div className="p-6 bg-gray-50 border-t border-gray-100">
+              <h3 className="font-semibold mb-2">How to Measure</h3>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>
+                  • <strong>Chest:</strong> Measure around the fullest part of your chest
+                </li>
+                <li>
+                  • <strong>Waist:</strong> Measure around your natural waistline
+                </li>
+                <li>
+                  • <strong>Hip:</strong> Measure around the fullest part of your hips
+                </li>
+                <li>
+                  • <strong>Inseam:</strong> Measure from the crotch to the bottom of your leg
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>

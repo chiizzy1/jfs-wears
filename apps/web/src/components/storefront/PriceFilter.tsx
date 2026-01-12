@@ -43,14 +43,14 @@ export default function PriceFilter() {
           placeholder="Min"
           value={minPrice}
           onChange={(e) => setMinPrice(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary"
+          className="w-full px-3 py-2 border border-gray-200 text-sm focus:outline-none focus:border-primary"
         />
         <input
           type="number"
           placeholder="Max"
           value={maxPrice}
           onChange={(e) => setMaxPrice(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary"
+          className="w-full px-3 py-2 border border-gray-200 text-sm focus:outline-none focus:border-primary"
         />
       </div>
     </div>

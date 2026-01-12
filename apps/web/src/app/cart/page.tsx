@@ -12,8 +12,8 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-secondary flex items-center justify-center">
-        <div className="text-center p-8 bg-white rounded-2xl shadow-sm border border-gray-100 max-w-md mx-4">
-          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="text-center p-8 bg-white shadow-sm border border-gray-100 max-w-md mx-4">
+          <div className="w-16 h-16 bg-gray-50 flex items-center justify-center mx-auto mb-6">
             <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>

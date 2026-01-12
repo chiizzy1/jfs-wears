@@ -48,13 +48,13 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
-          className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden pointer-events-auto animate-scale-in"
+          className="bg-white shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden pointer-events-auto animate-scale-in"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors"
+            className="absolute top-4 right-4 z-10 w-10 h-10 bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -64,7 +64,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
             {/* Image Section */}
             <div className="space-y-3">
-              <div className="relative aspect-square bg-gray-100 rounded-xl overflow-hidden">
+              <div className="relative aspect-square bg-gray-100 overflow-hidden">
                 {activeImage ? (
                   <Image src={activeImage} alt={product.name} fill className="object-cover" />
                 ) : (
@@ -79,7 +79,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                     <button
                       key={img.id}
                       onClick={() => setActiveImage(img.url)}
-                      className={`relative w-16 h-16 rounded-lg overflow-hidden shrink-0 border-2 transition-colors ${
+                      className={`relative w-16 h-16 overflow-hidden shrink-0 border-2 transition-colors ${
                         activeImage === img.url ? "border-accent" : "border-transparent hover:border-gray-300"
                       }`}
                     >
@@ -115,7 +115,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                       <button
                         key={size}
                         onClick={() => setSelectedSize(size)}
-                        className={`px-3 py-1.5 text-sm border rounded-lg transition-colors ${
+                        className={`px-3 py-1.5 text-sm border transition-colors ${
                           selectedSize === size ? "border-primary bg-primary text-white" : "border-gray-300 hover:border-primary"
                         }`}
                       >
@@ -135,7 +135,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                       <button
                         key={color}
                         onClick={() => setSelectedColor(color)}
-                        className={`px-3 py-1.5 text-sm border rounded-lg transition-colors ${
+                        className={`px-3 py-1.5 text-sm border transition-colors ${
                           selectedColor === color
                             ? "border-primary bg-primary text-white"
                             : "border-gray-300 hover:border-primary"

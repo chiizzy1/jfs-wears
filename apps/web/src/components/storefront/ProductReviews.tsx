@@ -146,7 +146,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
                 {showForm ? "Cancel Review" : "Write a Review"}
               </Button>
             ) : (
-              <div className="bg-gray-50 p-6 rounded-xl text-center">
+              <div className="bg-gray-50 p-6 text-center">
                 <p className="text-gray-600 mb-4">Own this product? Log in to share your thoughts.</p>
                 <Button variant="outline" className="w-full" asChild>
                   <a href={`/login?redirect=/product/${productId}`}>Log in to Review</a>
@@ -182,7 +182,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
 
             {/* Review Form */}
             {showForm && (
-              <div className="bg-gray-50 p-6 rounded-xl mb-8 animate-in fade-in slide-in-from-top-4">
+              <div className="bg-gray-50 p-6 mb-8 animate-in fade-in slide-in-from-top-4">
                 <h3 className="font-semibold mb-4">Write Your Review</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
@@ -215,7 +215,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
                       required
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                      className="w-full px-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
                       placeholder="Title of your review"
                     />
                   </div>
@@ -226,7 +226,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
                       required
                       value={formData.comment}
                       onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm min-h-[120px]"
+                      className="w-full px-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm min-h-[120px]"
                       placeholder="Tell us about your experience..."
                     />
                   </div>
@@ -258,7 +258,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
                 ))}
               </div>
             ) : reviews.length === 0 ? (
-              <div className="text-center py-12 border border-dashed border-gray-200 rounded-xl">
+              <div className="text-center py-12 border border-dashed border-gray-200">
                 <p className="text-gray-500 mb-2">No reviews matches your filters.</p>
                 {filterRating && (
                   <Button variant="link" onClick={() => setFilterRating(null)}>

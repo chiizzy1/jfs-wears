@@ -22,7 +22,7 @@ export default function WishlistPage() {
       <div className="min-h-screen bg-secondary pt-24 pb-12">
         <div className="container-width">
           <h1 className="text-3xl font-bold mb-8">My Wishlist</h1>
-          <div className="bg-white rounded-2xl p-12 text-center">
+          <div className="bg-white p-12 text-center">
             <svg className="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -60,7 +60,7 @@ export default function WishlistPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {items.map((item) => (
-            <div key={item.productId} className="bg-white rounded-2xl overflow-hidden shadow-sm group">
+            <div key={item.productId} className="bg-white overflow-hidden shadow-sm group">
               {/* Image */}
               <Link href={`/product/${item.slug}`} className="block relative aspect-3/4 bg-gray-100">
                 {item.image ? (

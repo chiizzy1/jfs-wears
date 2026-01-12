@@ -10,7 +10,7 @@ function Skeleton({ className = "" }: SkeletonProps) {
 
 export function ProductCardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+    <div className="bg-white overflow-hidden shadow-sm">
       {/* Image Skeleton */}
       <Skeleton className="aspect-[3/4]" />
 
@@ -43,10 +43,10 @@ export function ProductDetailsSkeleton() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
       {/* Image Gallery Skeleton */}
       <div className="space-y-4">
-        <Skeleton className="aspect-square rounded-2xl" />
+        <Skeleton className="aspect-square" />
         <div className="flex gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="w-20 h-20 rounded-lg shrink-0" />
+            <Skeleton key={i} className="w-20 h-20 shrink-0" />
           ))}
         </div>
       </div>
@@ -68,7 +68,7 @@ export function ProductDetailsSkeleton() {
           <Skeleton className="h-4 w-12 mb-3" />
           <div className="flex gap-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-14 rounded-lg" />
+              <Skeleton key={i} className="h-10 w-14" />
             ))}
           </div>
         </div>
@@ -76,11 +76,11 @@ export function ProductDetailsSkeleton() {
           <Skeleton className="h-4 w-12 mb-3" />
           <div className="flex gap-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-16 rounded-lg" />
+              <Skeleton key={i} className="h-10 w-16" />
             ))}
           </div>
         </div>
-        <Skeleton className="h-12 w-full rounded-lg" />
+        <Skeleton className="h-12 w-full" />
       </div>
     </div>
   );
@@ -90,7 +90,7 @@ export function CategoryGridSkeleton({ count = 4 }: { count?: number }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
       {Array.from({ length: count }).map((_, i) => (
-        <Skeleton key={i} className="aspect-square rounded-2xl" />
+        <Skeleton key={i} className="aspect-square" />
       ))}
     </div>
   );

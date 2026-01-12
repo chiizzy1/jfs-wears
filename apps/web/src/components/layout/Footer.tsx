@@ -139,7 +139,7 @@ export default function Footer() {
               </svg>
             </a>
             {/* Facebook */}
-            <a href="#" className="text-muted hover:text-primary transition-colors" aria-label="Facebook">
+            <a href="#" className="text-muted-foreground hover:text-primary transition-colors" aria-label="Facebook">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
                 <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
               </svg>
