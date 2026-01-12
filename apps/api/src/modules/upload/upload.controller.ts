@@ -1,16 +1,27 @@
-import { Controller, Post, Delete, Param, UseGuards, UseInterceptors, UploadedFile, UploadedFiles } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Delete,
+  Param,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  UploadedFiles,
+  BadRequestException,
+} from "@nestjs/common";
 import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
-import { ApiTags, ApiConsumes, ApiBody } from "@nestjs/swagger";
+import { ApiTags, ApiConsumes, ApiBody, ApiOperation } from "@nestjs/swagger";
 import { CloudinaryService, CloudinaryUploadResult } from "./cloudinary.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard, Roles } from "../auth/guards/roles.guard";
+import { PrismaService } from "../../prisma/prisma.service";
 
 @ApiTags("Upload")
 @Controller("upload")
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles("ADMIN", "MANAGER", "STAFF")
 export class UploadController {
-  constructor(private readonly cloudinaryService: CloudinaryService) {}
+  constructor(private readonly cloudinaryService: CloudinaryService, private readonly prisma: PrismaService) {}
 
   /**
    * Upload a single image
@@ -81,6 +92,56 @@ export class UploadController {
   })
   async uploadStorefrontMedia(@UploadedFile() file: Express.Multer.File) {
     return this.cloudinaryService.uploadStorefrontMedia(file);
+  }
+
+  /**
+   * Upload category image and update database
+   * POST /upload/category/:categoryId
+   */
+  @Post("category/:categoryId")
+  @UseInterceptors(FileInterceptor("file"))
+  @ApiOperation({ summary: "Upload category image and update category" })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        file: {
+          type: "string",
+          format: "binary",
+          description: "Category image (JPEG, PNG, WebP)",
+        },
+      },
+    },
+  })
+  async uploadCategoryImage(@Param("categoryId") categoryId: string, @UploadedFile() file: Express.Multer.File) {
+    // Verify category exists
+    const category = await this.prisma.category.findUnique({
+      where: { id: categoryId },
+    });
+
+    if (!category) {
+      throw new BadRequestException(`Category with ID ${categoryId} not found`);
+    }
+
+    // Upload to Cloudinary
+    const result = await this.cloudinaryService.uploadImage(file, "jfs-wears/categories");
+
+    // Update category with new image URL
+    const updated = await this.prisma.category.update({
+      where: { id: categoryId },
+      data: { imageUrl: result.secureUrl },
+    });
+
+    return {
+      message: "Category image uploaded successfully",
+      imageUrl: result.secureUrl,
+      category: {
+        id: updated.id,
+        name: updated.name,
+        imageUrl: updated.imageUrl,
+      },
+    };
   }
 
   /**

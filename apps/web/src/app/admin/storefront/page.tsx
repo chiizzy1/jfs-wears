@@ -48,7 +48,7 @@ interface Category {
 }
 
 export default function StorefrontPage() {
-  const [activeTab, setActiveTab] = useState<"heroes" | "sections">("heroes");
+  const [activeTab, setActiveTab] = useState<"heroes" | "categories" | "carousels">("heroes");
   const [heroes, setHeroes] = useState<StorefrontHero[]>([]);
   const [sections, setSections] = useState<StorefrontSection[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -57,6 +57,7 @@ export default function StorefrontPage() {
   const [showSectionModal, setShowSectionModal] = useState(false);
   const [editingHero, setEditingHero] = useState<StorefrontHero | null>(null);
   const [editingSection, setEditingSection] = useState<StorefrontSection | null>(null);
+  const [sectionModalType, setSectionModalType] = useState<"CATEGORY" | "carousel">("carousel");
 
   useEffect(() => {
     fetchData();
@@ -123,17 +124,21 @@ export default function StorefrontPage() {
     }
   };
 
+  // Filter sections by purpose
+  const categoryGridSections = categories; // Categories themselves (with images)
+  const carouselSections = sections.filter((s) => s.type === "CATEGORY" || s.type === "FEATURED");
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Storefront CMS</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage hero slides and content sections</p>
+          <p className="text-muted-foreground text-sm mt-1">Manage hero slides, category grid, and product carousels</p>
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs - Now 3 tabs */}
       <div className="flex gap-4 border-b border-gray-200">
         <button
           onClick={() => setActiveTab("heroes")}
@@ -144,12 +149,20 @@ export default function StorefrontPage() {
           Hero Slides
         </button>
         <button
-          onClick={() => setActiveTab("sections")}
+          onClick={() => setActiveTab("categories")}
           className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === "sections" ? "border-black text-black" : "border-transparent text-gray-500 hover:text-gray-700"
+            activeTab === "categories" ? "border-black text-black" : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
-          Content Sections
+          Category Grid
+        </button>
+        <button
+          onClick={() => setActiveTab("carousels")}
+          className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === "carousels" ? "border-black text-black" : "border-transparent text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Product Carousels
         </button>
       </div>
 
@@ -174,9 +187,11 @@ export default function StorefrontPage() {
           }}
           onRefresh={fetchData}
         />
+      ) : activeTab === "categories" ? (
+        <CategoryGridTab categories={categories} onRefresh={fetchData} />
       ) : (
-        <SectionsTab
-          sections={sections}
+        <CarouselsTab
+          sections={carouselSections}
           categories={categories}
           onToggle={toggleSectionActive}
           onDelete={deleteSection}
@@ -307,10 +322,116 @@ function HeroesTab({
 }
 
 // ============================================
-// SECTIONS TAB
+// CATEGORY GRID TAB - For managing category images
 // ============================================
 
-function SectionsTab({
+const API_BASE_URL_CAT = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+
+function CategoryGridTab({ categories, onRefresh }: { categories: Category[]; onRefresh: () => void }) {
+  const [uploading, setUploading] = useState<string | null>(null);
+
+  const handleImageUpload = async (categoryId: string, file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    setUploading(categoryId);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch(`${API_BASE_URL_CAT}/upload/category/${categoryId}`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: "Upload failed" }));
+        throw new Error(error.message);
+      }
+
+      toast.success("Category image updated!");
+      onRefresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to upload image");
+    } finally {
+      setUploading(null);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <p className="text-sm text-blue-800">
+          <strong>Category Grid</strong> appears on the homepage as "Shop by Category". Upload images for each category to
+          customize how they appear.
+        </p>
+      </div>
+
+      {categories.length === 0 ? (
+        <div className="border border-dashed border-gray-300 rounded-lg py-12 text-center">
+          <ImageIcon className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+          <p className="text-gray-500">No categories found</p>
+          <p className="text-sm text-gray-400 mt-1">Create categories first in the Categories page</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {categories.map((category) => (
+            <div key={category.id} className="border rounded-lg overflow-hidden bg-white">
+              {/* Category Image */}
+              <div className="aspect-[4/3] bg-gray-100 relative group">
+                {(category as any).imageUrl ? (
+                  <img src={(category as any).imageUrl} alt={category.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <ImageIcon className="h-12 w-12" />
+                  </div>
+                )}
+                {/* Upload overlay */}
+                <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex items-center justify-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(category.id, file);
+                    }}
+                    disabled={uploading === category.id}
+                  />
+                  {uploading === category.id ? (
+                    <div className="text-white text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2" />
+                      <span className="text-sm">Uploading...</span>
+                    </div>
+                  ) : (
+                    <div className="text-white text-center">
+                      <ImageIcon className="h-8 w-8 mx-auto mb-2" />
+                      <span className="text-sm">Click to upload</span>
+                    </div>
+                  )}
+                </label>
+              </div>
+              {/* Category Info */}
+              <div className="p-3">
+                <p className="font-medium">{category.name}</p>
+                <p className="text-xs text-gray-400">/{category.slug}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================
+// CAROUSELS TAB - For product carousels
+// ============================================
+
+function CarouselsTab({
   sections,
   categories,
   onToggle,
@@ -329,18 +450,25 @@ function SectionsTab({
 }) {
   return (
     <div className="space-y-4">
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+        <p className="text-sm text-green-800">
+          <strong>Product Carousels</strong> display below "Trending Now" on the homepage. Select a category and products will
+          auto-populate.
+        </p>
+      </div>
+
       <div className="flex justify-end">
-        <Button onClick={onAdd} className="gap-2">
-          <Plus className="h-4 w-4" /> Add Section
+        <Button onClick={onAdd} variant="premium" className="gap-2">
+          <Plus className="h-4 w-4" /> Add Product Carousel
         </Button>
       </div>
 
       {sections.length === 0 ? (
         <div className="border border-dashed border-gray-300 rounded-lg py-12 text-center">
           <ImageIcon className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">No content sections yet</p>
+          <p className="text-gray-500">No product carousels yet</p>
           <Button onClick={onAdd} variant="outline" className="mt-4">
-            Add First Section
+            Add First Carousel
           </Button>
         </div>
       ) : (
@@ -366,7 +494,7 @@ function SectionsTab({
                         : "bg-purple-100 text-purple-700"
                     }`}
                   >
-                    {section.type}
+                    {section.type === "CATEGORY" ? "Category" : "Featured"}
                   </span>
                   {section.category && (
                     <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{section.category.name}</span>

@@ -1,6 +1,7 @@
 import HeroSection from "@/components/storefront/HeroSection";
 import CategoryGrid from "@/components/storefront/CategoryGrid";
 import FeaturedProducts from "@/components/storefront/FeaturedProducts";
+import DynamicSections from "@/components/storefront/DynamicSections";
 
 export default function Home() {
   return (
@@ -10,6 +11,9 @@ export default function Home() {
       <CategoryGrid />
 
       <FeaturedProducts />
+
+      {/* Dynamic CMS Sections - rendered below "Trending Now" */}
+      <DynamicSections />
 
       {/* Premium Value Strip */}
       <section className="py-8 bg-primary text-white">
