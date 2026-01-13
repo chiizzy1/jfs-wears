@@ -50,6 +50,7 @@ export default function AddToCartButton({ product, selectedSize, selectedColor, 
       color: variant.color,
       image: product.images.find((img) => img.isPrimary)?.url || product.images[0]?.url || "",
       quantity: 1,
+      bulkPricingTiers: product.bulkPricingTiers,
     });
 
     // Open cart drawer instead of just showing toast

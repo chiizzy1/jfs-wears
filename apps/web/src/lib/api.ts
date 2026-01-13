@@ -49,6 +49,8 @@ export interface Product {
   }[];
   isActive: boolean;
   isFeatured: boolean;
+  bulkEnabled?: boolean;
+  bulkPricingTiers?: { minQuantity: number; discountPercent: number }[];
 }
 
 export interface Category {
@@ -85,6 +87,8 @@ interface ApiProduct {
   }>;
   isActive: boolean;
   isFeatured: boolean;
+  bulkEnabled?: boolean;
+  bulkPricingTiers?: Array<{ minQuantity: number; discountPercent: number }>;
 }
 
 interface PaginatedResponse<T> {
@@ -130,6 +134,11 @@ function mapApiProduct(apiProduct: ApiProduct): Product {
     })),
     isActive: apiProduct.isActive,
     isFeatured: apiProduct.isFeatured,
+    bulkEnabled: apiProduct.bulkEnabled,
+    bulkPricingTiers: apiProduct.bulkPricingTiers?.map((tier) => ({
+      minQuantity: tier.minQuantity,
+      discountPercent: Number(tier.discountPercent),
+    })),
   };
 }
 

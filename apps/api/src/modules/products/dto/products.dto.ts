@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, IsBoolean, IsArray, ValidateNested, Min, IsNotEmpty, IsIn } from "class-validator";
+import { IsString, IsNumber, IsOptional, IsBoolean, IsArray, ValidateNested, Min, Max, IsNotEmpty, IsIn } from "class-validator";
 import { Type } from "class-transformer";
 
 export class CreateVariantDto {
@@ -23,6 +23,17 @@ export class CreateVariantDto {
   priceAdjustment?: number;
 }
 
+export class BulkPricingTierDto {
+  @IsNumber()
+  @Min(2)
+  minQuantity: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  discountPercent: number;
+}
+
 export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
@@ -44,6 +55,10 @@ export class CreateProductDto {
   @IsOptional()
   isFeatured?: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  bulkEnabled?: boolean;
+
   @IsString()
   @IsOptional()
   @IsIn(["MEN", "WOMEN", "UNISEX"])
@@ -58,6 +73,12 @@ export class CreateProductDto {
   @Type(() => CreateVariantDto)
   @IsOptional()
   variants?: CreateVariantDto[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BulkPricingTierDto)
+  @IsOptional()
+  bulkPricingTiers?: BulkPricingTierDto[];
 }
 
 export class UpdateProductDto {
@@ -86,10 +107,20 @@ export class UpdateProductDto {
   @IsOptional()
   isFeatured?: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  bulkEnabled?: boolean;
+
   @IsString()
   @IsOptional()
   @IsIn(["MEN", "WOMEN", "UNISEX"])
   gender?: "MEN" | "WOMEN" | "UNISEX";
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BulkPricingTierDto)
+  @IsOptional()
+  bulkPricingTiers?: BulkPricingTierDto[];
 }
 
 export class ProductQueryDto {

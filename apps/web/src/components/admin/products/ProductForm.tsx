@@ -43,6 +43,17 @@ export function ProductForm({ categories, onSubmit, isSubmitting, initialData }:
     name: "variants",
   });
 
+  const {
+    fields: bulkFields,
+    append: appendBulk,
+    remove: removeBulk,
+  } = useFieldArray({
+    control: form.control,
+    name: "bulkPricingTiers",
+  });
+
+  const isBulkEnabled = form.watch("bulkEnabled");
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newImages = Array.from(e.target.files).map((file) => ({
@@ -212,6 +223,116 @@ export function ProductForm({ categories, onSubmit, isSubmitting, initialData }:
               <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageChange} />
             </label>
           </div>
+        </div>
+
+        {/* Bulk Pricing */}
+        <div className="bg-white p-6 rounded-lg border shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Bulk Pricing</h2>
+            <FormField
+              control={form.control}
+              name="bulkEnabled"
+              render={({ field }) => (
+                <FormItem className="flex items-center space-x-2 space-y-0">
+                  <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                  <FormLabel className="font-normal text-gray-600">Enable Bulk Discounts</FormLabel>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {isBulkEnabled && (
+            <div className="space-y-4 border-t pt-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-muted-foreground">Define discount tiers based on quantity.</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => appendBulk({ minQuantity: 10, discountPercent: 5 })}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Tier
+                </Button>
+              </div>
+
+              {bulkFields.length === 0 ? (
+                <div className="text-center py-6 bg-gray-50 rounded-md border border-dashed text-sm text-gray-500">
+                  No pricing tiers added. Click "Add Tier" to start.
+                </div>
+              ) : (
+                <div className="border rounded-md overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-100 border-b">
+                      <tr>
+                        <th className="text-left p-3 font-medium">Min Quantity</th>
+                        <th className="text-left p-3 font-medium">Discount (%)</th>
+                        <th className="text-right p-3 font-medium">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {bulkFields.map((field, index) => (
+                        <tr key={field.id} className="bg-white">
+                          <td className="p-3">
+                            <FormField
+                              control={form.control}
+                              name={`bulkPricingTiers.${index}.minQuantity`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input type="number" {...field} min={2} className="w-24 h-8" placeholder="Qty" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </td>
+                          <td className="p-3">
+                            <FormField
+                              control={form.control}
+                              name={`bulkPricingTiers.${index}.discountPercent`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <div className="relative w-24">
+                                      <Input
+                                        type="number"
+                                        {...field}
+                                        min={0}
+                                        max={100}
+                                        step={0.1}
+                                        className="h-8 pr-6"
+                                        placeholder="%"
+                                      />
+                                      <span className="absolute right-2 top-1.5 text-xs text-gray-500">%</span>
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </td>
+                          <td className="p-3 text-right">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-500 hover:text-red-700 h-8 w-8 p-0"
+                              onClick={() => removeBulk(index)}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Variants */}

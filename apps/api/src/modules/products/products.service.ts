@@ -77,6 +77,7 @@ export class ProductsService {
             orderBy: { position: "asc" },
             include: { images: { orderBy: { position: "asc" } } },
           },
+          bulkPricingTiers: { orderBy: { minQuantity: "asc" } },
         },
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
@@ -109,6 +110,7 @@ export class ProductsService {
           orderBy: { position: "asc" },
           include: { images: { orderBy: { position: "asc" } } },
         },
+        bulkPricingTiers: { orderBy: { minQuantity: "asc" } },
       },
     });
   }
@@ -124,6 +126,7 @@ export class ProductsService {
           orderBy: { position: "asc" },
           include: { images: { orderBy: { position: "asc" } } },
         },
+        bulkPricingTiers: { orderBy: { minQuantity: "asc" } },
       },
     });
   }
@@ -150,13 +153,16 @@ export class ProductsService {
         categoryId: data.categoryId,
         isFeatured: data.isFeatured,
         gender: data.gender,
+        bulkEnabled: data.bulkEnabled,
         variants: variantsData ? { create: variantsData } : undefined,
+        bulkPricingTiers: data.bulkPricingTiers ? { create: data.bulkPricingTiers } : undefined,
       },
       include: {
         category: true,
         variants: { include: { colorGroup: true } },
         images: true,
         colorGroups: { include: { images: true } },
+        bulkPricingTiers: true,
       },
     });
   }
@@ -164,12 +170,21 @@ export class ProductsService {
   async update(id: string, data: UpdateProductDto) {
     return this.prisma.product.update({
       where: { id },
-      data,
+      data: {
+        ...data,
+        bulkPricingTiers: data.bulkPricingTiers
+          ? {
+              deleteMany: {},
+              create: data.bulkPricingTiers,
+            }
+          : undefined,
+      },
       include: {
         category: true,
         variants: { include: { colorGroup: true } },
         images: true,
         colorGroups: { include: { images: true } },
+        bulkPricingTiers: true,
       },
     });
   }

@@ -29,38 +29,84 @@ export class OrdersService {
       let totalAmount = new Decimal(0);
       const orderItemsData: Prisma.OrderItemCreateWithoutOrderInput[] = [];
 
-      for (const item of data.items) {
-        const variant = await tx.productVariant.findUnique({
-          where: { id: item.variantId },
-          include: { product: true },
-        });
+      // Step 1: Fetch all variants involved in the order to calculate bulk discounts
+      const variantIds = data.items.map((item) => item.variantId);
+      const variants = await tx.productVariant.findMany({
+        where: { id: { in: variantIds } },
+        include: {
+          product: {
+            include: {
+              bulkPricingTiers: {
+                orderBy: { minQuantity: "desc" }, // Order by desc minQuantity for easier finding of highest applicable tier
+              },
+            },
+          },
+        },
+      });
 
-        if (!variant) {
+      // Map for easy access
+      const variantsMap = new Map(variants.map((v) => [v.id, v]));
+
+      // Validate all variants found
+      for (const item of data.items) {
+        if (!variantsMap.has(item.variantId)) {
           throw new NotFoundException(`Product variant not found: ${item.variantId}`);
         }
+      }
 
+      // Step 2: Calculate total quantity per product for Mix & Match logic
+      const productQuantities = new Map<string, number>();
+      for (const item of data.items) {
+        const variant = variantsMap.get(item.variantId)!;
+        const currentQty = productQuantities.get(variant.productId) || 0;
+        productQuantities.set(variant.productId, currentQty + item.quantity);
+      }
+
+      // Step 3: Process items and apply discounts
+      for (const item of data.items) {
+        const variant = variantsMap.get(item.variantId)!;
+
+        // Check stock
         if (variant.stock < item.quantity) {
-          throw new BadRequestException(`Insufficient stock for ${variant.product.name} (${variant.size}/${variant.color})`);
+          throw new BadRequestException(
+            `Insufficient stock for ${variant.product.name} (${variant.size || "N/A"}/${variant.color || "N/A"})`
+          );
         }
 
         // Decrement stock
         await tx.productVariant.update({
-          where: { id: item.variantId },
+          where: { id: variant.id },
           data: { stock: variant.stock - item.quantity },
         });
 
-        const price = variant.product.basePrice.plus(variant.priceAdjustment ?? 0);
-        totalAmount = totalAmount.plus(price.times(item.quantity));
+        // Calculate Price
+        let unitPrice = variant.product.basePrice.plus(variant.priceAdjustment ?? 0);
+
+        // Apply Bulk Discount if enabled
+        if (variant.product.bulkEnabled && variant.product.bulkPricingTiers.length > 0) {
+          const totalProductQty = productQuantities.get(variant.productId) || 0;
+
+          // Find the highest applicable tier (tiers are already sorted desc by minQuantity)
+          const validTier = variant.product.bulkPricingTiers.find((tier) => totalProductQty >= tier.minQuantity);
+
+          if (validTier) {
+            // Apply percentage discount
+            const discountMultiplier = new Decimal(1).minus(validTier.discountPercent.div(100));
+            unitPrice = unitPrice.times(discountMultiplier);
+          }
+        }
+
+        totalAmount = totalAmount.plus(unitPrice.times(item.quantity));
 
         orderItemsData.push({
           variant: { connect: { id: item.variantId } },
           product: { connect: { id: variant.productId } },
           quantity: item.quantity,
-          unitPrice: price,
-          total: price.times(item.quantity),
+          unitPrice: unitPrice,
+          total: unitPrice.times(item.quantity),
           productName: variant.product.name,
           variantSize: variant.size,
-          variantColor: variant.color,
+          variantColor: variant.color, // Keeps legacy support, though likely utilizing new color logic elsewhere
         });
       }
 

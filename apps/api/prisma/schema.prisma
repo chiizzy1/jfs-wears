@@ -150,6 +150,13 @@ model Product {
   gender      Gender   @default(UNISEX)
   isActive    Boolean  @default(true)
   isFeatured  Boolean  @default(false)
+
+  // Bulk/Wholesale Pricing
+  bulkEnabled      Boolean           @default(false)
+  bulkPricingTiers BulkPricingTier[]
+
+
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   deletedAt   DateTime?
@@ -681,4 +688,24 @@ enum NotificationType {
   REVIEW_NEW
   LOW_STOCK
   STAFF_LOGIN
+}
+
+// ============================================
+// BULK PRICING
+// ============================================
+
+model BulkPricingTier {
+  id              String  @id @default(cuid())
+  productId       String
+  product         Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  minQuantity     Int     // e.g., 10
+  discountPercent Decimal @db.Decimal(5, 2) // e.g., 5.00 for 5%
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([productId, minQuantity])
+  @@map("bulk_pricing_tiers")
+  @@index([productId])
 }

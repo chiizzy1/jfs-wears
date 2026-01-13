@@ -229,9 +229,27 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         <h1 className="text-3xl md:text-4xl font-medium text-primary tracking-[0.02em]">{product.name}</h1>
 
         {/* Price */}
-        <div className="flex items-baseline gap-4">
-          <span className="text-2xl font-medium">₦{currentPrice.toLocaleString()}</span>
-          {hasDiscount && <span className="text-lg text-muted line-through">₦{product.compareAtPrice!.toLocaleString()}</span>}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-baseline gap-4">
+            <span className="text-2xl font-medium">₦{currentPrice.toLocaleString()}</span>
+            {hasDiscount && <span className="text-lg text-muted line-through">₦{product.compareAtPrice!.toLocaleString()}</span>}
+          </div>
+
+          {/* Bulk Pricing Tiers */}
+          {product.bulkEnabled && product.bulkPricingTiers && product.bulkPricingTiers.length > 0 && (
+            <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 w-fit">
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Bulk Pricing Available</h4>
+              <div className="flex flex-col gap-1.5">
+                {product.bulkPricingTiers.map((tier) => (
+                  <div key={tier.minQuantity} className="flex items-center text-sm gap-2">
+                    <span className="font-medium text-gray-900">Buy {tier.minQuantity}+</span>
+                    <span className="text-gray-400">→</span>
+                    <span className="font-bold text-green-600">{Number(tier.discountPercent)}% OFF</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Description */}

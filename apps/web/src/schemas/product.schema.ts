@@ -8,6 +8,11 @@ export const productVariantSchema = z.object({
   priceAdjustment: z.coerce.number().optional().default(0),
 });
 
+export const bulkPricingTierSchema = z.object({
+  minQuantity: z.coerce.number().int().min(2, "Quantity must be at least 2"),
+  discountPercent: z.coerce.number().min(0).max(100, "Discount cannot exceed 100%"),
+});
+
 export const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
@@ -15,7 +20,9 @@ export const productSchema = z.object({
   categoryId: z.string().min(1, "Category is required"),
   gender: z.enum(["MEN", "WOMEN", "UNISEX"]),
   isFeatured: z.boolean().optional().default(false),
+  bulkEnabled: z.boolean().optional().default(false),
   variants: z.array(productVariantSchema).min(1, "At least one variant is required"),
+  bulkPricingTiers: z.array(bulkPricingTierSchema).optional(),
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
