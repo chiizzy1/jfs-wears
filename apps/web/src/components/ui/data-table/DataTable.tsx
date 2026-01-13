@@ -46,7 +46,7 @@ export function DataTable<TData, TValue>({ columns, data, searchKey }: DataTable
   });
 
   return (
-    <div>
+    <div className="min-w-0 overflow-hidden">
       {searchKey && (
         <div className="flex items-center py-4">
           <Input
@@ -57,7 +57,7 @@ export function DataTable<TData, TValue>({ columns, data, searchKey }: DataTable
           />
         </div>
       )}
-      <div>
+      <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Plus, Trash2, Pencil, Loader2, Image as ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { apiClient } from "@/lib/api-client";
+import { DataTable } from "@/components/ui/data-table/DataTable";
+import { ColumnDef } from "@tanstack/react-table";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -177,6 +179,84 @@ export default function CategoriesPage() {
     }
   }
 
+  const columns = useMemo<ColumnDef<Category>[]>(
+    () => [
+      {
+        accessorKey: "name",
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Name</span>,
+        cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+      },
+      {
+        accessorKey: "slug",
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Slug</span>,
+        cell: ({ row }) => <span className="text-gray-500 font-mono text-sm">{row.original.slug}</span>,
+      },
+      {
+        accessorKey: "description",
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Description</span>,
+        cell: ({ row }) => (
+          <span className="text-gray-500 text-sm max-w-xs truncate block">{row.original.description || "—"}</span>
+        ),
+      },
+      {
+        accessorKey: "_count.products",
+        header: () => (
+          <div className="text-center">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Products</span>
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div className="text-center">
+            <span
+              className={`inline-flex items-center justify-center min-w-8 px-2 py-1 text-xs font-medium rounded ${
+                (row.original._count?.products || 0) > 0 ? "bg-blue-50 text-blue-700" : "bg-gray-50 text-gray-500"
+              }`}
+            >
+              {row.original._count?.products || 0}
+            </span>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "isActive",
+        header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Status</span>,
+        cell: ({ row }) => (
+          <span
+            className={`inline-flex items-center gap-1.5 text-xs ${row.original.isActive ? "text-emerald-600" : "text-gray-400"}`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${row.original.isActive ? "bg-emerald-500" : "bg-gray-300"}`} />
+            {row.original.isActive ? "Active" : "Inactive"}
+          </span>
+        ),
+      },
+      {
+        id: "actions",
+        cell: ({ row }) => {
+          const category = row.original;
+          return (
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => handleOpenModal(category)}
+                className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                title="Edit"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => handleDeleteClick(category)}
+                className="p-2 text-muted-foreground hover:text-red-600 transition-colors"
+                title="Delete"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          );
+        },
+      },
+    ],
+    []
+  );
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -199,78 +279,9 @@ export default function CategoriesPage() {
         </Button>
       </div>
 
-      {/* Categories Table */}
-      <div className="border border-gray-100 bg-white">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-100">
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Name</th>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Slug</th>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">
-                Description
-              </th>
-              <th className="px-6 py-4 text-center text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">
-                Products
-              </th>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Status</th>
-              <th className="px-6 py-4 text-right text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                  No categories found. Create your first category.
-                </td>
-              </tr>
-            ) : (
-              categories.map((category) => (
-                <tr key={category.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium">{category.name}</td>
-                  <td className="px-6 py-4 text-gray-500 font-mono text-sm">{category.slug}</td>
-                  <td className="px-6 py-4 text-gray-500 text-sm max-w-xs truncate">{category.description || "—"}</td>
-                  <td className="px-6 py-4 text-center">
-                    <span
-                      className={`inline-flex items-center justify-center min-w-8 px-2 py-1 text-xs font-medium rounded ${
-                        (category._count?.products || 0) > 0 ? "bg-blue-50 text-blue-700" : "bg-gray-50 text-gray-500"
-                      }`}
-                    >
-                      {category._count?.products || 0}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1.5 text-xs ${
-                        category.isActive ? "text-emerald-600" : "text-gray-400"
-                      }`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full ${category.isActive ? "bg-emerald-500" : "bg-gray-300"}`} />
-                      {category.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleOpenModal(category)}
-                        className="p-2 text-muted-foreground hover:text-primary transition-colors"
-                        title="Edit"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(category)}
-                        className="p-2 text-muted-foreground hover:text-red-600 transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      {/* Categories Table via DataTable */}
+      <div className="rounded-none border-t border-gray-100">
+        <DataTable columns={columns} data={categories} searchKey="name" />
       </div>
 
       {/* Modal */}
