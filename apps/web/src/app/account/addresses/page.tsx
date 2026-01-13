@@ -17,6 +17,8 @@ interface Address {
   address: string;
   city: string;
   state: string;
+  postalCode?: string;
+  country: string;
   landmark?: string;
   isDefault: boolean;
 }
@@ -40,6 +42,8 @@ export default function AddressesPage() {
     address: "",
     city: "",
     state: "",
+    postalCode: "",
+    country: "Nigeria",
     landmark: "",
     isDefault: false,
   });
@@ -109,6 +113,8 @@ export default function AddressesPage() {
       address: addr.address,
       city: addr.city,
       state: addr.state,
+      postalCode: addr.postalCode || "",
+      country: addr.country || "Nigeria",
       landmark: addr.landmark || "",
       isDefault: addr.isDefault,
     });
@@ -124,6 +130,8 @@ export default function AddressesPage() {
       address: "",
       city: "",
       state: "",
+      postalCode: "",
+      country: "Nigeria",
       landmark: "",
       isDefault: false,
     });
@@ -218,12 +226,36 @@ export default function AddressesPage() {
                   className="px-4 py-3 border border-gray-200 focus:outline-none focus:border-accent"
                 />
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  placeholder="Postal Code (optional)"
+                  value={formData.postalCode}
+                  onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                  className="px-4 py-3 border border-gray-200 focus:outline-none focus:border-accent"
+                />
+                <select
+                  required
+                  value={formData.country}
+                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  className="px-4 py-3 border border-gray-200 focus:outline-none focus:border-accent bg-white"
+                >
+                  <option value="Nigeria">Nigeria</option>
+                  <option value="Ghana">Ghana</option>
+                  <option value="Kenya">Kenya</option>
+                  <option value="South Africa">South Africa</option>
+                  <option value="United States">United States</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
               <input
                 type="text"
                 placeholder="Landmark (optional)"
                 value={formData.landmark}
                 onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-accent"
+                className="w-full px-4 py-3 border border-gray-200 focus:outline-none focus:border-accent"
               />
               <label className="flex items-center gap-2 text-sm">
                 <input
@@ -283,8 +315,9 @@ export default function AddressesPage() {
                     </div>
                     <p className="text-gray-600 text-sm">{addr.address}</p>
                     <p className="text-gray-600 text-sm">
-                      {addr.city}, {addr.state}
+                      {addr.city}, {addr.state} {addr.postalCode && `- ${addr.postalCode}`}
                     </p>
+                    <p className="text-gray-600 text-sm">{addr.country}</p>
                     <p className="text-gray-500 text-sm mt-1">{addr.phone}</p>
                   </div>
                   <div className="flex gap-2">

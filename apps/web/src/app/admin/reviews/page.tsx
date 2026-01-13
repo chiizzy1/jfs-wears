@@ -52,7 +52,7 @@ export default function AdminReviewsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-light tracking-tight">Reviews</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage and moderate customer reviews</p>
+          <p className="text-gray-500 text-sm mt-1">Manage and moderate customer reviews</p>
         </div>
       </div>
 
@@ -83,33 +83,21 @@ export default function AdminReviewsPage() {
         <table className="w-full">
           <thead>
             <tr>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
-                Author
-              </th>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
-                Product
-              </th>
-              <th className="px-6 py-4 text-center text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
-                Rating
-              </th>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium max-w-xs">
+              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Author</th>
+              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Product</th>
+              <th className="px-6 py-4 text-center text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Rating</th>
+              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium max-w-xs">
                 Review
               </th>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
-                Status
-              </th>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
-                Date
-              </th>
-              <th className="px-6 py-4 text-right text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
-                Actions
-              </th>
+              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Status</th>
+              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Date</th>
+              <th className="px-6 py-4 text-right text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
             {!data?.reviews || data.reviews.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                   No reviews found matching your criteria.
                 </td>
               </tr>
@@ -119,12 +107,10 @@ export default function AdminReviewsPage() {
                   <td className="px-6 py-4">
                     <div>
                       <p className="font-medium">{review.user.name || "Anonymous"}</p>
-                      <p className="text-xs text-muted-foreground">{review.user.email}</p>
+                      <p className="text-xs text-gray-500">{review.user.email}</p>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-muted-foreground text-sm max-w-[200px] truncate">
-                    {review.product?.name || "—"}
-                  </td>
+                  <td className="px-6 py-4 text-gray-500 text-sm max-w-[200px] truncate">{review.product?.name || "—"}</td>
                   <td className="px-6 py-4 text-center">
                     <span className="inline-flex items-center gap-1 text-sm font-medium">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -134,7 +120,7 @@ export default function AdminReviewsPage() {
                   <td className="px-6 py-4 max-w-xs">
                     <div className="space-y-1">
                       {review.title && <p className="font-medium text-sm truncate">{review.title}</p>}
-                      <p className="text-sm text-muted-foreground truncate" title={review.comment || ""}>
+                      <p className="text-sm text-gray-500 truncate" title={review.comment || ""}>
                         {review.comment || "—"}
                       </p>
                     </div>
@@ -149,7 +135,7 @@ export default function AdminReviewsPage() {
                       {review.isApproved ? "Approved" : "Pending"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-muted-foreground text-sm">{formatDate(review.createdAt)}</td>
+                  <td className="px-6 py-4 text-gray-500 text-sm">{formatDate(review.createdAt)}</td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button

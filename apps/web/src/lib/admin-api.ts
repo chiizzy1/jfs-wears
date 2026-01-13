@@ -343,6 +343,9 @@ export interface Product {
     priceAdjustment?: number;
     isActive: boolean;
   }[];
+  colorGroups?: ColorGroup[];
+  bulkEnabled?: boolean;
+  bulkPricingTiers?: { id: string; minQuantity: number; discountPercent: number }[];
   isActive: boolean;
   isFeatured: boolean;
   deletedAt?: string | null;

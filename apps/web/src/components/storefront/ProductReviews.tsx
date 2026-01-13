@@ -104,7 +104,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
                 <span className="text-5xl font-bold text-gray-900">{stats?.average.toFixed(1) || "0.0"}</span>
                 <div className="space-y-1">
                   <StarRating rating={Math.round(stats?.average || 0)} size="md" />
-                  <p className="text-sm text-gray-500">{stats?.count || 0} Reviews</p>
+                  <p className="text-sm text-black font-medium">{stats?.count || 0} Reviews</p>
                 </div>
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
                       }}
                     />
                   </div>
-                  <span className="text-gray-400 text-xs w-8 text-right group-hover:text-gray-900">
+                  <span className="text-black text-xs w-8 text-right group-hover:text-black font-medium">
                     {stats?.distribution[star as keyof typeof stats.distribution] || 0}
                   </span>
                 </button>
@@ -146,9 +146,9 @@ export default function ProductReviews({ productId, productName }: ProductReview
                 {showForm ? "Cancel Review" : "Write a Review"}
               </Button>
             ) : (
-              <div className="bg-gray-50 p-6 text-center">
-                <p className="text-gray-600 mb-4">Own this product? Log in to share your thoughts.</p>
-                <Button variant="outline" className="w-full" asChild>
+              <div className="bg-gray-50 p-6 text-left">
+                <p className="text-black mb-4 font-medium">Own this product? Log in to share your thoughts.</p>
+                <Button variant="outline" className="w-auto border-black text-black hover:bg-black hover:text-white" asChild>
                   <a href={`/login?redirect=/product/${productId}`}>Log in to Review</a>
                 </Button>
               </div>

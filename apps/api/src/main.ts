@@ -17,8 +17,17 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // Enable CORS
+  const allowedOrigins = ["http://localhost:3000", "http://localhost:3002", "http://localhost:3003", "http://localhost:3004"];
+
   app.enableCors({
-    origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, Postman)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],

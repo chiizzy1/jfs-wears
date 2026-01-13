@@ -150,7 +150,7 @@ export default function StorefrontPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Storefront CMS</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage hero slides, category grid, and product carousels</p>
+          <p className="text-gray-500 text-sm mt-1">Manage hero slides, category grid, and product carousels</p>
         </div>
       </div>
 
@@ -401,7 +401,7 @@ function CategoryGridTab({ categories, onRefresh }: { categories: Category[]; on
                 {(category as any).imageUrl ? (
                   <img src={(category as any).imageUrl} alt={category.name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  <div className="w-full h-full flex items-center justify-center text-gray-500">
                     <ImageIcon className="h-12 w-12" />
                   </div>
                 )}
@@ -433,7 +433,7 @@ function CategoryGridTab({ categories, onRefresh }: { categories: Category[]; on
               {/* Category Info */}
               <div className="p-3">
                 <p className="font-medium">{category.name}</p>
-                <p className="text-xs text-gray-400">/{category.slug}</p>
+                <p className="text-xs text-gray-500">/{category.slug}</p>
               </div>
             </div>
           ))}

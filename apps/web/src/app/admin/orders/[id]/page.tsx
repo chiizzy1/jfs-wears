@@ -204,7 +204,7 @@ export default function OrderDetailPage() {
                 <div key={item.id} className="flex justify-between py-3 border-b border-gray-100 last:border-0">
                   <div>
                     <p className="font-medium">{item.productName}</p>
-                    <p className="text-sm text-muted">
+                    <p className="text-sm text-black">
                       {item.variantSize && `Size: ${item.variantSize}`}
                       {item.variantSize && item.variantColor && " / "}
                       {item.variantColor && `Color: ${item.variantColor}`}
@@ -253,13 +253,13 @@ export default function OrderDetailPage() {
               {order.user ? (
                 <>
                   <p className="font-medium">{order.user.name}</p>
-                  <p className="text-sm text-muted">{order.user.email}</p>
+                  <p className="text-sm text-black">{order.user.email}</p>
                 </>
               ) : (
                 <>
                   <p className="font-medium">Guest Customer</p>
-                  {order.guestEmail && <p className="text-sm text-muted">{order.guestEmail}</p>}
-                  {order.guestPhone && <p className="text-sm text-muted">{order.guestPhone}</p>}
+                  {order.guestEmail && <p className="text-sm text-black">{order.guestEmail}</p>}
+                  {order.guestPhone && <p className="text-sm text-black">{order.guestPhone}</p>}
                 </>
               )}
             </div>
@@ -274,11 +274,11 @@ export default function OrderDetailPage() {
               <p className="font-medium">
                 {order.shippingAddress.firstName} {order.shippingAddress.lastName}
               </p>
-              <p className="text-muted">{order.shippingAddress.address}</p>
-              <p className="text-muted">
+              <p className="text-black">{order.shippingAddress.address}</p>
+              <p className="text-black">
                 {order.shippingAddress.city}, {order.shippingAddress.state}
               </p>
-              {order.shippingAddress.phone && <p className="text-muted">{order.shippingAddress.phone}</p>}
+              {order.shippingAddress.phone && <p className="text-black">{order.shippingAddress.phone}</p>}
             </div>
           </div>
         </div>
@@ -317,7 +317,7 @@ export default function OrderDetailPage() {
               <CreditCard className="w-4 h-4" /> Payment
             </h2>
             <div className="space-y-3">
-              <p className="text-sm text-muted">Method: {order.paymentMethod.replace("_", " ")}</p>
+              <p className="text-sm text-black font-medium">Method: {order.paymentMethod.replace("_", " ")}</p>
               <select
                 value={paymentStatus}
                 onChange={(e) => setPaymentStatus(e.target.value)}
@@ -347,7 +347,7 @@ export default function OrderDetailPage() {
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-muted block mb-1">Carrier Name</label>
+                <label className="text-xs text-black font-medium block mb-1">Carrier Name</label>
                 <input
                   type="text"
                   value={carrierName}
@@ -357,7 +357,7 @@ export default function OrderDetailPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-muted block mb-1">Tracking Number</label>
+                <label className="text-xs text-black font-medium block mb-1">Tracking Number</label>
                 <input
                   type="text"
                   value={trackingNumber}
@@ -367,7 +367,7 @@ export default function OrderDetailPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-muted block mb-1 flex items-center gap-1">
+                <label className="text-xs text-black font-medium block mb-1 flex items-center gap-1">
                   <Calendar className="w-3 h-3" /> Est. Delivery Date
                 </label>
                 <input

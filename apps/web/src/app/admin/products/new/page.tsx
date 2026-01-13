@@ -16,6 +16,8 @@ interface FormData {
   categoryId: string;
   gender: "MEN" | "WOMEN" | "UNISEX";
   isFeatured?: boolean;
+  bulkEnabled?: boolean;
+  bulkPricingTiers?: { minQuantity: number; discountPercent: number }[];
   selectedSizes: string[];
   colorGroups: {
     colorName: string;
@@ -53,6 +55,8 @@ export default function AddProductPage() {
         categoryId: data.categoryId,
         gender: data.gender,
         isFeatured: data.isFeatured,
+        bulkEnabled: data.bulkEnabled,
+        bulkPricingTiers: data.bulkPricingTiers,
         variants,
       });
 
@@ -90,7 +94,7 @@ export default function AddProductPage() {
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>
-          <h1 className="text-xs uppercase tracking-[0.15em] font-medium text-muted">Products</h1>
+          <h1 className="text-xs uppercase tracking-[0.15em] font-medium text-black">Products</h1>
           <p className="text-2xl font-light mt-1">Add New Product</p>
         </div>
       </div>

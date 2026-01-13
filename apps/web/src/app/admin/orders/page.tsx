@@ -8,7 +8,7 @@ export default function OrdersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xs uppercase tracking-[0.15em] font-medium text-muted">Orders</h1>
+          <h1 className="text-xs uppercase tracking-[0.15em] font-medium text-black">Orders</h1>
           <p className="text-2xl font-light mt-1">Order Management</p>
         </div>
       </div>

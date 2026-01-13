@@ -1,27 +1,56 @@
 "use client";
 
 import { useProduct, useProducts } from "@/hooks/use-products";
-import { ProductForm } from "./ProductForm";
-import { ProductFormValues } from "@/schemas/product.schema";
+import { ProductFormV2 } from "./ProductFormV2";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { toast } from "react-hot-toast";
+import { adminAPI } from "@/lib/admin-api";
 
 interface ProductEditClientProps {
   id: string;
 }
 
+interface ColorGroupFormData {
+  colorName: string;
+  colorHex?: string;
+  images: { file?: File; preview: string; isMain: boolean }[];
+}
+
+interface FormData {
+  name: string;
+  description: string;
+  basePrice: number;
+  categoryId: string;
+  gender: "MEN" | "WOMEN" | "UNISEX";
+  isFeatured?: boolean;
+  bulkEnabled?: boolean;
+  bulkPricingTiers?: { minQuantity: number; discountPercent: number }[];
+  selectedSizes: string[];
+  colorGroups: ColorGroupFormData[];
+}
+
 export function ProductEditClient({ id }: ProductEditClientProps) {
   const router = useRouter();
   const { product, isLoading: isLoadingProduct, isError: isProductError } = useProduct(id);
-  const { categories, isLoading: isLoadingCategories, updateProduct, isUpdating, uploadImages } = useProducts();
+  const {
+    categories,
+    sizePresets,
+    colorPresets,
+    isLoading: isLoadingCategories,
+    updateProduct,
+    isUpdating,
+    createColorGroup,
+    uploadColorGroupImages,
+  } = useProducts();
 
   const isLoading = isLoadingProduct || isLoadingCategories;
 
-  // Map backend product data to form values
-  const initialData: ProductFormValues | undefined = product
+  // Map backend product data to ProductFormV2 format
+  const initialData = product
     ? {
         name: product.name,
         description: product.description,
@@ -29,28 +58,98 @@ export function ProductEditClient({ id }: ProductEditClientProps) {
         categoryId: product.categoryId,
         gender: (product.gender as "MEN" | "WOMEN" | "UNISEX") || "UNISEX",
         isFeatured: product.isFeatured || false,
-        variants: product.variants.map((v: any) => ({
-          size: v.size,
-          color: v.color,
-          sku: v.sku,
-          stock: v.stock,
-          priceAdjustment: Number(v.priceAdjustment) || 0,
+        bulkEnabled: product.bulkEnabled || false,
+        bulkPricingTiers: (product.bulkPricingTiers || []).map((t: any) => ({
+          minQuantity: Number(t.minQuantity),
+          discountPercent: Number(t.discountPercent),
+        })),
+        // Extract unique sizes from variants
+        selectedSizes: [...new Set(product.variants.map((v: any) => v.size).filter(Boolean))] as string[],
+        // Map existing colorGroups with their images
+        colorGroups: (product.colorGroups || []).map((cg: any) => ({
+          colorName: cg.colorName,
+          colorHex: cg.colorHex,
+          images: (cg.images || []).map((img: any) => ({
+            preview: img.url,
+            isMain: img.isMain || false,
+          })),
         })),
       }
     : undefined;
 
-  const handleSubmit = async (data: ProductFormValues, images: File[]) => {
+  const handleSubmit = async (data: FormData) => {
     try {
-      await updateProduct({ id, data });
+      // 1. Generate variants from sizes × colors
+      const variants = data.colorGroups.flatMap((color) =>
+        data.selectedSizes.map((size) => ({
+          size,
+          color: color.colorName,
+          sku: `${data.name.slice(0, 3).toUpperCase()}-${size.slice(0, 2).toUpperCase()}-${color.colorName
+            .slice(0, 3)
+            .toUpperCase()}-${Date.now().toString().slice(-4)}`,
+          stock: 0,
+          priceAdjustment: 0,
+        }))
+      );
 
-      if (images.length > 0) {
-        await uploadImages({ id, files: images });
+      // 2. Update the product
+      await updateProduct({
+        id,
+        data: {
+          name: data.name,
+          description: data.description,
+          basePrice: data.basePrice,
+          categoryId: data.categoryId,
+          gender: data.gender,
+          isFeatured: data.isFeatured,
+          bulkEnabled: data.bulkEnabled,
+          bulkPricingTiers: data.bulkPricingTiers,
+          variants,
+        },
+      });
+
+      // 3. Handle color groups and images
+      // Note: For existing products, we need to manage color groups separately
+      // This is a simplified version - for production, you'd compare existing vs new
+      for (const colorGroup of data.colorGroups) {
+        const newFiles = colorGroup.images.filter((img) => img.file).map((img) => img.file as File);
+
+        if (newFiles.length > 0) {
+          // Check if color group exists, if not create it
+          const existingColorGroup = product?.colorGroups?.find(
+            (cg: any) => cg.colorName.toLowerCase() === colorGroup.colorName.toLowerCase()
+          );
+
+          if (existingColorGroup) {
+            // Upload to existing color group
+            await uploadColorGroupImages({
+              productId: id,
+              colorGroupId: existingColorGroup.id,
+              files: newFiles,
+            });
+          } else {
+            // Create new color group and upload
+            const newCG = await createColorGroup({
+              productId: id,
+              data: {
+                colorName: colorGroup.colorName,
+                colorHex: colorGroup.colorHex,
+              },
+            });
+            await uploadColorGroupImages({
+              productId: id,
+              colorGroupId: newCG.id,
+              files: newFiles,
+            });
+          }
+        }
       }
 
+      toast.success("Product updated successfully!");
       router.push("/admin/products");
     } catch (error) {
       console.error("Failed to update product:", error);
-      // Toast is handled in the hook
+      toast.error("Failed to update product. Please try again.");
     }
   };
 
@@ -61,7 +160,7 @@ export function ProductEditClient({ id }: ProductEditClientProps) {
           <Skeleton className="h-8 w-64" />
           <Skeleton className="h-10 w-32" />
         </div>
-        <Skeleton className="h-[600px] w-full rounded-lg" />
+        <Skeleton className="h-[600px] w-full" />
       </div>
     );
   }
@@ -78,13 +177,27 @@ export function ProductEditClient({ id }: ProductEditClientProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header - matches new product page style */}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="w-4 h-4" />
+        </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Edit Product</h1>
-          <p className="text-muted-foreground">Make changes to your product here.</p>
+          <h1 className="text-xs uppercase tracking-[0.15em] font-medium text-muted">Products</h1>
+          <p className="text-2xl font-light mt-1">Edit Product</p>
         </div>
       </div>
-      <ProductForm categories={categories} onSubmit={handleSubmit} isSubmitting={isUpdating} initialData={initialData} />
+
+      {/* Form */}
+      <ProductFormV2
+        categories={categories}
+        sizePresets={sizePresets}
+        colorPresets={colorPresets}
+        onSubmit={handleSubmit}
+        isSubmitting={isUpdating}
+        initialData={initialData}
+        isEditing={true}
+      />
     </div>
   );
 }

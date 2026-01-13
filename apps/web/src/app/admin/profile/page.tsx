@@ -8,7 +8,7 @@ export default function AdminProfilePage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xs uppercase tracking-[0.15em] font-medium text-muted-foreground">Account</h1>
+        <h1 className="text-xs uppercase tracking-[0.15em] font-medium text-black">Account</h1>
         <p className="text-2xl font-light mt-1">My Profile</p>
       </div>
 

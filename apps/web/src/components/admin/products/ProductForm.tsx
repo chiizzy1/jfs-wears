@@ -34,6 +34,8 @@ export function ProductForm({ categories, onSubmit, isSubmitting, initialData }:
       categoryId: "",
       gender: "UNISEX",
       isFeatured: false,
+      bulkEnabled: false,
+      bulkPricingTiers: [],
       variants: [{ size: "", color: "", sku: "", stock: 0, priceAdjustment: 0 }],
     },
   });
@@ -95,7 +97,7 @@ export function ProductForm({ categories, onSubmit, isSubmitting, initialData }:
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8">
         {/* Basic Info */}
-        <div className="bg-white p-6 rounded-lg border shadow-sm space-y-4">
+        <div className="bg-white p-6 border shadow-sm space-y-4">
           <h2 className="text-lg font-semibold">Product Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
@@ -202,7 +204,7 @@ export function ProductForm({ categories, onSubmit, isSubmitting, initialData }:
         </div>
 
         {/* Images */}
-        <div className="bg-white p-6 rounded-lg border shadow-sm space-y-4">
+        <div className="bg-white p-6 border shadow-sm space-y-4">
           <h2 className="text-lg font-semibold">Images</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {images.map((img, index) => (
@@ -226,7 +228,7 @@ export function ProductForm({ categories, onSubmit, isSubmitting, initialData }:
         </div>
 
         {/* Bulk Pricing */}
-        <div className="bg-white p-6 rounded-lg border shadow-sm space-y-4">
+        <div className="bg-white p-6 border shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Bulk Pricing</h2>
             <FormField
@@ -336,7 +338,7 @@ export function ProductForm({ categories, onSubmit, isSubmitting, initialData }:
         </div>
 
         {/* Variants */}
-        <div className="bg-white p-6 rounded-lg border shadow-sm space-y-4">
+        <div className="bg-white p-6 border shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Variants</h2>
             <Button

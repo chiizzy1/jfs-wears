@@ -76,7 +76,7 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
         {/* Product Info - Clean typography */}
         <div className="space-y-2">
           {/* Category */}
-          {product.category && <p className="text-xs uppercase tracking-widest text-muted">{product.category.name}</p>}
+          {product.category && <p className="text-xs uppercase tracking-widest text-gray-500">{product.category.name}</p>}
 
           {/* Product Name - Simple hover underline */}
           <h3 className="text-sm font-medium text-primary line-clamp-2 group-hover:underline underline-offset-4 transition-all">

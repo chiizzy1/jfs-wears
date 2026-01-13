@@ -43,6 +43,23 @@ const sizeCharts = {
       ["XL", "40", "32", "42", "38"],
     ],
   },
+  shoes: {
+    title: "Shoes",
+    headers: ["EU", "US (M)", "US (W)", "UK", "CM"],
+    rows: [
+      ["36", "4.5", "6", "3.5", "23"],
+      ["37", "5", "6.5", "4", "23.5"],
+      ["38", "6", "7.5", "5", "24"],
+      ["39", "7", "8.5", "6", "25"],
+      ["40", "7.5", "9", "6.5", "25.5"],
+      ["41", "8.5", "10", "7.5", "26.5"],
+      ["42", "9", "10.5", "8", "27"],
+      ["43", "10", "11.5", "9", "28"],
+      ["44", "10.5", "12", "9.5", "28.5"],
+      ["45", "11.5", "13", "10.5", "29.5"],
+      ["46", "12", "13.5", "11", "30"],
+    ],
+  },
 };
 
 export default function SizeGuideModal({ isOpen, onClose, category }: SizeGuideModalProps) {
@@ -130,6 +147,9 @@ export default function SizeGuideModal({ isOpen, onClose, category }: SizeGuideM
                 </li>
                 <li>
                   • <strong>Inseam:</strong> Measure from the crotch to the bottom of your leg
+                </li>
+                <li>
+                  • <strong>Foot Length:</strong> Measure from the tip of your longest toe to the back of your heel
                 </li>
               </ul>
             </div>

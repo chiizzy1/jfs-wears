@@ -46,7 +46,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <ProductDetails product={product} />
 
         {/* Product Reviews */}
-        <ProductReviews productId={product.id} productName={product.name} />
+        <div className="mt-32">
+          <ProductReviews productId={product.id} productName={product.name} />
+        </div>
 
         {/* Track recently viewed */}
         <RecentlyViewedTracker

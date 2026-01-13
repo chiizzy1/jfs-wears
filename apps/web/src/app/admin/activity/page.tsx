@@ -118,7 +118,7 @@ export default function ActivityPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xs uppercase tracking-[0.15em] font-medium text-muted-foreground">Security</h1>
+          <h1 className="text-xs uppercase tracking-[0.15em] font-medium text-black">Security</h1>
           <p className="text-2xl font-light mt-1">Activity Log</p>
         </div>
         <div className="flex items-center gap-4">
@@ -140,7 +140,7 @@ export default function ActivityPage() {
               ))}
             </SelectContent>
           </Select>
-          <span className="text-xs text-muted-foreground">{total} activities</span>
+          <span className="text-xs text-gray-500">{total} activities</span>
         </div>
       </div>
 
@@ -159,7 +159,7 @@ export default function ActivityPage() {
           {logs.map((log) => (
             <div key={log.id} className="flex items-start gap-4 p-4 hover:bg-gray-50 transition-colors border-b border-gray-100">
               {/* Avatar */}
-              <div className="w-8 h-8 bg-black text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
+              <div className="w-8 h-8 bg-black text-white flex items-center justify-center text-xs font-medium shrink-0">
                 {log.staff?.name?.[0]?.toUpperCase() || log.staffName?.[0]?.toUpperCase() || "?"}
               </div>
 
@@ -168,13 +168,13 @@ export default function ActivityPage() {
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-medium text-sm truncate">{log.staff?.name || log.staffName || "Unknown"}</span>
                   {getActionBadge(log.action)}
-                  <span className="text-xs text-muted-foreground">{log.entity}</span>
+                  <span className="text-xs text-gray-500">{log.entity}</span>
                 </div>
-                <p className="text-sm text-muted-foreground truncate">{log.description}</p>
+                <p className="text-sm text-gray-500 truncate">{log.description}</p>
               </div>
 
               {/* Time */}
-              <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+              <div className="flex items-center gap-1 text-xs text-gray-500 shrink-0">
                 <Clock className="w-3 h-3" />
                 {formatDate(log.createdAt)}
               </div>

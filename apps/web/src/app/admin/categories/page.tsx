@@ -191,7 +191,7 @@ export default function CategoriesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-light tracking-tight">Categories</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage product categories</p>
+          <p className="text-gray-500 text-sm mt-1">Manage product categories</p>
         </div>
         <Button variant="premium" onClick={() => handleOpenModal()}>
           <Plus className="h-4 w-4 mr-2" />
@@ -204,30 +204,22 @@ export default function CategoriesPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-100">
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
-                Name
-              </th>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
-                Slug
-              </th>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
+              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Name</th>
+              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Slug</th>
+              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">
                 Description
               </th>
-              <th className="px-6 py-4 text-center text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
+              <th className="px-6 py-4 text-center text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">
                 Products
               </th>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
-                Status
-              </th>
-              <th className="px-6 py-4 text-right text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
-                Actions
-              </th>
+              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Status</th>
+              <th className="px-6 py-4 text-right text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
             {categories.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                   No categories found. Create your first category.
                 </td>
               </tr>
@@ -235,8 +227,8 @@ export default function CategoriesPage() {
               categories.map((category) => (
                 <tr key={category.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4 font-medium">{category.name}</td>
-                  <td className="px-6 py-4 text-muted-foreground font-mono text-sm">{category.slug}</td>
-                  <td className="px-6 py-4 text-muted-foreground text-sm max-w-xs truncate">{category.description || "—"}</td>
+                  <td className="px-6 py-4 text-gray-500 font-mono text-sm">{category.slug}</td>
+                  <td className="px-6 py-4 text-gray-500 text-sm max-w-xs truncate">{category.description || "—"}</td>
                   <td className="px-6 py-4 text-center">
                     <span
                       className={`inline-flex items-center justify-center min-w-8 px-2 py-1 text-xs font-medium rounded ${
@@ -289,7 +281,7 @@ export default function CategoriesPage() {
             <h2 className="text-lg font-medium mb-6">{editingCategory ? "Edit Category" : "Add Category"}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs uppercase tracking-[0.15em] text-muted-foreground mb-2">Name *</label>
+                <label className="block text-xs uppercase tracking-[0.15em] text-gray-500 mb-2">Name *</label>
                 <Input
                   value={formData.name}
                   onChange={(e) => handleNameChange(e.target.value)}
@@ -298,7 +290,7 @@ export default function CategoriesPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-[0.15em] text-muted-foreground mb-2">Slug *</label>
+                <label className="block text-xs uppercase tracking-[0.15em] text-gray-500 mb-2">Slug *</label>
                 <Input
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
@@ -307,7 +299,7 @@ export default function CategoriesPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-[0.15em] text-muted-foreground mb-2">Description</label>
+                <label className="block text-xs uppercase tracking-[0.15em] text-gray-500 mb-2">Description</label>
                 <Input
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -316,7 +308,7 @@ export default function CategoriesPage() {
               </div>
               {/* Image Upload */}
               <div>
-                <label className="block text-xs uppercase tracking-[0.15em] text-muted-foreground mb-2">Category Image</label>
+                <label className="block text-xs uppercase tracking-[0.15em] text-gray-500 mb-2">Category Image</label>
                 <div
                   onClick={() => fileInputRef.current?.click()}
                   onDrop={(e) => {

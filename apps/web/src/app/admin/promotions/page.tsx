@@ -86,7 +86,7 @@ export default function PromotionsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-light tracking-tight">Promotions Management</h1>
-          <p className="text-muted-foreground mt-1 text-sm uppercase tracking-wider">Discount Codes & Offers</p>
+          <p className="text-gray-500 mt-1 text-sm uppercase tracking-wider">Discount Codes & Offers</p>
         </div>
         <Button onClick={openCreateModal} variant="premium" className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
@@ -97,15 +97,15 @@ export default function PromotionsPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 divide-y md:divide-y-0 md:divide-x divide-gray-200">
         <div className="px-6 first:pl-0">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Active Promotions</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">Active Promotions</p>
           <p className="text-4xl font-light mt-2 tracking-tight">{activePromotionsCount}</p>
         </div>
         <div className="px-6">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Total Promotions</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">Total Promotions</p>
           <p className="text-4xl font-light mt-2 tracking-tight">{promotions.length}</p>
         </div>
         <div className="px-6">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Total Uses</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">Total Uses</p>
           <p className="text-4xl font-light mt-2 tracking-tight">{totalUsage.toLocaleString()}</p>
         </div>
       </div>

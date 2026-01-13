@@ -10,6 +10,7 @@ import SizeGuideModal from "./SizeGuideModal";
 import { useWishlistStore } from "@/stores/wishlist-store";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
+import { Truck, ShieldCheck } from "lucide-react";
 
 interface ProductDetailsProps {
   product: Product;
@@ -219,7 +220,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         {product.category && (
           <Link
             href={`/shop?category=${product.category.slug}`}
-            className="text-xs uppercase tracking-[0.15em] text-muted hover:text-primary transition-colors"
+            className="text-xs uppercase tracking-[0.15em] text-black hover:text-gray-600 transition-colors"
           >
             {product.category.name}
           </Link>
@@ -235,16 +236,20 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             {hasDiscount && <span className="text-lg text-muted line-through">₦{product.compareAtPrice!.toLocaleString()}</span>}
           </div>
 
-          {/* Bulk Pricing Tiers */}
+          {/* Bulk Pricing Tiers - High Hierarchy White Card */}
           {product.bulkEnabled && product.bulkPricingTiers && product.bulkPricingTiers.length > 0 && (
-            <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 w-fit">
-              <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Bulk Pricing Available</h4>
-              <div className="flex flex-col gap-1.5">
+            <div className="bg-white text-black p-8 w-full my-6 shadow-sm">
+              <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
+                <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-black">Bulk Savings</h4>
+                <span className="text-[10px] bg-black text-white px-2 py-0.5 font-bold uppercase tracking-wider">
+                  Volume Discount
+                </span>
+              </div>
+              <div className="space-y-4">
                 {product.bulkPricingTiers.map((tier) => (
-                  <div key={tier.minQuantity} className="flex items-center text-sm gap-2">
-                    <span className="font-medium text-gray-900">Buy {tier.minQuantity}+</span>
-                    <span className="text-gray-400">→</span>
-                    <span className="font-bold text-green-600">{Number(tier.discountPercent)}% OFF</span>
+                  <div key={tier.minQuantity} className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-gray-600">Buy {tier.minQuantity}+ pieces</span>
+                    <span className="font-bold text-black text-lg">{Number(tier.discountPercent)}% OFF</span>
                   </div>
                 ))}
               </div>
@@ -253,14 +258,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </div>
 
         {/* Description */}
-        <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+        <p className="text-black leading-relaxed">{product.description}</p>
 
         {/* Color Selector - Visual Swatches with Smooth Transitions */}
         {colors.length > 0 && (
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <h3 className="text-xs uppercase tracking-[0.15em] font-medium">Color</h3>
-              {selectedColor && <span className="text-xs text-muted capitalize">{selectedColor}</span>}
+              <h3 className="text-xs uppercase tracking-[0.15em] font-medium text-black">Color</h3>
+              {selectedColor && <span className="text-xs text-black capitalize">{selectedColor}</span>}
             </div>
             <div className="flex flex-wrap gap-3">
               {colors.map((color) => {
@@ -306,10 +311,10 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         {sizes.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs uppercase tracking-[0.15em] font-medium">Size</h3>
+              <h3 className="text-xs uppercase tracking-[0.15em] font-medium text-black">Size</h3>
               <button
                 onClick={() => setShowSizeGuide(true)}
-                className="text-xs uppercase tracking-widest text-muted hover:text-primary transition-colors underline underline-offset-4"
+                className="text-xs uppercase tracking-widest text-black hover:text-gray-600 transition-colors underline underline-offset-4"
               >
                 Size Guide
               </button>
@@ -337,9 +342,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             {currentVariant.stock === 0 ? (
               <span className="text-xs uppercase tracking-widest text-sale">Out of Stock</span>
             ) : currentVariant.stock <= 5 ? (
-              <span className="text-xs uppercase tracking-widest text-muted">Only {currentVariant.stock} left</span>
+              <span className="text-xs uppercase tracking-widest text-black">Only {currentVariant.stock} left</span>
             ) : (
-              <span className="text-xs uppercase tracking-widest text-muted">In Stock</span>
+              <span className="text-xs uppercase tracking-widest text-black">In Stock</span>
             )}
           </div>
         )}
@@ -356,18 +361,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </div>
 
         {/* Trust Indicators */}
-        <div className="grid grid-cols-2 gap-6 pt-8 border-t border-gray-200">
+        <div className="grid grid-cols-2 gap-6 pt-12 border-t border-gray-100">
           <div className="flex items-center gap-3">
-            <svg className="w-5 h-5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-            <span className="text-xs text-muted">Free shipping over ₦30,000</span>
+            <Truck className="w-5 h-5 text-black" strokeWidth={1} />
+            <span className="text-xs text-black uppercase tracking-wider font-medium">Free shipping over ₦30k</span>
           </div>
           <div className="flex items-center gap-3">
-            <svg className="w-5 h-5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="text-xs text-muted">Quality guaranteed</span>
+            <ShieldCheck className="w-5 h-5 text-black" strokeWidth={1} />
+            <span className="text-xs text-black uppercase tracking-wider font-medium">Quality guaranteed</span>
           </div>
         </div>
       </div>

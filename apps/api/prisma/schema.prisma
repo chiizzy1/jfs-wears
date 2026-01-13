@@ -104,6 +104,8 @@ model Address {
   address     String
   city        String
   state       String
+  postalCode  String?
+  country     String   @default("Nigeria")
   landmark    String?
   isDefault   Boolean  @default(false)
   createdAt   DateTime @default(now())

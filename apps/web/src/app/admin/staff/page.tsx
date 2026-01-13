@@ -17,7 +17,7 @@ export default function StaffPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-light tracking-tight">Staff Management</h1>
-          <p className="text-muted-foreground mt-1 text-sm uppercase tracking-wider">Team & Access Control</p>
+          <p className="text-gray-500 mt-1 text-sm uppercase tracking-wider">Team & Access Control</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setIsModalOpen(true)} variant="premium" className="flex items-center gap-2">
@@ -30,19 +30,19 @@ export default function StaffPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 divide-y md:divide-y-0 md:divide-x divide-gray-200">
         <div className="px-6 first:pl-0">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Total Staff</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">Total Staff</p>
           <p className="text-4xl font-light mt-2 tracking-tight">{staff.length}</p>
         </div>
         <div className="px-6">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Admins</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">Admins</p>
           <p className="text-4xl font-light mt-2 tracking-tight">{staff.filter((s) => s.role === "ADMIN").length}</p>
         </div>
         <div className="px-6">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Managers</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">Managers</p>
           <p className="text-4xl font-light mt-2 tracking-tight">{staff.filter((s) => s.role === "MANAGER").length}</p>
         </div>
         <div className="px-6">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Staff</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">Staff</p>
           <p className="text-4xl font-light mt-2 tracking-tight">{staff.filter((s) => s.role === "STAFF").length}</p>
         </div>
       </div>
