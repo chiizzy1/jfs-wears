@@ -10,6 +10,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { formatDate } from "@/lib/format";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { ordersColumns } from "./orders-columns";
 
 export function OrdersTable() {
   const [statusFilter, setStatusFilter] = useState("all");
@@ -176,7 +177,7 @@ export function OrdersTable() {
         </div>
       ) : (
         <div className="rounded-none border-t border-gray-100">
-          <DataTable columns={columns} data={filteredOrders} />
+          <DataTable columns={ordersColumns} data={filteredOrders} />
         </div>
       )}
     </div>

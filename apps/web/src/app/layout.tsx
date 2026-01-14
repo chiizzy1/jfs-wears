@@ -3,6 +3,7 @@ import { Hanken_Grotesk, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
 import ClientProviders from "@/components/providers/ClientProviders";
+import SmoothScroll from "@/components/common/SmoothScroll";
 import { Toaster } from "react-hot-toast";
 
 const hankenGrotesk = Hanken_Grotesk({
@@ -37,7 +38,9 @@ export default function RootLayout({
       >
         <Toaster position="top-right" />
         <ClientProviders>
-          <ConditionalLayout>{children}</ConditionalLayout>
+          <SmoothScroll>
+            <ConditionalLayout>{children}</ConditionalLayout>
+          </SmoothScroll>
         </ClientProviders>
       </body>
     </html>

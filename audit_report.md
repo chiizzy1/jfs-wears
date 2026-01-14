@@ -11,13 +11,13 @@ A comprehensive scan of the `apps/web` codebase reveals systematic violations of
 **Rule**: Pages should be thin shells for metadata and top-level layout. Logic must reside in Feature Components.
 **Findings**:
 
-- `src/app/account/addresses/page.tsx`: **Severe**. Contains ~350 lines of full CRUD logic, manual form state, and UI rendering.
+- `src/app/account/addresses/page.tsx`: **[FIXED]** Refactored to thin shell using `AddressList` component and `AddressForm`.
 - `src/app/admin/orders/[id]/page.tsx`: **Severe**. Contains ~400 lines of data fetching, edit state management, and manual forms.
-- `src/app/admin/categories/page.tsx`: **Moderate**. Manage modals and forms locally.
+- `src/app/admin/categories/page.tsx`: **[FIXED]** Refactored to thin shell using `CategoriesView` component, `DataTable`, and `CategoryForm`.
 - `src/app/admin/staff/page.tsx`: **Moderate**. Manages modal state locally.
 - `src/app/admin/promotions/page.tsx`: **Moderate**. Manages modal state and delete handlers locally.
 - `src/app/admin/storefront/page.tsx`: **Critical**. ~1000 lines. Manual forms, inline modals, mixed concerns.
-- `src/app/track/page.tsx`: **Critical**. ~350 lines. Manual `<form>`, `<input>`, inline API fetching, inline UI logic.
+- `src/app/track/page.tsx`: **[FIXED]** Refactored to thin shell using `TrackOrderView` and `TrackOrderForm`.
 - `src/app/reset-password/page.tsx`: **Moderate**. Manual `useState` and `apiClient` calls. Wraps a `ResetPasswordForm` but handles token verification logic inline.
 
 ### Data Table Architecture (Rule 5.6 Violation)
@@ -42,8 +42,10 @@ A comprehensive scan of the `apps/web` codebase reveals systematic violations of
 **Rule**: All inputs must use `react-hook-form` + `zod`.
 **Findings**:
 
-- `src/app/account/addresses/page.tsx`: Uses manual `input` bindings (`value={formData.firstName}`).
-- `src/app/admin/orders/[id]/page.tsx`: Uses manual `select` and `input` for status/tracking updates.
+- `src/app/account/addresses/page.tsx`: **[FIXED]** Replaced with `AddressForm` using `react-hook-form` + `zod`.
+- `src/app/admin/orders/[id]/page.tsx`: **[FIXED]** Order#### Violation 2: Order Page (`src/app/admin/orders/[id]/page.tsx`)
+- **Status**: [FIXED]
+  390 lines. Manual fetch, manual forms, inline types. **Severity: High**. Uses manual `select` and `input` for status/tracking updates.
 - `src/components/admin/products/ProductFormV2.tsx`: Uses `resolver: zodResolver(schema) as any`. (Minor TS violation).
 
 ## 3. Type Safety Violations (Rule 6.1)

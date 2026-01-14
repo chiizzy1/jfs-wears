@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import { useAdminReviews, useReviewAction } from "@/hooks/use-reviews";
-import { Trash2, Pencil, Loader2, Star, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { formatDate } from "@/lib/utils";
+import { ReviewsTable } from "@/components/admin/reviews/ReviewsTable";
+import { ReviewsFilters } from "@/components/admin/reviews/ReviewsFilters";
 
 export default function AdminReviewsPage() {
   const [page, setPage] = useState(1);
@@ -38,14 +36,6 @@ export default function AdminReviewsPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -57,111 +47,15 @@ export default function AdminReviewsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-        <div className="relative w-full sm:w-80">
-          <Input
-            placeholder="Search by author, product, or content..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-4"
-          />
-        </div>
-        <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Reviews</SelectItem>
-            <SelectItem value="pending">Pending Approval</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <ReviewsFilters search={search} onSearchChange={setSearch} status={status} onStatusChange={setStatus} />
 
       {/* Reviews Table */}
-      <div className="bg-white">
-        <table className="w-full">
-          <thead>
-            <tr>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Author</th>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Product</th>
-              <th className="px-6 py-4 text-center text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Rating</th>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium max-w-xs">
-                Review
-              </th>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Status</th>
-              <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Date</th>
-              <th className="px-6 py-4 text-right text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {!data?.reviews || data.reviews.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                  No reviews found matching your criteria.
-                </td>
-              </tr>
-            ) : (
-              data.reviews.map((review) => (
-                <tr key={review.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div>
-                      <p className="font-medium">{review.user.name || "Anonymous"}</p>
-                      <p className="text-xs text-gray-500">{review.user.email}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-gray-500 text-sm max-w-[200px] truncate">{review.product?.name || "—"}</td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="inline-flex items-center gap-1 text-sm font-medium">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      {review.rating}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 max-w-xs">
-                    <div className="space-y-1">
-                      {review.title && <p className="font-medium text-sm truncate">{review.title}</p>}
-                      <p className="text-sm text-gray-500 truncate" title={review.comment || ""}>
-                        {review.comment || "—"}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1.5 text-xs ${
-                        review.isApproved ? "text-emerald-600" : "text-amber-600"
-                      }`}
-                    >
-                      <span className={`w-1.5 h-1.5 ${review.isApproved ? "bg-emerald-500" : "bg-amber-500"}`} />
-                      {review.isApproved ? "Approved" : "Pending"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-500 text-sm">{formatDate(review.createdAt)}</td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleApprove(review.id, review.isApproved)}
-                        className={`p-2 transition-colors ${
-                          review.isApproved ? "text-amber-500 hover:text-amber-600" : "text-emerald-500 hover:text-emerald-600"
-                        }`}
-                        title={review.isApproved ? "Unapprove" : "Approve"}
-                      >
-                        {review.isApproved ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />}
-                      </button>
-                      <button
-                        onClick={() => setDeleteConfirm({ isOpen: true, id: review.id })}
-                        className="p-2 text-muted-foreground hover:text-red-600 transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ReviewsTable
+        reviews={data?.reviews || []}
+        isLoading={isLoading}
+        onApprove={handleApprove}
+        onDelete={(id) => setDeleteConfirm({ isOpen: true, id })}
+      />
 
       {/* Pagination */}
       {data?.meta && data.meta.lastPage > 1 && (

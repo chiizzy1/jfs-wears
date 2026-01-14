@@ -21,7 +21,7 @@ export function AdminSidebar({ pathname }: AdminSidebarProps) {
         </Link>
       </div>
 
-      <nav className="p-4 flex-1 overflow-y-auto">
+      <nav className="p-4 flex-1 overflow-y-auto" data-lenis-prevent>
         <ul className="space-y-1">
           {adminNavItems.map((item) => (
             <li key={item.href}>

@@ -1,35 +1,22 @@
 import { z } from "zod";
 
-export const orderItemSchema = z.object({
-  id: z.string(),
-  productId: z.string(),
-  productName: z.string(),
-  variantSize: z.string().optional(),
-  variantColor: z.string().optional(),
-  quantity: z.number(),
-  unitPrice: z.number(),
-  total: z.number(),
+export const ORDER_STATUSES = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"] as const;
+export const PAYMENT_STATUSES = ["PENDING", "PAID", "FAILED", "REFUNDED"] as const;
+
+export const orderStatusSchema = z.object({
+  status: z.enum(ORDER_STATUSES),
 });
 
-export const orderSchema = z.object({
-  id: z.string(),
-  orderNumber: z.string(),
-  userId: z.string(),
-  user: z
-    .object({
-      id: z.string(),
-      name: z.string(),
-      email: z.string(),
-    })
-    .optional(),
-  items: z.array(orderItemSchema),
-  subtotal: z.number(),
-  shippingFee: z.number(),
-  discount: z.number(),
-  total: z.number(),
-  status: z.enum(["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"]),
-  paymentStatus: z.enum(["PENDING", "PAID", "FAILED", "REFUNDED"]),
-  createdAt: z.string(),
+export const orderPaymentStatusSchema = z.object({
+  paymentStatus: z.enum(PAYMENT_STATUSES),
 });
 
-export type Order = z.infer<typeof orderSchema>;
+export const orderTrackingSchema = z.object({
+  carrierName: z.string().optional(),
+  trackingNumber: z.string().optional(),
+  estimatedDeliveryDate: z.string().optional(),
+});
+
+export type OrderStatusValues = z.infer<typeof orderStatusSchema>;
+export type OrderPaymentStatusValues = z.infer<typeof orderPaymentStatusSchema>;
+export type OrderTrackingValues = z.infer<typeof orderTrackingSchema>;
