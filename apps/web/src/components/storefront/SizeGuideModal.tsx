@@ -105,7 +105,7 @@ export default function SizeGuideModal({ isOpen, onClose, category }: SizeGuideM
           </div>
 
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto" data-lenis-prevent>
             {/* Chart */}
             <div className="p-6 overflow-x-auto">
               <table className="w-full text-sm">

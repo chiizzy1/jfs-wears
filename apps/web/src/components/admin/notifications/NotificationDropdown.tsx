@@ -145,7 +145,7 @@ export function NotificationDropdown() {
           </div>
 
           {/* Notification List */}
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-80 overflow-y-auto" data-lenis-prevent>
             {isLoading ? (
               <div className="px-4 py-8 text-center text-gray-500 text-sm">Loading...</div>
             ) : notifications.length === 0 ? (

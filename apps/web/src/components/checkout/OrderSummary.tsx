@@ -38,7 +38,7 @@ export function OrderSummary({
       <h2 className="text-xs uppercase tracking-[0.2em] text-muted-foreground font-medium mb-6">Order Summary</h2>
 
       {/* Items Preview */}
-      <div className="space-y-3 mb-6 max-h-68 overflow-y-auto pr-2 custom-scrollbar">
+      <div className="space-y-3 mb-6 max-h-68 overflow-y-auto pr-2 custom-scrollbar" data-lenis-prevent>
         {items.map((item) => (
           <div key={item.variantId} className="flex justify-between text-sm py-2 border-b border-gray-50 last:border-0">
             <span className="text-gray-600 truncate max-w-[65%]">

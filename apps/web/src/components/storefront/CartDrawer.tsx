@@ -73,7 +73,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </div>
 
             {/* Cart Items */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto" data-lenis-prevent>
               {items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full px-6 text-center">
                   <svg

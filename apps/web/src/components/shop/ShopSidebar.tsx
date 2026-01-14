@@ -84,7 +84,7 @@ export function ShopMobileFilter({ categories, currentCategory }: ShopSidebarPro
             <Filter className="w-4 h-4" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[300px] overflow-y-auto">
+        <SheetContent side="left" className="w-[300px] overflow-y-auto" data-lenis-prevent>
           <SheetHeader className="mb-8 text-left">
             <SheetTitle className="text-lg font-bold uppercase tracking-widest">Filters</SheetTitle>
           </SheetHeader>

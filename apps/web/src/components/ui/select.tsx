@@ -57,6 +57,7 @@ function SelectContent({
         position={position}
         align={align}
         {...props}
+        data-lenis-prevent
       >
         <SelectScrollUpButton />
         <SelectPrimitive.Viewport
