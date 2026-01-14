@@ -62,8 +62,12 @@ export function AdminHeader({ pathname }: AdminHeaderProps) {
 
             {/* Profile */}
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 bg-black flex items-center justify-center text-white font-medium text-sm sm:text-base">
-                {user?.name?.[0]?.toUpperCase() || "A"}
+              <div className="w-8 h-8 sm:w-9 sm:h-9 overflow-hidden bg-black flex items-center justify-center text-white font-medium text-sm sm:text-base">
+                {user?.profileImage ? (
+                  <img src={user.profileImage} alt={user?.name || "Admin"} className="w-full h-full object-cover" />
+                ) : (
+                  user?.name?.[0]?.toUpperCase() || "A"
+                )}
               </div>
               <div className="hidden sm:block">
                 <p className="text-sm font-medium">{user?.name || "Admin"}</p>

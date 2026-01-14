@@ -17,6 +17,8 @@ interface AdminAuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  setUser: (user: AdminUser | null) => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
@@ -59,6 +61,21 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const updateUser = (updatedUser: AdminUser | null) => {
+    setUser(updatedUser);
+  };
+
+  const refreshUser = async () => {
+    try {
+      const userData = await apiClient.get<AdminUser>("/auth/me");
+      if (userData && userData.role && ["ADMIN", "MANAGER", "STAFF"].includes(userData.role)) {
+        setUser(userData);
+      }
+    } catch {
+      // Ignore refresh errors
+    }
+  };
+
   return (
     <AdminAuthContext.Provider
       value={{
@@ -67,6 +84,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         login,
         logout,
+        setUser: updateUser,
+        refreshUser,
       }}
     >
       {children}

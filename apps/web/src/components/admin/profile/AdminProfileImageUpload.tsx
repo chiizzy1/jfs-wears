@@ -8,7 +8,7 @@ import { Camera, Loader2, User } from "lucide-react";
 import toast from "react-hot-toast";
 
 export function AdminProfileImageUpload() {
-  const { user } = useAdminAuth();
+  const { user, setUser } = useAdminAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -59,9 +59,13 @@ export function AdminProfileImageUpload() {
 
       const data = await apiClient.upload<{ profileImage: string }>("/staff/me/profile-image", formData);
 
-      // Update preview with server URL
+      // Update preview with server URL and sync to global state
       if (data.profileImage) {
         setPreviewUrl(data.profileImage);
+        // Update global admin auth context so navbar reflects the change
+        if (user) {
+          setUser({ ...user, profileImage: data.profileImage });
+        }
       }
 
       toast.success("Profile image updated!");
