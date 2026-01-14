@@ -6,6 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSettings } from "@/hooks/use-settings";
 import { settingsSchema, SettingsFormValues } from "@/schemas/settings.schema";
 import { Button } from "@/components/ui/button";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { SettingsSkeleton } from "@/components/admin/skeletons/SettingsSkeleton";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -46,11 +48,7 @@ export function SettingsContent() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-black border-t-transparent animate-spin"></div>
-      </div>
-    );
+    return <SettingsSkeleton />;
   }
 
   return (

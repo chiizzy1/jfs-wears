@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { Plus, Trash2, GripVertical, Image as ImageIcon, Eye, EyeOff, Edit2, Loader2 } from "lucide-react";
+import { Plus, Trash2, GripVertical, Image as ImageIcon, Eye, EyeOff, Edit2 } from "lucide-react";
+import { StorefrontSkeleton } from "@/components/admin/skeletons/StorefrontSkeleton";
 
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
@@ -141,9 +142,7 @@ export function StorefrontView() {
 
       {/* Content */}
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-        </div>
+        <StorefrontSkeleton />
       ) : (
         <>
           {activeTab === "heroes" && (

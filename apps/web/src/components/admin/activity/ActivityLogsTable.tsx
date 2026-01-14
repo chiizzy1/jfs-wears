@@ -1,8 +1,8 @@
 "use client";
 
-import { Clock, FileText } from "lucide-react";
-import { Loader2 } from "lucide-react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Clock, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import { format } from "date-fns";
+import { TableSkeleton } from "@/components/admin/skeletons/TableSkeleton";
 import { Button } from "@/components/ui/button";
 
 export interface AuditLog {
@@ -78,11 +78,7 @@ export function ActivityLogsTable({ logs, isLoading, page, totalPages, onPageCha
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <TableSkeleton />;
   }
 
   if (logs.length === 0) {

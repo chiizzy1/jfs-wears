@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useOrders } from "@/hooks/use-orders";
 import { DataTable } from "@/components/ui/data-table/DataTable";
+import { TableSkeleton } from "@/components/admin/skeletons/TableSkeleton";
 import { ColumnDef } from "@tanstack/react-table";
 import { Order } from "@/lib/admin-api";
 import { Button } from "@/components/ui/button";
@@ -172,12 +173,10 @@ export function OrdersTable() {
 
       {/* Data Table */}
       {isLoading ? (
-        <div className="h-64 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-        </div>
+        <TableSkeleton />
       ) : (
         <div className="rounded-none border-t border-gray-100">
-          <DataTable columns={ordersColumns} data={filteredOrders} />
+          <DataTable columns={columns} data={filteredOrders} />
         </div>
       )}
     </div>

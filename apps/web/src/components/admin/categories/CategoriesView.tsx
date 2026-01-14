@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Category } from "@/types/category.types";
 import { categoriesService } from "@/services/categories.service";
 import { CategoryForm } from "./CategoryForm";
+import { CategoriesSkeleton } from "@/components/admin/skeletons/CategoriesSkeleton";
 import { getCategoriesColumns } from "./categories-columns";
 
 export function CategoriesView() {
@@ -91,11 +92,7 @@ export function CategoriesView() {
   );
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-black border-t-transparent animate-spin"></div>
-      </div>
-    );
+    return <CategoriesSkeleton />;
   }
 
   return (

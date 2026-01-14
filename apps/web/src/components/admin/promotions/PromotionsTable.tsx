@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { TableSkeleton } from "@/components/admin/skeletons/TableSkeleton";
 import { Promotion } from "@/lib/admin-api";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { Button } from "@/components/ui/button";
@@ -98,12 +99,15 @@ export function PromotionsTable({ data, isLoading, onEdit, onDelete }: Promotion
     [onEdit, onDelete]
   );
 
+  if (isLoading) {
+    return <TableSkeleton columns={columns.length} rows={5} />;
+  }
+
   return (
     <DataTable
       columns={columns}
       data={data}
       searchKey="code"
-      loading={isLoading}
       meta={{
         pluralName: "Promotions",
       }}

@@ -3,6 +3,8 @@
 import { Trash2, Star, Check, X, Loader2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { Review } from "@/hooks/use-reviews";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { TableSkeleton } from "@/components/admin/skeletons/TableSkeleton";
 import { Button } from "@/components/ui/button";
 
 interface ReviewsTableProps {
@@ -14,11 +16,7 @@ interface ReviewsTableProps {
 
 export function ReviewsTable({ reviews, isLoading, onApprove, onDelete }: ReviewsTableProps) {
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <TableSkeleton />;
   }
 
   return (

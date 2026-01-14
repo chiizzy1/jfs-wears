@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { TableSkeleton } from "@/components/admin/skeletons/TableSkeleton";
 import { User } from "@/lib/admin-api";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { Button } from "@/components/ui/button";
@@ -19,12 +20,13 @@ export function CustomersTable({ data, isLoading, onDelete }: CustomersTableProp
 
   const columns = useMemo(() => getCustomersColumns({ onDelete }), [onDelete]);
 
-  return (
+  return isLoading ? (
+    <TableSkeleton />
+  ) : (
     <DataTable
       columns={columns}
       data={data}
       searchKey="email"
-      loading={isLoading}
       meta={{
         pluralName: "Customers",
       }}

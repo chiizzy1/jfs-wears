@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useNotifications, useUnreadCount, useMarkAsRead, useMarkAllAsRead, Notification } from "@/hooks/use-notifications";
 import { formatDistanceToNow } from "date-fns";
+import { NotificationSkeleton } from "@/components/admin/skeletons/NotificationSkeleton";
 
 /**
  * NotificationDropdown Component
@@ -147,7 +148,7 @@ export function NotificationDropdown() {
           {/* Notification List */}
           <div className="max-h-80 overflow-y-auto" data-lenis-prevent>
             {isLoading ? (
-              <div className="px-4 py-8 text-center text-gray-500 text-sm">Loading...</div>
+              <NotificationSkeleton />
             ) : notifications.length === 0 ? (
               <div className="px-4 py-8 text-center text-gray-500 text-sm">No notifications yet</div>
             ) : (

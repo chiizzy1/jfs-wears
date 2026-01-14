@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Staff } from "@/lib/admin-api";
 import { DataTable } from "@/components/ui/data-table/DataTable";
+import { TableSkeleton } from "@/components/admin/skeletons/TableSkeleton";
 import { ColumnDef } from "@tanstack/react-table";
 import { useStaff } from "@/hooks/use-staff";
 import { Button } from "@/components/ui/button";

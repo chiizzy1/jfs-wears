@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowLeft, Package, User, MapPin } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { OrderDetailSkeleton } from "@/components/admin/skeletons/OrderDetailSkeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { getErrorMessage } from "@/lib/api-client";
@@ -42,11 +44,7 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
   }, [fetchOrder]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-black border-t-transparent animate-spin"></div>
-      </div>
-    );
+    return <OrderDetailSkeleton />;
   }
 
   if (error || !order) {
