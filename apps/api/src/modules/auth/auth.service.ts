@@ -205,6 +205,7 @@ export class AuthService {
         email: staff.email,
         name: staff.name,
         role: staff.role,
+        profileImage: staff.profileImage,
       },
       tokens,
     };

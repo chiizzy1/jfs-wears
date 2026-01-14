@@ -32,7 +32,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     const checkAuth = async () => {
       try {
         // Try to get current user from API - cookie will be sent automatically
-        const userData = await apiClient.get<AdminUser>("/auth/me");
+        const response = await apiClient.get<{ user: AdminUser }>("/auth/me");
+        const userData = response.user;
         if (userData && userData.role && ["ADMIN", "MANAGER", "STAFF"].includes(userData.role)) {
           setUser(userData);
         }
@@ -67,7 +68,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const userData = await apiClient.get<AdminUser>("/auth/me");
+      const response = await apiClient.get<{ user: AdminUser }>("/auth/me");
+      const userData = response.user;
       if (userData && userData.role && ["ADMIN", "MANAGER", "STAFF"].includes(userData.role)) {
         setUser(userData);
       }
