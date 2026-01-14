@@ -12,6 +12,7 @@ import { Search } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function ProductTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -152,7 +153,7 @@ export function ProductTable() {
               placeholder="SEARCH PRODUCTS..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 border-t-0 border-x-0 border-b border-gray-200 rounded-none bg-transparent focus-visible:ring-0 focus-visible:border-black px-0 text-xs uppercase tracking-widest placeholder:text-gray-300"
+              className="pl-10 border-t-0 border-x-0 border-b border-gray-200 rounded-none bg-transparent focus-visible:ring-0 focus-visible:border-black px-0 text-xs uppercase tracking-widest placeholder:text-gray-300"
             />
           </div>
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -182,9 +183,7 @@ export function ProductTable() {
 
       {/* Data Table - Editorial Style */}
       {isLoading ? (
-        <div className="h-64 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-        </div>
+        <LoadingSpinner className="h-64" />
       ) : (
         <div className="rounded-none border-t border-gray-100">
           <DataTable columns={columns} data={filteredProducts} />

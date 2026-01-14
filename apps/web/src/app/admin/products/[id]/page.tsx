@@ -1,9 +1,14 @@
-"use client";
-
 import { ProductEditClient } from "@/components/admin/products/ProductEditClient";
-import { use } from "react";
 
-export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+interface EditProductPageProps {
+  params: Promise<{ id: string }>;
+}
+
+/**
+ * Edit Product Page (Server Component)
+ * ProductEditClient is a Client Component handling all interactivity.
+ */
+export default async function EditProductPage({ params }: EditProductPageProps) {
+  const { id } = await params;
   return <ProductEditClient id={id} />;
 }

@@ -1,5 +1,3 @@
-# Airbills Frontend (v2) - Agent Instructions & Codebase Guide
-
 ## 1. Tech Stack Overview
 
 - **Framework**: Next.js (App Router)

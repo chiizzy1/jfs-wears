@@ -1,7 +1,9 @@
-"use client";
-
 import { OrdersTable } from "@/components/admin/orders/OrdersTable";
 
+/**
+ * Orders Page (Server Component)
+ * OrdersTable is a Client Component handling all interactivity.
+ */
 export default function OrdersPage() {
   return (
     <div className="space-y-6">

@@ -1,11 +1,14 @@
-"use client";
-
-import { useParams } from "next/navigation";
 import { OrderDetailView } from "@/components/admin/orders/OrderDetailView";
 
-export default function OrderDetailPage() {
-  const params = useParams();
-  const orderId = params.id as string;
+interface OrderDetailPageProps {
+  params: Promise<{ id: string }>;
+}
 
-  return <OrderDetailView orderId={orderId} />;
+/**
+ * Order Detail Page (Server Component)
+ * OrderDetailView is a Client Component handling all interactivity.
+ */
+export default async function OrderDetailPage({ params }: OrderDetailPageProps) {
+  const { id } = await params;
+  return <OrderDetailView orderId={id} />;
 }

@@ -208,44 +208,222 @@ You cannot build a house without a hammer. You must create the base component pr
 
 ## Step 7: The Proxy Strategy (Next.js 16 Security)
 
-We leverage specific architectural patterns for request interception.
+We leverage the Next.js 16 three-layer defense architecture for authentication.
 
-1. **Create `src/proxy.ts`** (NOT `middleware.ts`):
+### 7.1 Create `src/lib/jwt.ts` (Token Helper)
 
-   - **Runtime**: Node.js (default).
-   - **Logic**:
+```typescript
+/**
+ * Check if a JWT token is expired (without signature verification)
+ */
+export function isTokenExpired(token: string): boolean {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return true;
+    const payload = parts[1];
+    const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    const now = Math.floor(Date.now() / 1000);
+    return decoded.exp < now + 30; // 30 second buffer
+  } catch {
+    return true;
+  }
+}
+```
 
-     ```typescript
-     import { NextResponse } from "next/server";
-     import type { NextRequest } from "next/server";
-     import { isTokenExpired } from "@/lib/jwt";
+### 7.2 Create `src/proxy.ts` (NOT `middleware.ts`)
 
-     const PROTECTED_ROUTES = ["/dashboard", "/admin"];
+```typescript
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { isTokenExpired } from "@/lib/jwt";
 
-     export default function proxy(request: NextRequest) {
-       const { pathname } = request.nextUrl;
-       const isProtected = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+const PROTECTED_ROUTES = ["/dashboard", "/admin", "/account"];
+const AUTH_ROUTES = ["/login", "/register"];
 
-       if (isProtected) {
-         const token = request.cookies.get("auth_token")?.value;
-         if (!token || isTokenExpired(token)) {
-           return NextResponse.redirect(new URL("/login", request.url));
-         }
-       }
-       return NextResponse.next();
-     }
-     ```
+export default function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const token = request.cookies.get("access_token")?.value;
+  const isAuthenticated = token && !isTokenExpired(token);
+
+  // Protected routes - redirect to login if not authenticated
+  if (PROTECTED_ROUTES.some((route) => pathname.startsWith(route))) {
+    if (!isAuthenticated) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // Auth routes - redirect authenticated users away
+  if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
+    if (isAuthenticated) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+};
+```
+
+### 7.3 Create `src/lib/dal.ts` (Data Access Layer)
+
+This is the server-side session verification utility for Server Components.
+
+```typescript
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+export interface Session {
+  user: { id: string; email: string; name?: string };
+}
+
+/**
+ * Verify session server-side. Redirects to /login if invalid.
+ * Use in protected Server Component pages.
+ */
+export async function verifySession(): Promise<Session> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value;
+
+  if (!token) redirect("/login");
+
+  try {
+    const res = await fetch(`${API_URL}/api/auth/me`, {
+      headers: { Cookie: `access_token=${token}` },
+      cache: "no-store",
+    });
+    if (!res.ok) redirect("/login");
+    return res.json();
+  } catch {
+    redirect("/login");
+  }
+}
+
+/**
+ * Get user without redirecting (for optional auth contexts).
+ */
+export async function getUser(): Promise<Session | null> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("access_token")?.value;
+    if (!token) return null;
+    const res = await fetch(`${API_URL}/api/auth/me`, {
+      headers: { Cookie: `access_token=${token}` },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+```
 
 ---
 
-## Step 8: State Machinery (Global Store)
+## Step 8: State Machinery (Global Stores + Session Sync)
 
-We prevent "local state drift" by establishing the global UI store immediately.
+We prevent "local state drift" by establishing global stores with session synchronization.
 
-1. **Create `src/stores/ui-store.ts`**:
-   - Use `zustand` + `devtools`.
-   - Implement `useUIStore` with `openModal`, `closeModal`, `toggleSidebar`.
-   - **Why**: This forces future AI to use this store instead of inventing new state mechanisms.
+### 8.1 Create `src/stores/auth-store.ts` (Auth Store)
+
+```typescript
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+}
+
+interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  checkAuth: () => Promise<void>;
+  logout: () => Promise<void>;
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      isAuthenticated: false,
+
+      checkAuth: async () => {
+        try {
+          const res = await fetch("/api/auth/me", { credentials: "include" });
+          if (!res.ok) throw new Error();
+          const { user } = await res.json();
+          set({ user, isAuthenticated: true });
+        } catch {
+          set({ user: null, isAuthenticated: false });
+        }
+      },
+
+      logout: async () => {
+        await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+        set({ user: null, isAuthenticated: false });
+      },
+    }),
+    { name: "auth-storage", partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }) }
+  )
+);
+```
+
+### 8.2 Create `src/components/providers/ClientProviders.tsx`
+
+**CRITICAL**: This includes session sync on mount to prevent localStorage/cookie desync.
+
+```typescript
+"use client";
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useAuthStore } from "@/stores/auth-store";
+
+export default function ClientProviders({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient());
+
+  // Sync auth state with cookie on app mount - fixes localStorage desync
+  useEffect(() => {
+    useAuthStore.getState().checkAuth();
+  }, []);
+
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+}
+```
+
+### 8.3 Create `src/stores/ui-store.ts` (UI Store)
+
+```typescript
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
+
+interface UIState {
+  isSidebarOpen: boolean;
+  modalId: string | null;
+  openModal: (id: string) => void;
+  closeModal: () => void;
+  toggleSidebar: () => void;
+}
+
+export const useUIStore = create<UIState>()(
+  devtools((set) => ({
+    isSidebarOpen: false,
+    modalId: null,
+    openModal: (id) => set({ modalId: id }),
+    closeModal: () => set({ modalId: null }),
+    toggleSidebar: () => set((s) => ({ isSidebarOpen: !s.isSidebarOpen })),
+  }))
+);
+```
 
 ---
 

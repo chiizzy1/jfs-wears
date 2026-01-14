@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { DashboardSkeleton } from "@/components/admin/dashboard/DashboardSkeleton";
 import { ChartPeriod } from "@/constants/dashboard.constants";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -74,11 +76,7 @@ export function DashboardView() {
   }, [selectedYear]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-black border-t-transparent animate-spin"></div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -236,7 +234,7 @@ export function DashboardView() {
             <h2 className="text-xs uppercase tracking-[0.15em] font-medium">Recent Orders</h2>
             <Link
               href="/admin/orders"
-              className="text-xs text-muted hover:text-primary transition-colors underline underline-offset-4"
+              className="text-xs text-gray-500 hover:text-primary transition-colors underline underline-offset-4"
             >
               View All
             </Link>
@@ -248,10 +246,10 @@ export function DashboardView() {
               <div className="space-y-3">
                 {/* Header - hidden on mobile */}
                 <div className="hidden sm:grid sm:grid-cols-4 gap-4 pb-3 border-b border-gray-100">
-                  <span className="text-xs uppercase tracking-widest text-muted font-medium">Order</span>
-                  <span className="text-xs uppercase tracking-widest text-muted font-medium">Customer</span>
-                  <span className="text-xs uppercase tracking-widest text-muted font-medium">Amount</span>
-                  <span className="text-xs uppercase tracking-widest text-muted font-medium">Status</span>
+                  <span className="text-xs uppercase tracking-widest text-gray-500 font-medium">Order</span>
+                  <span className="text-xs uppercase tracking-widest text-gray-500 font-medium">Customer</span>
+                  <span className="text-xs uppercase tracking-widest text-gray-500 font-medium">Amount</span>
+                  <span className="text-xs uppercase tracking-widest text-gray-500 font-medium">Status</span>
                 </div>
                 {/* Order items */}
                 {recentOrders.map((order) => (
@@ -290,7 +288,7 @@ export function DashboardView() {
             <h2 className="text-xs uppercase tracking-[0.15em] font-medium">Top Products</h2>
             <Link
               href="/admin/products"
-              className="text-xs text-muted hover:text-primary transition-colors underline underline-offset-4"
+              className="text-xs text-gray-500 hover:text-primary transition-colors underline underline-offset-4"
             >
               View All
             </Link>
@@ -304,7 +302,7 @@ export function DashboardView() {
                   </span>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{product.name}</p>
-                    <p className="text-xs text-muted">{product.totalSold} sold</p>
+                    <p className="text-xs text-gray-500">{product.totalSold} sold</p>
                   </div>
                 </div>
               ))
@@ -323,7 +321,7 @@ export function DashboardView() {
             </div>
             <Link
               href="/admin/products?filter=low-stock"
-              className="text-xs text-muted hover:text-primary transition-colors underline underline-offset-4"
+              className="text-xs text-gray-500 hover:text-primary transition-colors underline underline-offset-4"
             >
               Manage
             </Link>
@@ -334,7 +332,7 @@ export function DashboardView() {
                 <div key={item.variantId} className="flex items-center justify-between p-3 bg-secondary">
                   <div className="min-w-0">
                     <p className="font-medium text-sm truncate">{item.productName}</p>
-                    <p className="text-xs text-muted">{item.sku}</p>
+                    <p className="text-xs text-gray-500">{item.sku}</p>
                   </div>
                   <span className="text-red-600 font-medium text-sm shrink-0">{item.stock} left</span>
                 </div>

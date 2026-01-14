@@ -1,8 +1,10 @@
-"use client";
-
 import { AdminProfileForm } from "@/components/admin/profile/AdminProfileForm";
 import { AdminPasswordForm } from "@/components/admin/profile/AdminPasswordForm";
 
+/**
+ * Admin Profile Page (Server Component)
+ * AdminProfileForm and AdminPasswordForm are Client Components.
+ */
 export default function AdminProfilePage() {
   return (
     <div className="space-y-6">

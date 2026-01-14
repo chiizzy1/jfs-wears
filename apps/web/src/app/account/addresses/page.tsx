@@ -1,33 +1,15 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuthStore } from "@/stores/auth-store";
+import { verifySession } from "@/lib/dal";
 import { AddressList } from "@/components/account/AddressList";
 
-export default function AddressesPage() {
-  const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted && !isAuthenticated) {
-      router.push("/login?redirect=/account/addresses");
-    }
-  }, [mounted, isAuthenticated, router]);
-
-  if (!mounted || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-secondary flex items-center justify-center">
-        <div className="animate-pulse">Loading...</div>
-      </div>
-    );
-  }
+/**
+ * Addresses Page (Server Component)
+ *
+ * Authentication is verified server-side using DAL.
+ */
+export default async function AddressesPage() {
+  // Server-side session verification - redirects if invalid
+  await verifySession();
 
   return (
     <div className="min-h-screen bg-secondary py-12">

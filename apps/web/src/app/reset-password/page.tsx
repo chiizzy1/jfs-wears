@@ -1,10 +1,8 @@
-"use client";
-
 import { Suspense } from "react";
 import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 
 /**
- * Reset Password Page
+ * Reset Password Page (Server Component)
  * Thin shell wrapper for the reset password form.
  */
 export default function ResetPasswordPage() {

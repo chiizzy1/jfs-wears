@@ -1,8 +1,10 @@
-"use client";
-
 import { Suspense } from "react";
 import { TrackOrderView } from "@/components/track/TrackOrderView";
 
+/**
+ * Track Order Page (Server Component)
+ * TrackOrderView is a Client Component handling all interactivity.
+ */
 export default function TrackPage() {
   return (
     <Suspense

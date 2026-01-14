@@ -1,13 +1,10 @@
-"use client";
-
 import { AdminLoginForm } from "@/components/auth/AdminLoginForm";
 
 /**
- * Admin Login Page
+ * Admin Login Page (Server Component)
  *
- * Note: Auth redirects are handled by proxy.ts middleware.
- * If user reaches this page, they are NOT authenticated.
- * If they were authenticated, proxy.ts would have redirected to /admin.
+ * Auth redirects are handled by proxy.ts middleware.
+ * AdminLoginForm is a Client Component handling all interactivity.
  */
 export default function AdminLoginPage() {
   return (

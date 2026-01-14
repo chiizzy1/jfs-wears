@@ -1,34 +1,21 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/stores/auth-store";
+import { verifySession } from "@/lib/dal";
 import { AccountSidebar } from "@/components/account/AccountSidebar";
 import { ProfileForm } from "@/components/account/ProfileForm";
 import { PasswordForm } from "@/components/account/PasswordForm";
 
-export default function AccountPage() {
-  const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted && !isAuthenticated) {
-      router.push("/login?redirect=/account");
-    }
-  }, [mounted, isAuthenticated, router]);
-
-  if (!mounted || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-secondary flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
+/**
+ * Account Page (Server Component)
+ *
+ * Authentication is verified server-side using DAL.
+ * - If not authenticated → redirects to /login
+ * - If authenticated → renders page with user data
+ *
+ * Child components (ProfileForm, AccountSidebar, PasswordForm) remain Client Components
+ * as they use hooks for interactivity.
+ */
+export default async function AccountPage() {
+  // Server-side session verification - redirects if invalid
+  const { user } = await verifySession();
 
   return (
     <div className="min-h-screen bg-secondary pt-24 pb-12">

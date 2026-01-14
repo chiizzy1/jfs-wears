@@ -1,15 +1,5 @@
-"use client";
-
 import { Suspense } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
-
-function LoginPageContent() {
-  return (
-    <div className="min-h-screen bg-secondary flex items-center justify-center pt-24 pb-12 px-4">
-      <LoginForm />
-    </div>
-  );
-}
 
 function LoginPageFallback() {
   return (
@@ -20,16 +10,17 @@ function LoginPageFallback() {
 }
 
 /**
- * Customer Login Page
+ * Customer Login Page (Server Component)
  *
- * Note: Auth redirects are handled by proxy.ts middleware.
+ * Auth redirects are handled by proxy.ts middleware.
  * If user reaches this page, they are NOT authenticated.
- * If they were authenticated, proxy.ts would have redirected to /account.
  */
 export default function LoginPage() {
   return (
     <Suspense fallback={<LoginPageFallback />}>
-      <LoginPageContent />
+      <div className="min-h-screen bg-secondary flex items-center justify-center pt-24 pb-12 px-4">
+        <LoginForm />
+      </div>
     </Suspense>
   );
 }

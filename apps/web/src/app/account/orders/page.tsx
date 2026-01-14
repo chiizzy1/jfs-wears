@@ -1,33 +1,15 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/stores/auth-store";
+import { verifySession } from "@/lib/dal";
 import { AccountSidebar } from "@/components/account/AccountSidebar";
 import { OrderList } from "@/components/account/OrderList";
 
-export default function OrderHistoryPage() {
-  const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted && !isAuthenticated) {
-      router.push("/login?redirect=/account/orders");
-    }
-  }, [mounted, isAuthenticated, router]);
-
-  if (!mounted || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-secondary flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
+/**
+ * Order History Page (Server Component)
+ *
+ * Authentication is verified server-side using DAL.
+ */
+export default async function OrderHistoryPage() {
+  // Server-side session verification - redirects if invalid
+  await verifySession();
 
   return (
     <div className="min-h-screen bg-secondary py-12">

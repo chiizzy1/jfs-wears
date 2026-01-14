@@ -1,7 +1,9 @@
-"use client";
-
 import { ProductTable } from "@/components/admin/products/ProductTable";
 
+/**
+ * Products Page (Server Component)
+ * ProductTable is a Client Component handling all interactivity.
+ */
 export default function ProductsPage() {
   return (
     <div className="space-y-6">
