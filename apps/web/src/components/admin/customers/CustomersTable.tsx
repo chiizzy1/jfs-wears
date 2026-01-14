@@ -8,6 +8,7 @@ import { DataTable } from "@/components/ui/data-table/DataTable";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { getCustomersColumns } from "./customers-columns";
+import { CustomerMobileRow } from "./CustomerMobileRow";
 
 interface CustomersTableProps {
   data: User[];
@@ -23,13 +24,17 @@ export function CustomersTable({ data, isLoading, onDelete }: CustomersTableProp
   return isLoading ? (
     <TableSkeleton />
   ) : (
-    <DataTable
-      columns={columns}
-      data={data}
-      searchKey="email"
-      meta={{
-        pluralName: "Customers",
-      }}
-    />
+    <div className="rounded-none border-t border-gray-100">
+      {/* @ts-ignore */}
+      <DataTable
+        columns={columns}
+        data={data}
+        searchKey="email"
+        meta={{
+          pluralName: "Customers",
+        }}
+        renderSubComponent={(props) => <CustomerMobileRow customer={props.row.original} />}
+      />
+    </div>
   );
 }

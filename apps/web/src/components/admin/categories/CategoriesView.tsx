@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Category } from "@/types/category.types";
 import { categoriesService } from "@/services/categories.service";
 import { CategoryForm } from "./CategoryForm";
+import { CategoryMobileRow } from "./CategoryMobileRow";
 import { CategoriesSkeleton } from "@/components/admin/skeletons/CategoriesSkeleton";
 import { getCategoriesColumns } from "./categories-columns";
 
@@ -111,7 +112,12 @@ export function CategoriesView() {
 
       {/* Categories Table */}
       <div className="rounded-none border-t border-gray-100">
-        <DataTable columns={columns} data={categories} searchKey="name" />
+        <DataTable
+          columns={columns}
+          data={categories}
+          searchKey="name"
+          renderSubComponent={(props) => <CategoryMobileRow category={props.row.original} />}
+        />
       </div>
 
       {/* Create/Edit Modal */}

@@ -6,41 +6,46 @@ import PriceFilter from "@/components/storefront/PriceFilter";
 import { Category } from "@/lib/api";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Filter } from "lucide-react";
+import { Filter, ChevronRight } from "lucide-react";
 
 interface ShopSidebarProps {
   categories: Category[];
   currentCategory?: string;
+  onSelect?: () => void;
 }
 
-function SidebarContent({ categories, currentCategory }: ShopSidebarProps) {
+function SidebarContent({ categories, currentCategory, onSelect }: ShopSidebarProps) {
   return (
     <div className="space-y-12">
       {/* Categories Section */}
       <div>
-        <h3 className="text-xs font-bold uppercase tracking-widest mb-6 text-black">Categories</h3>
-        <ul className="space-y-3">
+        <h3 className="text-xs font-bold uppercase tracking-widest mb-6 text-black px-1">Categories</h3>
+        <ul className="space-y-1">
           <li>
             <Link
               href="/shop"
-              className={`block text-sm transition-colors duration-300 ${
-                !currentCategory ? "text-black font-medium translate-x-1" : "text-gray-500 hover:text-black hover:translate-x-1"
+              onClick={onSelect}
+              className={`flex items-center justify-between w-full px-4 py-3 text-sm transition-all duration-300 rounded-md group ${
+                !currentCategory ? "bg-black/5 font-medium text-black" : "text-gray-600 hover:bg-gray-50 hover:text-black"
               }`}
             >
-              All Products
+              <span>All Products</span>
+              {!currentCategory && <ChevronRight className="w-4 h-4 text-black/40" />}
             </Link>
           </li>
           {categories.map((cat) => (
             <li key={cat.id}>
               <Link
                 href={`/shop?category=${cat.slug}`}
-                className={`block text-sm transition-all duration-300 ${
+                onClick={onSelect}
+                className={`flex items-center justify-between w-full px-4 py-3 text-sm transition-all duration-300 rounded-md group ${
                   currentCategory === cat.slug
-                    ? "text-black font-medium translate-x-1"
-                    : "text-gray-500 hover:text-black hover:translate-x-1"
+                    ? "bg-black/5 font-medium text-black"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-black"
                 }`}
               >
-                {cat.name}
+                <span>{cat.name}</span>
+                {currentCategory === cat.slug && <ChevronRight className="w-4 h-4 text-black/40" />}
               </Link>
             </li>
           ))}
@@ -88,7 +93,7 @@ export function ShopMobileFilter({ categories, currentCategory }: ShopSidebarPro
           <SheetHeader className="mb-8 text-left">
             <SheetTitle className="text-lg font-bold uppercase tracking-widest">Filters</SheetTitle>
           </SheetHeader>
-          <SidebarContent categories={categories} currentCategory={currentCategory} />
+          <SidebarContent categories={categories} currentCategory={currentCategory} onSelect={() => setOpen(false)} />
         </SheetContent>
       </Sheet>
     </div>

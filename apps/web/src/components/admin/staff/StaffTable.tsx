@@ -9,6 +9,7 @@ import { useStaff } from "@/hooks/use-staff";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EditStaffModal } from "./EditStaffModal";
+import { StaffMobileRow } from "./StaffMobileRow";
 
 export function StaffTable() {
   const { staff, isLoading, deleteStaff } = useStaff();
@@ -37,6 +38,7 @@ export function StaffTable() {
         accessorKey: "email",
         header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Email</span>,
         cell: ({ row }) => <span className="text-xs text-muted-foreground">{row.getValue("email")}</span>,
+        meta: { className: "hidden md:table-cell" }, // Hide on mobile
       },
       {
         accessorKey: "role",
@@ -45,6 +47,7 @@ export function StaffTable() {
           const role = row.getValue("role") as string;
           return <span className="text-xs uppercase tracking-widest font-medium text-muted-foreground">{role}</span>;
         },
+        meta: { className: "hidden md:table-cell" }, // Hide on mobile
       },
       {
         accessorKey: "status",
@@ -60,6 +63,7 @@ export function StaffTable() {
             </div>
           );
         },
+        meta: { className: "hidden md:table-cell" }, // Hide on mobile
       },
       {
         id: "actions",
@@ -96,7 +100,12 @@ export function StaffTable() {
 
   return (
     <>
-      <DataTable columns={columns} data={staff} searchKey="name" />
+      <DataTable
+        columns={columns}
+        data={staff}
+        searchKey="name"
+        renderSubComponent={(props) => <StaffMobileRow staff={props.row.original} />}
+      />
       <EditStaffModal isOpen={!!editingStaff} onClose={() => setEditingStaff(null)} staff={editingStaff} />
 
       {/* Delete Confirmation Dialog */}

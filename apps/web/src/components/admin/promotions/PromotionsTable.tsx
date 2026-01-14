@@ -7,6 +7,7 @@ import { Promotion } from "@/lib/admin-api";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
+import { PromotionMobileRow } from "./PromotionMobileRow";
 
 interface PromotionsTableProps {
   data: Promotion[];
@@ -32,6 +33,7 @@ export function PromotionsTable({ data, isLoading, onEdit, onDelete }: Promotion
         accessorKey: "type",
         header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Type</span>,
         cell: ({ row }) => <span className="text-xs text-muted-foreground uppercase">{row.original.type}</span>,
+        meta: { className: "hidden md:table-cell" },
       },
       {
         accessorKey: "value",
@@ -41,6 +43,7 @@ export function PromotionsTable({ data, isLoading, onEdit, onDelete }: Promotion
             {row.original.type === "PERCENTAGE" ? `${row.original.value}%` : `₦${row.original.value.toLocaleString()}`}
           </span>
         ),
+        meta: { className: "hidden md:table-cell" },
       },
       {
         accessorKey: "usageCount",
@@ -51,6 +54,7 @@ export function PromotionsTable({ data, isLoading, onEdit, onDelete }: Promotion
             {row.original.usageLimit && <span className="text-muted-foreground">/ {row.original.usageLimit}</span>}
           </div>
         ),
+        meta: { className: "hidden md:table-cell" },
       },
       {
         accessorKey: "validTo",
@@ -58,6 +62,7 @@ export function PromotionsTable({ data, isLoading, onEdit, onDelete }: Promotion
         cell: ({ row }) => (
           <span className="text-xs text-muted-foreground uppercase tracking-wider">{formatDate(row.original.validTo)}</span>
         ),
+        meta: { className: "hidden md:table-cell" },
       },
       {
         accessorKey: "isActive",
@@ -70,13 +75,14 @@ export function PromotionsTable({ data, isLoading, onEdit, onDelete }: Promotion
             </span>
           </div>
         ),
+        meta: { className: "hidden md:table-cell" },
       },
       {
         id: "actions",
         cell: ({ row }) => {
           const promo = row.original;
           return (
-            <div className="flex justify-end gap-4">
+            <div className="flex justify-end gap-4" onClick={(e) => e.stopPropagation()}>
               <Button
                 variant="ghost"
                 className="h-auto p-0 text-xs uppercase tracking-widest hover:text-black hover:bg-transparent hover:underline underline-offset-4"
@@ -111,6 +117,7 @@ export function PromotionsTable({ data, isLoading, onEdit, onDelete }: Promotion
       meta={{
         pluralName: "Promotions",
       }}
+      renderSubComponent={(props) => <PromotionMobileRow promotion={props.row.original} />}
     />
   );
 }

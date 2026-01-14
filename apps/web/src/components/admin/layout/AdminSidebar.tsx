@@ -5,13 +5,14 @@ import { adminNavItems } from "./constants";
 
 interface AdminSidebarProps {
   pathname: string;
+  onSelect?: () => void;
 }
 
 /**
  * Admin Sidebar Component
  * Renders the desktop sidebar with navigation items
  */
-export function AdminSidebar({ pathname }: AdminSidebarProps) {
+export function AdminSidebar({ pathname, onSelect }: AdminSidebarProps) {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="p-6 border-b border-gray-100">
@@ -27,7 +28,8 @@ export function AdminSidebar({ pathname }: AdminSidebarProps) {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                onClick={onSelect}
+                className={`flex items-center gap-3 px-6 py-3 text-sm transition-colors ${
                   pathname === item.href ? "bg-black text-white" : "text-primary hover:bg-gray-50"
                 }`}
               >

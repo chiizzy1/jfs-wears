@@ -13,6 +13,8 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { ordersColumns } from "./orders-columns";
 
+import { OrderMobileRow } from "./OrderMobileRow";
+
 export function OrdersTable() {
   const [statusFilter, setStatusFilter] = useState("all");
   const { orders, isLoading } = useOrders({ status: "all" });
@@ -92,6 +94,7 @@ export function OrdersTable() {
           <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">{row.original.user?.email || "—"}</p>
         </div>
       ),
+      meta: { className: "hidden md:table-cell" }, // Hide on mobile
     },
     {
       accessorFn: (row) => row.items?.length || 0,
@@ -100,6 +103,7 @@ export function OrdersTable() {
       cell: ({ row }) => (
         <span className="text-sm font-medium text-muted-foreground tabular-nums">{row.original.items?.length || 0}</span>
       ),
+      meta: { className: "hidden md:table-cell" }, // Hide on mobile
     },
     {
       accessorKey: "total",
@@ -115,6 +119,7 @@ export function OrdersTable() {
       accessorKey: "paymentStatus",
       header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Payment</span>,
       cell: ({ row }) => <StatusBadge status={row.original.paymentStatus} type="payment" />,
+      meta: { className: "hidden md:table-cell" }, // Hide on mobile
     },
     {
       accessorKey: "createdAt",
@@ -122,11 +127,12 @@ export function OrdersTable() {
       cell: ({ row }) => (
         <span className="text-xs text-muted-foreground uppercase tracking-wider">{formatDate(row.original.createdAt)}</span>
       ),
+      meta: { className: "hidden md:table-cell" }, // Hide on mobile
     },
     {
       id: "actions",
       cell: ({ row }) => (
-        <div className="flex justify-end">
+        <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
           <Link
             href={`/admin/orders/${row.original.id}`}
             className="text-xs uppercase tracking-widest hover:text-black hover:underline underline-offset-4"
@@ -176,7 +182,12 @@ export function OrdersTable() {
         <TableSkeleton />
       ) : (
         <div className="rounded-none border-t border-gray-100">
-          <DataTable columns={columns} data={filteredOrders} />
+          {/* @ts-ignore */}
+          <DataTable
+            columns={columns}
+            data={filteredOrders}
+            renderSubComponent={(props) => <OrderMobileRow order={props.row.original} />}
+          />
         </div>
       )}
     </div>

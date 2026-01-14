@@ -46,7 +46,7 @@ export function AdminHeader({ pathname }: AdminHeaderProps) {
                   </button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 w-72">
-                  <AdminSidebar pathname={pathname} />
+                  <AdminSidebar pathname={pathname} onSelect={() => setIsMobileMenuOpen(false)} />
                 </SheetContent>
               </Sheet>
             </div>

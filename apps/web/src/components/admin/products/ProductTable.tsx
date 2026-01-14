@@ -14,6 +14,8 @@ import Image from "next/image";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
+import { ProductMobileRow } from "./ProductMobileRow";
+
 export function ProductTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -83,6 +85,7 @@ export function ProductTable() {
       cell: ({ row }) => (
         <span className="text-sm font-medium uppercase tracking-wide">{row.original.category?.name || "—"}</span>
       ),
+      meta: { className: "hidden md:table-cell" }, // Hide on mobile
     },
     {
       accessorKey: "basePrice",
@@ -99,6 +102,7 @@ export function ProductTable() {
         const totalStock = row.original.variants?.reduce((sum, v) => sum + v.stock, 0) || 0;
         return <span className="text-sm font-mono">{totalStock}</span>;
       },
+      meta: { className: "hidden md:table-cell" }, // Hide on mobile
     },
     {
       accessorKey: "status",
@@ -117,13 +121,14 @@ export function ProductTable() {
           </div>
         );
       },
+      meta: { className: "hidden md:table-cell" }, // Hide on mobile
     },
     {
       id: "actions",
       cell: ({ row }) => {
         const product = row.original;
         return (
-          <div className="flex justify-end gap-4">
+          <div className="flex justify-end gap-4" onClick={(e) => e.stopPropagation()}>
             <Link
               href={`/admin/products/${product.id}`}
               className="text-xs uppercase tracking-widest hover:text-black hover:underline underline-offset-4"
@@ -186,7 +191,12 @@ export function ProductTable() {
         <LoadingSpinner className="h-64" />
       ) : (
         <div className="rounded-none border-t border-gray-100">
-          <DataTable columns={columns} data={filteredProducts} />
+          {/* @ts-ignore */}
+          <DataTable
+            columns={columns}
+            data={filteredProducts}
+            renderSubComponent={(props) => <ProductMobileRow product={props.row.original} />}
+          />
         </div>
       )}
 

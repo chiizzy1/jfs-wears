@@ -21,6 +21,7 @@ export const getCustomersColumns = ({ onDelete }: CustomersColumnsProps): Column
     accessorKey: "email",
     header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Email</span>,
     cell: ({ row }) => <span className="text-xs text-muted-foreground">{row.original.email}</span>,
+    meta: { className: "hidden md:table-cell" }, // Hide on mobile
   },
   {
     accessorKey: "orders",
@@ -28,6 +29,7 @@ export const getCustomersColumns = ({ onDelete }: CustomersColumnsProps): Column
     cell: ({ row }) => (
       <span className="text-sm font-medium text-muted-foreground tabular-nums">{row.original.orders?.length || 0}</span>
     ),
+    meta: { className: "hidden md:table-cell" }, // Hide on mobile
   },
   {
     accessorKey: "createdAt",
@@ -35,6 +37,7 @@ export const getCustomersColumns = ({ onDelete }: CustomersColumnsProps): Column
     cell: ({ row }) => (
       <span className="text-xs text-muted-foreground uppercase tracking-wider">{formatDate(row.original.createdAt)}</span>
     ),
+    meta: { className: "hidden md:table-cell" }, // Hide on mobile
   },
   {
     accessorKey: "isActive",
@@ -47,6 +50,7 @@ export const getCustomersColumns = ({ onDelete }: CustomersColumnsProps): Column
         </span>
       </div>
     ),
+    meta: { className: "hidden md:table-cell" }, // Hide on mobile
   },
   {
     id: "actions",
