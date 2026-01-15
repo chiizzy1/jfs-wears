@@ -2,6 +2,8 @@ import { fetchProducts, fetchCategories } from "@/lib/api";
 import { ShopHero } from "@/components/shop/ShopHero";
 import { ShopSidebar, ShopMobileFilter } from "@/components/shop/ShopSidebar";
 import { ProductGrid } from "@/components/shop/ProductGrid";
+import { constructMetadata } from "@/lib/seo";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 
 interface ShopPageProps {
   searchParams: Promise<{
@@ -11,6 +13,23 @@ interface ShopPageProps {
     maxPrice?: string;
     gender?: string;
   }>;
+}
+
+export async function generateMetadata({ searchParams }: ShopPageProps) {
+  const params = await searchParams;
+  const categories = await fetchCategories();
+
+  const categoryName = params.category ? categories.find((c) => c.slug === params.category)?.name : undefined;
+
+  const genderLabel = params.gender === "men" ? "Men's" : params.gender === "women" ? "Women's" : undefined;
+
+  const titleParts = [genderLabel, categoryName, "Shop"].filter(Boolean);
+  const title = titleParts.join(" ");
+
+  return constructMetadata({
+    title: title || "Shop",
+    description: `Browse our extensive collection of ${title}. Premium quality fashion for everyone.`,
+  });
 }
 
 export default async function ShopPage({ searchParams }: ShopPageProps) {
@@ -27,8 +46,23 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 
   const products = productsResult.products;
 
+  // breadcrumb items
+  const breadcrumbItems = [{ label: "Shop", href: "/shop" }];
+  if (params.category) {
+    const cat = categories.find((c) => c.slug === params.category);
+    if (cat) {
+      breadcrumbItems.push({ label: cat.name, href: `/shop?category=${cat.slug}` });
+    }
+  }
+
   return (
     <div className="min-h-screen bg-secondary">
+      <div className="bg-primary/5 pt-24 pb-4 px-4 md:px-8">
+        <div className="container-width">
+          <Breadcrumbs items={breadcrumbItems} />
+        </div>
+      </div>
+
       <ShopHero category={params.category} gender={params.gender} categories={categories} />
 
       <div className="container-width py-12">
