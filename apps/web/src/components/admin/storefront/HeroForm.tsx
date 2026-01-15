@@ -2,15 +2,16 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Upload, X, Video, Image as ImageIcon } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 import { useState, useRef } from "react";
 import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { UploadProgress } from "@/components/ui/upload-progress";
 
 import { heroSchema, HeroFormValues } from "@/schemas/storefront.schema";
 import { StorefrontHero } from "@/types/storefront.types";
@@ -26,6 +27,9 @@ interface HeroFormProps {
 
 export function HeroForm({ initialData, categories, onSuccess, onCancel }: HeroFormProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewIsVideo, setPreviewIsVideo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<HeroFormValues>({
@@ -44,11 +48,18 @@ export function HeroForm({ initialData, categories, onSuccess, onCancel }: HeroF
 
   const onSubmit = async (values: HeroFormValues) => {
     try {
+      // Sanitize optional ID fields - convert "none" or empty strings to undefined
+      const payload = {
+        ...values,
+        categoryId: values.categoryId && values.categoryId !== "none" && values.categoryId !== "" ? values.categoryId : undefined,
+        productId: values.productId && values.productId !== "none" && values.productId !== "" ? values.productId : undefined,
+      };
+
       if (initialData) {
-        await storefrontService.updateHero(initialData.id, values);
+        await storefrontService.updateHero(initialData.id, payload);
         toast.success("Hero updated successfully");
       } else {
-        await storefrontService.createHero(values as any); // Type assertion needed as backend expects simpler obj
+        await storefrontService.createHero(payload as any);
         toast.success("Hero created successfully");
       }
       onSuccess();
@@ -74,16 +85,57 @@ export function HeroForm({ initialData, categories, onSuccess, onCancel }: HeroF
       return;
     }
 
+    // Create local preview immediately
+    const localPreviewUrl = URL.createObjectURL(file);
+    setPreviewUrl(localPreviewUrl);
+    setPreviewIsVideo(isVideo);
+    setUploadProgress(0);
     setIsUploading(true);
+
+    // Start simulated processing progress after upload phase
+    let processingInterval: NodeJS.Timeout | null = null;
+
     try {
-      const result = await storefrontService.uploadMedia(file);
+      const result = await storefrontService.uploadMedia(file, (percent) => {
+        // Phase 1: Actual upload progress (0-70%)
+        const scaledProgress = Math.round(percent * 0.7);
+        setUploadProgress(scaledProgress);
+
+        // Once upload to server completes, start simulated processing
+        if (percent >= 100 && !processingInterval) {
+          let processingProgress = 70;
+          processingInterval = setInterval(() => {
+            processingProgress += Math.random() * 3 + 1; // Random increment 1-4%
+            if (processingProgress >= 95) {
+              processingProgress = 95; // Cap at 95% until complete
+              if (processingInterval) clearInterval(processingInterval);
+            }
+            setUploadProgress(Math.round(processingProgress));
+          }, 200);
+        }
+      });
+
+      // Clear processing interval and set 100%
+      if (processingInterval) clearInterval(processingInterval);
+      setUploadProgress(100);
+
       form.setValue("mediaUrl", result.secureUrl);
       form.setValue("mediaType", result.mediaType);
-      toast.success("Media uploaded");
+      toast.success("Media uploaded successfully");
+
+      // Clean up local preview after a brief delay to show 100%
+      setTimeout(() => {
+        URL.revokeObjectURL(localPreviewUrl);
+        setPreviewUrl(null);
+        setIsUploading(false);
+        setUploadProgress(0);
+      }, 500);
     } catch (error) {
+      if (processingInterval) clearInterval(processingInterval);
       toast.error("Upload failed");
-    } finally {
+      setPreviewUrl(null);
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -111,10 +163,12 @@ export function HeroForm({ initialData, categories, onSuccess, onCancel }: HeroF
               onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
             />
             {isUploading ? (
-              <div className="flex flex-col items-center">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-2" />
-                <p className="text-sm text-gray-500">Uploading...</p>
-              </div>
+              <UploadProgress
+                progress={uploadProgress}
+                previewUrl={previewUrl || undefined}
+                isVideo={previewIsVideo}
+                status={uploadProgress < 70 ? "Uploading file..." : uploadProgress < 100 ? "Processing on cloud..." : "Complete!"}
+              />
             ) : form.watch("mediaUrl") ? (
               <div className="space-y-2">
                 {form.watch("mediaType") === "VIDEO" ? (

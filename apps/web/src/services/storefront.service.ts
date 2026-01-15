@@ -40,24 +40,51 @@ export const storefrontService = {
     return adminAPI.delete(`/admin/storefront/sections/${id}`);
   },
 
-  // Media Upload
-  uploadMedia: async (file: File): Promise<{ secureUrl: string; mediaType: "IMAGE" | "VIDEO" }> => {
-    const formData = new FormData();
-    formData.append("file", file);
+  // Media Upload with progress tracking
+  uploadMedia: async (
+    file: File,
+    onProgress?: (percent: number) => void
+  ): Promise<{ secureUrl: string; mediaType: "IMAGE" | "VIDEO" }> => {
+    return new Promise((resolve, reject) => {
+      const formData = new FormData();
+      formData.append("file", file);
 
-    const response = await fetch(`${API_BASE_URL}/upload/storefront`, {
-      method: "POST",
-      body: formData,
-      // Note: We do NOT set Content-Type header here; fetch sets it automatically with boundary for FormData
-      credentials: "include", // Important for cookies if needed, though adminAPI usually handles this.
+      const xhr = new XMLHttpRequest();
+
+      // Track upload progress
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable && onProgress) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          onProgress(percent);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            resolve(response);
+          } catch {
+            reject(new Error("Invalid response from server"));
+          }
+        } else {
+          try {
+            const error = JSON.parse(xhr.responseText);
+            reject(new Error(error.message || "Upload failed"));
+          } catch {
+            reject(new Error("Upload failed"));
+          }
+        }
+      };
+
+      xhr.onerror = () => {
+        reject(new Error("Network error during upload"));
+      };
+
+      xhr.open("POST", `${API_BASE_URL}/upload/storefront`);
+      xhr.withCredentials = true; // Include cookies
+      xhr.send(formData);
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: "Upload failed" }));
-      throw new Error(error.message);
-    }
-
-    return response.json();
   },
 
   uploadCategoryImage: async (categoryId: string, file: File): Promise<void> => {
@@ -74,5 +101,13 @@ export const storefrontService = {
       const error = await response.json().catch(() => ({ message: "Upload failed" }));
       throw new Error(error.message);
     }
+  },
+
+  toggleCategoryFeatured: async (categoryId: string, featured: boolean, position?: number): Promise<void> => {
+    return adminAPI.put(`/categories/${categoryId}/featured`, { featured, position });
+  },
+
+  updateCategoryFeaturedPosition: async (categoryId: string, position: number): Promise<void> => {
+    return adminAPI.put(`/categories/${categoryId}/featured-position`, { position });
   },
 };

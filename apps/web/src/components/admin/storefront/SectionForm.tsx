@@ -37,11 +37,17 @@ export function SectionForm({ initialData, categories, onSuccess, onCancel }: Se
 
   const onSubmit = async (values: SectionFormValues) => {
     try {
+      // Sanitize categoryId - convert empty string to undefined
+      const payload = {
+        ...values,
+        categoryId: values.categoryId && values.categoryId !== "" ? values.categoryId : undefined,
+      };
+
       if (initialData) {
-        await storefrontService.updateSection(initialData.id, values);
+        await storefrontService.updateSection(initialData.id, payload);
         toast.success("Section updated successfully");
       } else {
-        await storefrontService.createSection(values as any);
+        await storefrontService.createSection(payload as any);
         toast.success("Section created successfully");
       }
       onSuccess();

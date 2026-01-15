@@ -31,6 +31,20 @@ export class CategoriesController {
     return this.categoriesService.update(id, data);
   }
 
+  @Put(":id/featured")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("ADMIN", "MANAGER")
+  async toggleFeatured(@Param("id") id: string, @Body() data: { featured: boolean; position?: number }) {
+    return this.categoriesService.toggleFeatured(id, data.featured, data.position);
+  }
+
+  @Put(":id/featured-position")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("ADMIN", "MANAGER")
+  async updateFeaturedPosition(@Param("id") id: string, @Body() data: { position: number }) {
+    return this.categoriesService.updateFeaturedPosition(id, data.position);
+  }
+
   @Delete(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("ADMIN")

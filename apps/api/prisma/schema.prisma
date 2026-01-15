@@ -129,6 +129,8 @@ model Category {
   children    Category[] @relation("CategoryHierarchy")
   position    Int        @default(0)
   isActive    Boolean    @default(true)
+  isFeatured  Boolean    @default(false) // For homepage "Shop by Category" grid
+  featuredPosition Int?  // 1 = main large image, 2-3 = side images (null = not in grid)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 

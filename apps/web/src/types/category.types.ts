@@ -5,6 +5,8 @@ export interface Category {
   description?: string;
   imageUrl?: string;
   isActive: boolean;
+  isFeatured?: boolean;
+  featuredPosition?: number | null;
   position: number;
   children?: Category[];
   _count?: {
