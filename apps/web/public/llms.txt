@@ -1,0 +1,17 @@
+# JFS Wears - Premium Online Fashion Store
+
+> JFS Wears is a premium online fashion retailer specializing in luxury Nigerian and African contemporary clothing, including Kaftans, Agbada, and modern streetwear.
+
+## Core Documentation
+- [Shop Index](https://jfs-wears.com/shop) - Comprehensive catalog of all available products.
+- [Fashion Blog](https://jfs-wears.com/blog) - Editorial content on trends and style guides.
+- [About Us](https://jfs-wears.com/about) - Brand history and mission.
+
+## Product Collections
+- [Men's Collection](https://jfs-wears.com/collections/men)
+- [Women's Collection](https://jfs-wears.com/collections/women)
+- [New Arrivals](https://jfs-wears.com/collections/new)
+
+## Technical Summary
+- **Sitemap**: https://jfs-wears.com/sitemap.xml
+- **Full Context**: https://jfs-wears.com/llms-full.txt

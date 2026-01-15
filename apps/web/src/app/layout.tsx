@@ -6,6 +6,7 @@ import ConditionalLayout from "@/components/layout/ConditionalLayout";
 import ClientProviders from "@/components/providers/ClientProviders";
 import SmoothScroll from "@/components/common/SmoothScroll";
 import { Toaster } from "react-hot-toast";
+import { PostHogProvider } from "@/providers/posthog-provider";
 
 const hankenGrotesk = Hanken_Grotesk({
   subsets: ["latin"],
@@ -77,19 +78,23 @@ export default function RootLayout({
     sameAs: [],
   };
 
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html lang="en">
       <body
         className={`${hankenGrotesk.variable} ${instrumentSans.variable} min-h-screen flex flex-col font-sans antialiased text-primary bg-secondary`}
       >
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-        <GoogleAnalytics gaId="G-PLACEHOLDER" /> {/* User to replace */}
+        {gaId && <GoogleAnalytics gaId={gaId} />}
         <Toaster position="top-right" />
-        <ClientProviders>
-          <SmoothScroll>
-            <ConditionalLayout>{children}</ConditionalLayout>
-          </SmoothScroll>
-        </ClientProviders>
+        <PostHogProvider>
+          <ClientProviders>
+            <SmoothScroll>
+              <ConditionalLayout>{children}</ConditionalLayout>
+            </SmoothScroll>
+          </ClientProviders>
+        </PostHogProvider>
       </body>
     </html>
   );

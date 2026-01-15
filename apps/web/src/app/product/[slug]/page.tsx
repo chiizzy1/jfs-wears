@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { fetchProductBySlug } from "@/lib/api";
+import { fetchProductBySlug, fetchProductReviewStats } from "@/lib/api";
 import ProductDetails from "@/components/storefront/ProductDetails";
 import ProductReviews from "@/components/storefront/ProductReviews";
 import RecentlyViewedTracker from "@/components/storefront/RecentlyViewedTracker";
@@ -36,6 +36,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
+  const [reviewStats] = await Promise.all([fetchProductReviewStats(product.id)]);
+
   const primaryImage = product.images.find((img) => img.isPrimary)?.url || product.images[0]?.url || "";
 
   // Prepare Schema
@@ -47,6 +49,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
     currency: "NGN",
     availability: product.variants.some((v) => v.stock > 0) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
     url: `https://jfs-wears.com/product/${product.slug}`,
+    aggregateRating: {
+      ratingValue: reviewStats.average,
+      reviewCount: reviewStats.count,
+    },
   });
 
   // Prepare Breadcrumbs

@@ -145,6 +145,30 @@ export class UploadController {
   }
 
   /**
+   * Upload blog post cover image
+   * POST /upload/blog
+   */
+  @Post("blog")
+  @UseInterceptors(FileInterceptor("file"))
+  @ApiOperation({ summary: "Upload blog post cover image" })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        file: {
+          type: "string",
+          format: "binary",
+          description: "Cover image (JPEG, PNG, WebP)",
+        },
+      },
+    },
+  })
+  async uploadBlogImage(@UploadedFile() file: Express.Multer.File) {
+    return this.cloudinaryService.uploadImage(file, "jfs-wears/blog");
+  }
+
+  /**
    * Delete an image by its public ID
    * DELETE /upload/:publicId
    */

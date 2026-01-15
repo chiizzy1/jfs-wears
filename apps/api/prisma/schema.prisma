@@ -85,6 +85,7 @@ model Staff {
   refreshTokens RefreshToken[]
   auditLogs     AuditLog[]
   notifications Notification[]
+  blogPosts     BlogPost[]
 }
 
 enum StaffRole {
@@ -712,4 +713,41 @@ model BulkPricingTier {
   @@unique([productId, minQuantity])
   @@map("bulk_pricing_tiers")
   @@index([productId])
+}
+
+// ============================================
+// BLOG / CONTENT ENGINE
+// ============================================
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String?
+  content     String   // HTML content
+  coverImage  String?
+  
+  // Author
+  authorId    String?
+  author      Staff?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorName  String?  // Snapshot for display if staff deleted
+  
+  // Metadata
+  tags        String[] @default([])
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  readTime    Int?     // In minutes
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  @@map("blog_posts")
+  @@index([slug])
+  @@index([isPublished])
+  @@index([createdAt])
 }

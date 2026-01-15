@@ -1,0 +1,29 @@
+# JFS Wears - Full Context
+
+## Mission
+To bring the elegance of African luxury fashion to the global stage, blending traditional Nigerian craftsmanship with modern streetwear aesthetics.
+
+## Core Offerings
+
+### Men's Wear
+- **Kaftans**: Premium tailored two-piece sets available in Senator and Agbada styles.
+- **Streetwear**: Graphic tees, hoodies, and joggers inspired by Lagos urban culture.
+
+### Women's Wear
+- **Boubou**: Flowing, elegant gowns made from high-quality chiffon and silk.
+- **Co-ords**: Matching sets for casual and business-casual wear.
+
+## Frequently Asked Questions
+
+### Shipping & Returns
+- **Do you ship internationally?** Yes, we ship worldwide via DHL Express (3-5 business days).
+- **What is your return policy?** We offer a 14-day return policy for unworn items with tags attached. Custom orders are final sale.
+
+### Sizing
+- **How does your sizing work?** We use standard UK/EU sizing. Please check our Size Guide on product pages for specific execution.
+- **Do you offer custom sizing?** Yes, select "Custom" at checkout and provide your measurements.
+
+## Technical Details for Agents
+- **Primary Domain**: https://jfs-wears.com
+- **Contact**: support@jfs-wears.com
+- **Socials**: @jfswears (Instagram, Twitter, TikTok)

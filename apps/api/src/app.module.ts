@@ -22,6 +22,7 @@ import { SettingsModule } from "./modules/settings/settings.module";
 import { StorefrontModule } from "./modules/storefront/storefront.module";
 import { AuditLogModule } from "./modules/audit-log/audit-log.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
+import { BlogModule } from "./modules/blog/blog.module";
 import { AllExceptionsFilter } from "./common/filters/http-exception.filter";
 import { HealthController } from "./modules/health/health.controller";
 import { CacheModule } from "@nestjs/cache-manager";
@@ -87,6 +88,7 @@ import * as redisStore from "cache-manager-redis-store";
     StorefrontModule,
     AuditLogModule,
     NotificationsModule,
+    BlogModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -206,5 +206,20 @@ export async function fetchFeaturedProducts(): Promise<Product[]> {
   return result.products;
 }
 
+export interface ReviewStats {
+  count: number;
+  average: number;
+}
+
+export async function fetchProductReviewStats(productId: string): Promise<ReviewStats> {
+  try {
+    const data = await apiClient.get<{ stats: ReviewStats }>(`/reviews/product/${productId}?limit=1`);
+    return data.stats;
+  } catch (error) {
+    console.error("Error fetching review stats:", error);
+    return { count: 0, average: 0 };
+  }
+}
+
 // Re-export ApiError for convenience
 export { ApiError };

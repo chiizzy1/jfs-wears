@@ -60,8 +60,12 @@ export function getProductSchema(product: {
   currency: string;
   availability: "https://schema.org/InStock" | "https://schema.org/OutOfStock";
   url: string;
+  aggregateRating?: {
+    ratingValue: number;
+    reviewCount: number;
+  };
 }): WithContext<Product> {
-  return {
+  const schema: WithContext<Product> = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
@@ -76,6 +80,16 @@ export function getProductSchema(product: {
       url: product.url,
     },
   };
+
+  if (product.aggregateRating && product.aggregateRating.reviewCount > 0) {
+    schema.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: product.aggregateRating.ratingValue,
+      reviewCount: product.aggregateRating.reviewCount,
+    };
+  }
+
+  return schema;
 }
 
 export function getImageObjectSchema(url: string, caption?: string): WithContext<ImageObject> {

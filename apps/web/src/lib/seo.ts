@@ -6,6 +6,7 @@ interface MetadataProps {
   image?: string;
   icons?: Metadata["icons"];
   noIndex?: boolean;
+  type?: "website" | "article";
 }
 
 const defaultMetadata = {
@@ -22,6 +23,7 @@ export function constructMetadata({
   image = "/opengraph-image",
   icons = "/logo.png",
   noIndex = false,
+  type = "website",
 }: MetadataProps): Metadata {
   return {
     title: {
@@ -44,7 +46,7 @@ export function constructMetadata({
         },
       ],
       locale: "en_NG",
-      type: "website",
+      type,
     },
     twitter: {
       card: "summary_large_image",
