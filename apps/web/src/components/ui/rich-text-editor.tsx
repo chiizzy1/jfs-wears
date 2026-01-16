@@ -7,6 +7,10 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
+import { Input } from "./input";
+import { Label } from "./label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "./dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
 import {
   Bold,
   Italic,
@@ -21,8 +25,13 @@ import {
   Redo,
   Link as LinkIcon,
   Image as ImageIcon,
+  Upload,
+  Loader2,
+  X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { blogService } from "@/services/blog.service";
+import toast from "react-hot-toast";
 
 interface RichTextEditorProps {
   value: string;
@@ -31,7 +40,12 @@ interface RichTextEditorProps {
   placeholder?: string;
 }
 
-const MenuBar = ({ editor }: { editor: Editor | null }) => {
+interface MenuBarProps {
+  editor: Editor | null;
+  onImageClick: () => void;
+}
+
+const MenuBar = ({ editor, onImageClick }: MenuBarProps) => {
   if (!editor) {
     return null;
   }
@@ -53,13 +67,6 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 
     // update
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-  };
-
-  const addImage = () => {
-    const url = window.prompt("Image URL");
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
-    }
   };
 
   return (
@@ -169,7 +176,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
       <Button
         variant="ghost"
         size="icon"
-        onClick={addImage}
+        onClick={onImageClick}
         className={cn("h-8 w-8", editor.isActive("image") ? "bg-muted" : "")}
         type="button"
       >
@@ -203,6 +210,13 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 };
 
 export function RichTextEditor({ value, onChange, className, placeholder = "Start writing..." }: RichTextEditorProps) {
+  // Image upload dialog state
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const editor = useEditor({
     extensions: [StarterKit, Link.configure({ openOnClick: false }), Image, Placeholder.configure({ placeholder })],
     content: value,
@@ -231,19 +245,215 @@ export function RichTextEditor({ value, onChange, className, placeholder = "Star
     setIsMounted(true);
   }, []);
 
+  // Handle file upload
+  const handleFileUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+
+    // Create preview
+    const previewUrl = URL.createObjectURL(file);
+    setUploadPreview(previewUrl);
+
+    setIsUploading(true);
+    try {
+      const result = await blogService.uploadImage(file);
+      setImageUrl(result.secureUrl);
+      toast.success("Image uploaded successfully");
+    } catch (error) {
+      console.error("Upload failed", error);
+      toast.error("Failed to upload image");
+      setUploadPreview(null);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Insert image into editor
+  const handleImageInsert = () => {
+    if (imageUrl && editor) {
+      editor.chain().focus().setImage({ src: imageUrl }).run();
+      // Reset state
+      setImageUrl("");
+      setUploadPreview(null);
+      setImageDialogOpen(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  // Reset dialog state
+  const resetDialog = () => {
+    setImageUrl("");
+    setUploadPreview(null);
+    setIsUploading(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   if (!isMounted) {
     return <div className={cn("border border-input rounded-md overflow-hidden bg-background min-h-[400px]", className)} />;
   }
 
   return (
-    <div
-      className={cn(
-        "border border-input rounded-md overflow-hidden bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
-        className
-      )}
-    >
-      <MenuBar editor={editor} />
-      <EditorContent editor={editor} />
-    </div>
+    <>
+      <div
+        className={cn(
+          "border border-input rounded-md overflow-hidden bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
+          className
+        )}
+      >
+        <MenuBar editor={editor} onImageClick={() => setImageDialogOpen(true)} />
+        <EditorContent editor={editor} />
+      </div>
+
+      {/* Image Upload Dialog */}
+      <Dialog
+        open={imageDialogOpen}
+        onOpenChange={(open) => {
+          setImageDialogOpen(open);
+          if (!open) resetDialog();
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading uppercase tracking-widest text-sm">Insert Image</DialogTitle>
+            <DialogDescription className="text-xs text-gray-500">
+              Upload an image or paste a URL to insert into your content.
+            </DialogDescription>
+          </DialogHeader>
+
+          <Tabs defaultValue="upload" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="upload" className="flex-1">
+                <Upload className="h-4 w-4 mr-2" />
+                Upload
+              </TabsTrigger>
+              <TabsTrigger value="url" className="flex-1">
+                <LinkIcon className="h-4 w-4 mr-2" />
+                URL
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="upload">
+              <div className="space-y-4">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileUpload(file);
+                  }}
+                  className="hidden"
+                />
+
+                <div
+                  onClick={() => !isUploading && fileInputRef.current?.click()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files[0];
+                    if (file) handleFileUpload(file);
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                  className={cn(
+                    "relative aspect-video border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-gray-50",
+                    isUploading ? "border-gray-400 bg-gray-50" : "border-gray-300",
+                    uploadPreview ? "border-solid border-gray-200 p-0" : "p-8"
+                  )}
+                >
+                  {isUploading ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="h-8 w-8 text-gray-500 animate-spin" />
+                      <p className="text-sm text-gray-600 font-medium">Uploading...</p>
+                    </div>
+                  ) : uploadPreview ? (
+                    <div className="relative w-full h-full">
+                      <img src={uploadPreview} alt="Preview" className="w-full h-full object-cover" />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2 h-8 w-8 rounded-none"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          resetDialog();
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="text-center space-y-2">
+                      <div className="bg-gray-100 p-3 inline-block">
+                        <ImageIcon className="h-6 w-6 text-gray-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 uppercase tracking-wide">Click to upload</p>
+                        <p className="text-xs text-gray-500">or drag and drop</p>
+                        <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 5MB</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="url">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="imageUrl" className="uppercase text-xs tracking-widest text-gray-500 font-medium">
+                    Image URL
+                  </Label>
+                  <Input
+                    id="imageUrl"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                    className="rounded-none border-gray-200 focus-visible:ring-0 focus-visible:border-black"
+                  />
+                </div>
+
+                {imageUrl && (
+                  <div className="aspect-video border border-gray-200 overflow-hidden bg-gray-50">
+                    <img
+                      src={imageUrl}
+                      alt="Preview"
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={() => setImageDialogOpen(false)} className="rounded-none">
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleImageInsert}
+              disabled={!imageUrl || isUploading}
+              className="rounded-none bg-black text-white hover:bg-gray-800 uppercase tracking-widest text-xs"
+            >
+              {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Insert Image
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

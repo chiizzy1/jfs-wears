@@ -1,6 +1,6 @@
 import { blogService } from "@/services/blog.service";
 import { constructMetadata } from "@/lib/seo";
-import { Breadcrumbs } from "@/components/common/Breadcrumbs";
+import { PageHero } from "@/components/common/PageHero";
 import Link from "next/link";
 import { format } from "date-fns";
 import Image from "next/image";
@@ -22,18 +22,14 @@ export default async function BlogIndexPage() {
 
   return (
     <div className="min-h-screen bg-secondary">
-      <div className="bg-primary/5 pt-24 pb-4 px-4 md:px-8">
-        <div className="container-width">
-          <Breadcrumbs
-            items={[
-              { label: "Home", href: "/" },
-              { label: "Blog", href: "/blog" },
-            ]}
-          />
-          <h1 className="text-4xl md:text-5xl font-light tracking-tight mt-6 mb-2">The Journal</h1>
-          <p className="text-gray-500 max-w-2xl text-lg">Stories about fashion, culture, and the art of dressing well.</p>
-        </div>
-      </div>
+      <PageHero
+        title="The Journal"
+        description="Stories about fashion, culture, and the art of dressing well."
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Blog", href: "/blog" },
+        ]}
+      />
 
       <div className="container-width py-12 px-4 md:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

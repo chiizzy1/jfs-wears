@@ -1,5 +1,6 @@
 import { verifySession } from "@/lib/dal";
 import { AccountSidebar } from "@/components/account/AccountSidebar";
+import { PageHero } from "@/components/common/PageHero";
 import { ProfileForm } from "@/components/account/ProfileForm";
 import { PasswordForm } from "@/components/account/PasswordForm";
 import { DeleteAccountSection } from "@/components/account/DeleteAccountSection";
@@ -19,10 +20,10 @@ export default async function AccountPage() {
   const { user } = await verifySession();
 
   return (
-    <div className="min-h-screen bg-secondary pt-24 pb-12">
-      <div className="container-width max-w-4xl">
-        <h1 className="text-3xl font-medium mb-10 tracking-[0.02em]">My Account</h1>
+    <div className="min-h-screen bg-secondary pb-12">
+      <PageHero title="My Account" alignment="center" />
 
+      <div className="container-width max-w-4xl">
         <div className="grid md:grid-cols-3 gap-8">
           <AccountSidebar />
 

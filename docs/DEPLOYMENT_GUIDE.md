@@ -10,8 +10,8 @@ A step-by-step guide to deploy your e-commerce platform for **FREE** (or very lo
 ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
 │   Frontend      │      │    Backend      │      │   Database      │
 │   (Next.js)     │ ───▶ │   (NestJS)      │ ───▶ │  (PostgreSQL)   │
-│   Vercel        │      │   Railway       │      │   Neon          │
-│   FREE          │      │   $5/mo         │      │   FREE          │
+│   Vercel        │      │ Railway/Render  │      │   Neon          │
+│   FREE          │      │  $5 or FREE     │      │   FREE          │
 └─────────────────┘      └─────────────────┘      └─────────────────┘
                                 │
                                 ▼
@@ -22,7 +22,7 @@ A step-by-step guide to deploy your e-commerce platform for **FREE** (or very lo
                          └─────────────────┘
 ```
 
-**Estimated Monthly Cost: $0 - $5** (within free tiers)
+**Estimated Monthly Cost: $0** (using Render) or **$5** (using Railway)
 
 ---
 
@@ -122,7 +122,11 @@ postgresql://neondb_owner:AbCdEf123456@ep-xyz-123456.us-east-2.aws.neon.tech/jfs
 
 ---
 
-## Step 4: Deploy Backend (Railway)
+## Step 4: Deploy Backend
+
+Choose **Option A** (Railway) for better performance/reliability, or **Option B** (Render) for $0 cost.
+
+### Option A: Railway ($5/mo - Recommended)
 
 ### 4.1 Create Railway Account
 
@@ -215,6 +219,50 @@ In Railway, go to the service and open the **Shell**:
 ```bash
 npx prisma db push
 ```
+
+---
+
+### Option B: Render (Truly FREE - $0/mo)
+
+**Note:** Render's free tier spins down after inactivity. The first request after a while will take ~30-60 seconds.
+
+#### 4B.1 Create Render Account
+
+1. Go to [render.com](https://render.com)
+2. Sign up with GitHub
+
+#### 4B.2 Create Web Service
+
+1. Click **"New"** -> **"Web Service"**
+2. Select **"Build and deploy from a Git repository"**
+3. Connect your `jfs-wears` repo
+4. Name: `jfs-wears-api`
+5. **Region**: Choose closest to you (e.g., Frankfurt, Oregon)
+6. **Branch**: `main`
+7. **Root Directory**: `apps/api`
+8. **Runtime**: `Node`
+9. **Build Command**: `npm install && npm run build`
+10. **Start Command**: `npm run start:prod`
+11. **Instance Type**: Free
+
+#### 4B.3 Environment Variables
+
+Scroll down to **Environment Variables** and add all the same variables as Railway:
+
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `JWT_REFRESH_SECRET`
+- `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` (from Upstash)
+- `NEXT_PUBLIC_APP_URL` (Set this to your future Vercel URL)
+- `CLOUDINARY_*` keys
+- `OPAY_*`, `MONNIFY_*`, `PAYSTACK_*` keys
+- **Important**: Add `PORT` = `3000` (Render explicitly needs this sometimes for NestJS)
+
+#### 4B.4 Deploy
+
+1. Click **"Create Web Service"**
+2. Wait for the build to finish.
+3. Your URL will look like: `https://jfs-wears-api.onrender.com`
 
 ---
 
@@ -370,6 +418,7 @@ npm run db:seed
 | ----------- | ---------------- | ------------- |
 | **Vercel**  | 100GB bandwidth  | $20/mo        |
 | **Railway** | $5 free credit   | Pay as you go |
+| **Render**  | Free Web Service | $7/mo (Pro)   |
 | **Neon**    | 0.5GB storage    | $19/mo        |
 | **Upstash** | 10k commands/day | $0.2/100k     |
 

@@ -6,6 +6,7 @@ import { ProductGridSkeleton } from "@/components/ui/LoadingSkeletons";
 import { Button } from "@/components/ui/button";
 import { useSearch } from "@/hooks/use-search";
 import { SearchFilters } from "@/components/search/SearchFilters";
+import { PageHero } from "@/components/common/PageHero";
 
 function SearchContent() {
   const {
@@ -28,17 +29,10 @@ function SearchContent() {
   const hasActiveFilters = !!(category || gender || localFilters.minPrice || localFilters.maxPrice);
 
   return (
-    <div className="min-h-screen bg-secondary pt-24 pb-8">
-      <div className="container-width">
-        {/* Header */}
-        <div className="mb-12 border-b border-gray-100 pb-6">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-2">Search Results</p>
-          <div className="flex items-baseline gap-4">
-            <h1 className="text-4xl md:text-5xl font-medium tracking-tight uppercase">{query || "All Products"}</h1>
-            <span className="text-xs text-gray-400 font-mono">({products.length})</span>
-          </div>
-        </div>
+    <div className="min-h-screen bg-secondary pb-8">
+      <PageHero title={query || "All Products"} description={`${products.length} results found`} variant="default" />
 
+      <div className="container-width">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Filters Sidebar */}
           <aside className="lg:col-span-1">

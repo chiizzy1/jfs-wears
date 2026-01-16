@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ProductCard from "@/components/storefront/ProductCard";
 import { Product } from "@/lib/api";
+import { SortSelect } from "./SortSelect";
 
 interface ProductGridProps {
   products: Product[];
@@ -14,13 +15,7 @@ export function ProductGrid({ products }: ProductGridProps) {
           Showing <span className="font-medium text-black">{products.length}</span> products
         </p>
 
-        {/* Sort Select - keeping simple for now, could be a separate component */}
-        <select className="border border-gray-200 rounded-none px-4 py-2 text-sm bg-white focus:outline-none focus:border-black cursor-pointer">
-          <option value="newest">Newest First</option>
-          <option value="price-asc">Price: Low to High</option>
-          <option value="price-desc">Price: High to Low</option>
-          <option value="popular">Most Popular</option>
-        </select>
+        <SortSelect />
       </div>
 
       {products.length > 0 ? (

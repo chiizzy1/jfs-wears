@@ -23,7 +23,7 @@ export function TrackOrderForm({ initialOrderNumber = "", isLoading, onSubmit }:
   });
 
   return (
-    <div className="bg-white p-0 mb-12 border-b border-gray-100 pb-12">
+    <div className="w-full">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-0">
           <FormField

@@ -45,12 +45,17 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
   const onSubmit = async (values: BlogPostFormValues) => {
     try {
       setLoading(true);
+
+      // Clean payload - convert empty strings to undefined for optional fields
       const payload = {
-        ...values,
+        title: values.title,
+        slug: values.slug,
+        content: values.content,
         excerpt: values.excerpt || undefined,
         coverImage: values.coverImage || undefined,
         metaTitle: values.metaTitle || undefined,
         metaDescription: values.metaDescription || undefined,
+        isPublished: values.isPublished ?? false,
         tags: values.tags
           ? values.tags
               .split(",")
@@ -69,9 +74,13 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
       }
 
       router.refresh();
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong");
+    } catch (error: any) {
+      console.error("Blog post submission error:", error);
+
+      // Extract detailed error message from API response
+      const errorMessage = error?.response?.data?.message || error?.message || "Something went wrong. Please try again.";
+
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

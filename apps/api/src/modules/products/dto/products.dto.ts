@@ -219,4 +219,9 @@ export class ProductQueryDto {
   @IsString()
   @IsOptional()
   color?: string; // Comma-separated colors: "Black,White"
+
+  @IsString()
+  @IsOptional()
+  @IsIn(["newest", "price-asc", "price-desc", "popular"])
+  sort?: string;
 }

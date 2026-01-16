@@ -5,6 +5,7 @@ import { useCartStore } from "@/stores/cart-store";
 import { Button } from "@/components/ui/button";
 import { CartItemRow } from "@/components/cart/CartItemRow";
 import { CartSummary } from "@/components/cart/CartSummary";
+import { PageHero } from "@/components/common/PageHero";
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, getTotal, clearCart } = useCartStore();
@@ -31,10 +32,10 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary pt-24 pb-12">
-      <div className="container-width">
-        <h1 className="text-3xl font-medium tracking-[0.02em] mb-12">Shopping Cart</h1>
+    <div className="min-h-screen bg-secondary pb-12">
+      <PageHero title="Shopping Cart" alignment="center" />
 
+      <div className="container-width">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Cart Items */}
           <div className="lg:col-span-2">

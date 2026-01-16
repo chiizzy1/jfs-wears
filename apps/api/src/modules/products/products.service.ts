@@ -21,7 +21,7 @@ export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(query: ProductQueryDto) {
-    const { categoryId, search, minPrice, maxPrice, gender, size, color, page = 1, limit = 12 } = query;
+    const { categoryId, search, minPrice, maxPrice, gender, size, color, page = 1, limit = 12, sort = "newest" } = query;
 
     const where: any = {
       isActive: true,
@@ -94,6 +94,18 @@ export class ProductsService {
           AND: variantConditions,
         },
       };
+    }
+
+    // Dynamic orderBy based on sort parameter
+    let orderBy: any = { createdAt: "desc" }; // Default to newest first
+
+    if (sort === "price-asc") {
+      orderBy = { basePrice: "asc" };
+    } else if (sort === "price-desc") {
+      orderBy = { basePrice: "desc" };
+    } else if (sort === "popular") {
+      // Fallback to featured + newest since we don't have popularity metrics
+      orderBy = [{ isFeatured: "desc" }, { createdAt: "desc" }];
     }
 
     const [items, total] = await Promise.all([

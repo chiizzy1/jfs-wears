@@ -1,5 +1,5 @@
 import { fetchProducts, fetchCategories } from "@/lib/api";
-import { ShopHero } from "@/components/shop/ShopHero";
+import { PageHero } from "@/components/common/PageHero";
 import { ShopSidebar, ShopMobileFilter } from "@/components/shop/ShopSidebar";
 import { ProductGrid } from "@/components/shop/ProductGrid";
 import { constructMetadata } from "@/lib/seo";
@@ -48,6 +48,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
       color: params.color,
       isOnSale: params.isOnSale === "true",
       search: params.search,
+      sort: params.sort,
     }),
     fetchCategories(),
   ]);
@@ -63,15 +64,17 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     }
   }
 
+  const categoryName = params.category ? categories.find((c) => c.slug === params.category)?.name : undefined;
+  const genderLabel = params.gender === "men" ? "Men's" : params.gender === "women" ? "Women's" : undefined;
+
+  const title = categoryName || "All Products";
+  const subtitle = genderLabel
+    ? `Discover our premium collection for ${genderLabel.toLowerCase()}.`
+    : "Discover our curated collection of premium fashion pieces.";
+
   return (
     <div className="min-h-screen bg-secondary">
-      <div className="bg-primary/5 pt-24 pb-4 px-4 md:px-8">
-        <div className="container-width">
-          <Breadcrumbs items={breadcrumbItems} />
-        </div>
-      </div>
-
-      <ShopHero category={params.category} gender={params.gender} categories={categories} />
+      <PageHero title={title} description={subtitle} breadcrumbs={breadcrumbItems} variant="default" />
 
       <div className="container-width py-12">
         <div className="flex flex-col lg:flex-row gap-8">

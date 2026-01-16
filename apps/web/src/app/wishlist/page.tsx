@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import { PageHero } from "@/components/common/PageHero";
 
 export default function WishlistPage() {
   const { items, removeItem, clearWishlist } = useWishlistStore();
@@ -43,10 +44,11 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary pt-24 pb-12">
+    <div className="min-h-screen bg-secondary pb-12">
+      <PageHero title={`My Wishlist (${items.length})`} alignment="center" />
+
       <div className="container-width">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">My Wishlist ({items.length})</h1>
+        <div className="flex items-center justify-end mb-8">
           <Button
             variant="outline"
             onClick={() => {

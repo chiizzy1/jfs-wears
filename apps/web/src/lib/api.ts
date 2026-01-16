@@ -190,6 +190,7 @@ export async function fetchProducts(params?: {
   size?: string;
   color?: string;
   isOnSale?: boolean;
+  sort?: string;
 }): Promise<{ products: Product[]; total: number; totalPages: number }> {
   const searchParams = new URLSearchParams();
   if (params?.category) searchParams.set("categoryId", params.category);
@@ -204,6 +205,7 @@ export async function fetchProducts(params?: {
   if (params?.size) searchParams.set("size", params.size);
   if (params?.color) searchParams.set("color", params.color);
   if (params?.isOnSale) searchParams.set("isOnSale", "true");
+  if (params?.sort) searchParams.set("sort", params.sort);
 
   try {
     const data = await apiClient.get<PaginatedResponse<ApiProduct> | ApiProduct[]>(`/products?${searchParams.toString()}`);

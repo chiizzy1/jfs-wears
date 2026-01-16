@@ -32,6 +32,9 @@ export default function Navbar() {
 
   // Routes that have a light background (requires dark navbar text)
   const LIGHT_BG_ROUTES = [
+    "/shop",
+    "/blog",
+    "/collections",
     "/track",
     "/cart",
     "/wishlist",

@@ -9,6 +9,7 @@ import { getErrorMessage, isApiError } from "@/lib/api-client";
 import { ErrorFallback } from "@/components/ui/error-fallback";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { TrackOrderForm } from "./TrackOrderForm";
+import { PageHero } from "@/components/common/PageHero";
 
 const statusSteps = [
   { key: "PENDING", label: "Order Placed", icon: "📦" },
@@ -78,11 +79,10 @@ export function TrackOrderView() {
   const currentStepIndex = order ? statusSteps.findIndex((s) => s.key === order.status) : -1;
 
   return (
-    <div className="min-h-screen bg-secondary py-24">
-      <div className="container-width max-w-4xl mx-auto">
-        <h1 className="text-[10px] uppercase tracking-[0.3em] text-center mb-4 text-gray-500 font-medium">Order Status</h1>
-        <h2 className="text-4xl md:text-5xl font-medium text-center mb-12 tracking-tight">Track Your Shipment</h2>
+    <div className="min-h-screen bg-secondary pb-24">
+      <PageHero title="Track Your Shipment" description="Check the status of your order instantly." alignment="center" />
 
+      <div className="container-width max-w-4xl mx-auto -mt-12 relative z-10 bg-white shadow-xl p-8 md:p-12">
         {/* Search Form */}
         <TrackOrderForm
           initialOrderNumber={orderNumber}

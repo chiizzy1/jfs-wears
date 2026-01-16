@@ -1,9 +1,8 @@
 import { fetchProducts, fetchCategories } from "@/lib/api";
-import { ShopHero } from "@/components/shop/ShopHero";
+import { PageHero } from "@/components/common/PageHero";
 import { ShopSidebar, ShopMobileFilter } from "@/components/shop/ShopSidebar";
 import { ProductGrid } from "@/components/shop/ProductGrid";
 import { constructMetadata } from "@/lib/seo";
-import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { notFound } from "next/navigation";
 
 interface CollectionPageProps {
@@ -98,13 +97,12 @@ export default async function CollectionPage({ params, searchParams }: Collectio
 
   return (
     <div className="min-h-screen bg-secondary">
-      <div className="bg-primary/5 pt-24 pb-4 px-4 md:px-8">
-        <div className="container-width">
-          <Breadcrumbs items={breadcrumbItems} />
-        </div>
-      </div>
-
-      <ShopHero category={category?.slug} gender={gender} categories={categories} />
+      <PageHero
+        title={category?.name || (gender === "men" ? "Men's Collection" : "Women's Collection")}
+        description={category?.description || `Discover our premium collection for ${gender === "men" ? "men" : "women"}.`}
+        breadcrumbs={breadcrumbItems}
+        variant="default"
+      />
 
       <div className="container-width py-12">
         <div className="flex flex-col lg:flex-row gap-8">

@@ -22,7 +22,14 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // Enable CORS
-  const allowedOrigins = ["http://localhost:3000", "http://localhost:3002", "http://localhost:3003", "http://localhost:3004"];
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:3002",
+    "http://localhost:3003",
+    "http://localhost:3004",
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.FRONTEND_URL,
+  ].filter((origin) => !!origin);
 
   app.enableCors({
     origin: (origin, callback) => {
