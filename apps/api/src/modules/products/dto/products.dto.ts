@@ -1,5 +1,17 @@
-import { IsString, IsNumber, IsOptional, IsBoolean, IsArray, ValidateNested, Min, Max, IsNotEmpty, IsIn } from "class-validator";
-import { Type } from "class-transformer";
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsBoolean,
+  IsArray,
+  ValidateNested,
+  Min,
+  Max,
+  IsNotEmpty,
+  IsIn,
+  IsDateString,
+} from "class-validator";
+import { Type, Transform } from "class-transformer";
 
 export class CreateVariantDto {
   @IsString()
@@ -79,6 +91,24 @@ export class CreateProductDto {
   @Type(() => BulkPricingTierDto)
   @IsOptional()
   bulkPricingTiers?: BulkPricingTierDto[];
+
+  @IsNumber()
+  @IsOptional()
+  salePrice?: number;
+
+  @IsDateString()
+  @IsOptional()
+  saleStartDate?: string;
+
+  @IsDateString()
+  @IsOptional()
+  saleEndDate?: string;
+}
+
+export class UpdateVariantDto extends CreateVariantDto {
+  @IsString()
+  @IsOptional()
+  id?: string;
 }
 
 export class UpdateProductDto {
@@ -121,6 +151,24 @@ export class UpdateProductDto {
   @Type(() => BulkPricingTierDto)
   @IsOptional()
   bulkPricingTiers?: BulkPricingTierDto[];
+
+  @IsNumber()
+  @IsOptional()
+  salePrice?: number;
+
+  @IsDateString()
+  @IsOptional()
+  saleStartDate?: string;
+
+  @IsDateString()
+  @IsOptional()
+  saleEndDate?: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateVariantDto)
+  @IsOptional()
+  variants?: UpdateVariantDto[];
 }
 
 export class ProductQueryDto {
@@ -158,4 +206,8 @@ export class ProductQueryDto {
   @IsString()
   @IsOptional()
   gender?: string;
+  @IsBoolean()
+  @IsOptional()
+  @Transform(({ value }) => value === "true" || value === true)
+  isOnSale?: boolean;
 }

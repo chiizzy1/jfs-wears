@@ -31,6 +31,9 @@ interface FormData {
   bulkPricingTiers?: { minQuantity: number; discountPercent: number }[];
   selectedSizes: string[];
   colorGroups: ColorGroupFormData[];
+  salePrice?: number;
+  saleStartDate?: string;
+  saleEndDate?: string;
 }
 
 export function ProductEditClient({ id }: ProductEditClientProps) {
@@ -74,23 +77,71 @@ export function ProductEditClient({ id }: ProductEditClientProps) {
             isMain: img.isMain || false,
           })),
         })),
+        salePrice: product.salePrice ? Number(product.salePrice) : 0,
+        saleStartDate: product.saleStartDate ? new Date(product.saleStartDate).toISOString().slice(0, 16) : "",
+        saleEndDate: product.saleEndDate ? new Date(product.saleEndDate).toISOString().slice(0, 16) : "",
       }
     : undefined;
 
   const handleSubmit = async (data: FormData) => {
     try {
-      // 1. Generate variants from sizes × colors
+      // 1. Generate variants from sizes × colors and map to existing variants to preserve Ids/Stock
       const variants = data.colorGroups.flatMap((color) =>
-        data.selectedSizes.map((size) => ({
-          size,
-          color: color.colorName,
-          sku: `${data.name.slice(0, 3).toUpperCase()}-${size.slice(0, 2).toUpperCase()}-${color.colorName
-            .slice(0, 3)
-            .toUpperCase()}-${Date.now().toString().slice(-4)}`,
-          stock: 0,
-          priceAdjustment: 0,
-        }))
+        data.selectedSizes.map((size) => {
+          // Find existing variant - check BOTH deprecated 'color' field AND new 'colorGroup.colorName'
+          const existingVariant = product?.variants?.find((v: any) => {
+            const matchesSize = v.size === size;
+            // Match by legacy color field OR by colorGroup relationship
+            const matchesColor =
+              v.color === color.colorName ||
+              v.color?.toLowerCase() === color.colorName.toLowerCase() ||
+              v.colorGroup?.colorName?.toLowerCase() === color.colorName.toLowerCase();
+            return matchesSize && matchesColor;
+          });
+
+          // Generate truly unique SKU using crypto.randomUUID() to prevent collisions
+          const generateUniqueSku = () => {
+            const prefix = data.name
+              .slice(0, 3)
+              .toUpperCase()
+              .replace(/[^A-Z]/g, "X");
+            const sizeCode = size.slice(0, 2).toUpperCase();
+            const colorCode = color.colorName
+              .slice(0, 3)
+              .toUpperCase()
+              .replace(/[^A-Z]/g, "X");
+            const uniqueId = crypto.randomUUID().slice(0, 8).toUpperCase();
+            return `${prefix}-${sizeCode}-${colorCode}-${uniqueId}`;
+          };
+
+          // Get stock from form variantStocks if provided, otherwise preserve existing
+          const variantKey = `${color.colorName}-${size}`;
+          const formStockValue = (data as any).variantStocks?.[variantKey];
+          const stockValue =
+            formStockValue !== undefined
+              ? typeof formStockValue === "string"
+                ? parseInt(formStockValue) || 0
+                : formStockValue
+              : existingVariant?.stock ?? 0;
+
+          return {
+            id: existingVariant?.id, // Important: Include ID to trigger update instead of create
+            size,
+            color: color.colorName,
+            sku: existingVariant?.sku || generateUniqueSku(),
+            stock: stockValue,
+            priceAdjustment: existingVariant?.priceAdjustment ?? 0, // Preserve existing price adjustment
+          };
+        })
       );
+
+      // Debug: Log the variants being sent
+      console.log("=== UPDATE PRODUCT DEBUG ===");
+      console.log("Product ID:", id);
+      console.log("Existing variants count:", product?.variants?.length || 0);
+      console.log("New variants count:", variants.length);
+      console.log("Variants with IDs (updates):", variants.filter((v) => v.id).length);
+      console.log("Variants without IDs (creates):", variants.filter((v) => !v.id).length);
 
       // 2. Update the product
       await updateProduct({
@@ -104,7 +155,10 @@ export function ProductEditClient({ id }: ProductEditClientProps) {
           isFeatured: data.isFeatured,
           bulkEnabled: data.bulkEnabled,
           bulkPricingTiers: data.bulkPricingTiers,
-          variants,
+          variants, // Now includes IDs for existing variants
+          salePrice: data.salePrice || undefined,
+          saleStartDate: data.saleStartDate || undefined,
+          saleEndDate: data.saleEndDate || undefined,
         },
       });
 

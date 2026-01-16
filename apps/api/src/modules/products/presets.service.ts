@@ -1,29 +1,60 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
+import { IsString, IsOptional, IsArray, IsBoolean, IsNumber, ArrayMinSize, ValidateNested } from "class-validator";
+import { Type } from "class-transformer";
 
-// DTOs
+// DTOs with validation decorators
 export class CreateSizePresetDto {
+  @IsString()
   name: string;
+
+  @IsString()
   category: string;
+
+  @IsArray()
+  @IsString({ each: true })
   sizes: string[];
+
+  @IsBoolean()
+  @IsOptional()
   isDefault?: boolean;
 }
 
 export class CreateColorPresetDto {
+  @IsString()
   name: string;
+
+  @IsString()
   hexCode: string;
 }
 
 export class CreateColorGroupDto {
+  @IsString()
   colorName: string;
+
+  @IsString()
+  @IsOptional()
   colorHex?: string;
+
+  @IsNumber()
+  @IsOptional()
   position?: number;
 }
 
 export class CreateVariantImageDto {
+  @IsString()
   url: string;
+
+  @IsString()
+  @IsOptional()
   altText?: string;
+
+  @IsNumber()
+  @IsOptional()
   position?: number;
+
+  @IsBoolean()
+  @IsOptional()
   isMain?: boolean;
 }
 

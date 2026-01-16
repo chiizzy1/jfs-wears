@@ -52,7 +52,7 @@ export class AuthController {
 
   @Post("register")
   async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
-    const result = await this.authService.registerCustomer(dto.email, dto.password, dto.name);
+    const result = await this.authService.registerCustomer(dto.email, dto.password, dto.name, dto.subscribe);
     this.setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken);
     // Still return tokens in body for mobile/API clients
     return result;

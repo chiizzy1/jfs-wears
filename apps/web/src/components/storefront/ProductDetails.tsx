@@ -7,6 +7,8 @@ import { Product, ColorGroup } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import AddToCartButton from "./AddToCartButton";
 import SizeGuideModal from "./SizeGuideModal";
+import { CountdownTimer } from "./CountdownTimer";
+import { ProductPrice } from "./ProductPrice";
 import { useWishlistStore } from "@/stores/wishlist-store";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
@@ -162,7 +164,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   }, [product.variants, sizes, colors, selectedSize, selectedColor]);
 
   const currentPrice = currentVariant ? currentVariant.price : product.price;
-  const hasDiscount = product.compareAtPrice && product.compareAtPrice > currentPrice;
+  const isSaleActive = !!product.saleEndDate && new Date(product.saleEndDate) > new Date();
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
@@ -181,8 +183,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted">No Image</div>
           )}
-          {/* Minimal sale badge */}
-          {hasDiscount && (
+          {/* Minimal sale badge - reusing logic from ProductCard or keeping simple */}
+          {product.compareAtPrice && product.compareAtPrice > product.price && (
             <span className="absolute top-4 left-4 text-xs uppercase tracking-widest text-sale font-medium">Sale</span>
           )}
         </div>
@@ -229,12 +231,16 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         {/* Product Name */}
         <h1 className="text-3xl md:text-4xl font-medium text-primary tracking-[0.02em]">{product.name}</h1>
 
-        {/* Price */}
+        {/* Price & Timer */}
         <div className="flex flex-col gap-4">
-          <div className="flex items-baseline gap-4">
-            <span className="text-2xl font-medium">₦{currentPrice.toLocaleString()}</span>
-            {hasDiscount && <span className="text-lg text-muted line-through">₦{product.compareAtPrice!.toLocaleString()}</span>}
-          </div>
+          <ProductPrice price={currentPrice} compareAtPrice={product.compareAtPrice} size="lg" />
+
+          {isSaleActive && product.saleEndDate && (
+            <div className="bg-secondary/50 p-4 border border-border">
+              <p className="text-xs uppercase tracking-widest text-muted mb-2">Limited Time Offer Ends In:</p>
+              <CountdownTimer endDate={product.saleEndDate} size="md" />
+            </div>
+          )}
 
           {/* Bulk Pricing Tiers - High Hierarchy White Card */}
           {product.bulkEnabled && product.bulkPricingTiers && product.bulkPricingTiers.length > 0 && (

@@ -13,17 +13,45 @@ export const bulkPricingTierSchema = z.object({
   discountPercent: z.coerce.number().min(0).max(100, "Discount cannot exceed 100%"),
 });
 
-export const productSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  description: z.string().min(1, "Description is required"),
-  basePrice: z.coerce.number().min(0, "Price must be positive"),
-  categoryId: z.string().min(1, "Category is required"),
-  gender: z.enum(["MEN", "WOMEN", "UNISEX"]),
-  isFeatured: z.boolean().optional().default(false),
-  bulkEnabled: z.boolean().optional().default(false),
-  variants: z.array(productVariantSchema).min(1, "At least one variant is required"),
-  bulkPricingTiers: z.array(bulkPricingTierSchema).optional(),
-});
+export const productSchema = z
+  .object({
+    name: z.string().min(1, "Name is required"),
+    description: z.string().min(1, "Description is required"),
+    basePrice: z.coerce.number().min(0, "Price must be positive"),
+    categoryId: z.string().min(1, "Category is required"),
+    gender: z.enum(["MEN", "WOMEN", "UNISEX"]),
+    isFeatured: z.boolean().optional().default(false),
+    bulkEnabled: z.boolean().optional().default(false),
+    variants: z.array(productVariantSchema).min(1, "At least one variant is required"),
+    bulkPricingTiers: z.array(bulkPricingTierSchema).optional(),
+    salePrice: z.coerce.number().min(0).optional(),
+    saleStartDate: z.string().optional(),
+    saleEndDate: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.salePrice && data.basePrice && data.salePrice >= data.basePrice) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Sale price must be lower than base price",
+      path: ["salePrice"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.saleStartDate && data.saleEndDate) {
+        return new Date(data.saleStartDate) < new Date(data.saleEndDate);
+      }
+      return true;
+    },
+    {
+      message: "End date must be after start date",
+      path: ["saleEndDate"],
+    }
+  );
 
 export type ProductFormValues = z.infer<typeof productSchema>;
 export type ProductVariantFormValues = z.infer<typeof productVariantSchema>;

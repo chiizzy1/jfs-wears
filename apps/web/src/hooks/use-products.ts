@@ -4,7 +4,7 @@ import { toast } from "react-hot-toast";
 import { getErrorMessage } from "@/lib/api-client";
 import { adminAPI } from "@/lib/admin-api";
 
-export const useProducts = (params?: { category?: string }) => {
+export const useProducts = (params?: { category?: string; isOnSale?: boolean }) => {
   const queryClient = useQueryClient();
 
   const productsQuery = useQuery({

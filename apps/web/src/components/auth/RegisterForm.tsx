@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { registerSchema, RegisterValues } from "@/schemas/auth.schema";
 import { useAuthStore } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
@@ -24,13 +25,14 @@ export function RegisterForm() {
       name: "",
       email: "",
       password: "",
+      subscribe: false,
     },
   });
 
   async function onSubmit(data: RegisterValues) {
     setIsLoading(true);
     try {
-      await register(data.email, data.password, data.name);
+      await register(data.email, data.password, data.name, data.subscribe);
       toast.success("Account created successfully!");
       router.push("/");
     } catch (error) {
@@ -105,6 +107,23 @@ export function RegisterForm() {
                   />
                 </FormControl>
                 <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="subscribe"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel className="text-sm font-normal text-gray-600 cursor-pointer">
+                    Subscribe to our newsletter for exclusive offers and updates
+                  </FormLabel>
+                </div>
               </FormItem>
             )}
           />

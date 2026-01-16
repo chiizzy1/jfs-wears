@@ -260,6 +260,9 @@ export class StorefrontService {
           basePrice: any;
           images: Array<{ url: string }>;
           category: { id: string; name: string; slug: string } | null;
+          salePrice?: any;
+          saleStartDate?: Date | null;
+          saleEndDate?: Date | null;
         }> = [];
 
         if (section.type === "FEATURED") {
@@ -293,6 +296,9 @@ export class StorefrontService {
             basePrice: p.basePrice,
             image: p.images[0]?.url ?? null,
             category: p.category,
+            salePrice: p.salePrice,
+            saleStartDate: p.saleStartDate,
+            saleEndDate: p.saleEndDate,
           })),
         };
       })

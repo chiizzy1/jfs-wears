@@ -5,6 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/api";
 import QuickViewModal from "./QuickViewModal";
+import { SaleBadge } from "./SaleBadge";
+import { CountdownTimer } from "./CountdownTimer";
+import { ProductPrice } from "./ProductPrice";
 
 interface ProductCardProps {
   product: Product;
@@ -20,10 +23,14 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
   const primaryImage = product.images.find((img) => img.isPrimary) || product.images[0];
+
+  // Calculate discount percentage based on price difference if on sale
   const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
   const discountPercent = hasDiscount
     ? Math.round(((product.compareAtPrice! - product.price) / product.compareAtPrice!) * 100)
     : 0;
+
+  const isSaleActive = !!product.saleEndDate && new Date(product.saleEndDate) > new Date();
 
   // Calculate total stock across all variants
   const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
@@ -53,14 +60,19 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
             <div className="w-full h-full flex items-center justify-center text-muted">No Image</div>
           )}
 
-          {/* Minimal Badges - Text only, subtle */}
+          {/* Minimal Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2">
-            {hasDiscount && (
-              <span className="text-xs uppercase tracking-widest text-sale font-medium">Save {discountPercent}%</span>
-            )}
+            {hasDiscount && <SaleBadge price={product.price} compareAtPrice={product.compareAtPrice} size="sm" />}
             {isLowStock && <span className="text-xs uppercase tracking-widest text-muted">Low Stock</span>}
             {isOutOfStock && <span className="text-xs uppercase tracking-widest text-muted">Sold Out</span>}
           </div>
+
+          {/* Sale Timer Overlay - Only if sale is active and ending soon (optional logic, but here acts as visual urgency) */}
+          {isSaleActive && product.saleEndDate && (
+            <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-1 flex justify-center">
+              <CountdownTimer endDate={product.saleEndDate} size="sm" className="text-white text-xs" />
+            </div>
+          )}
 
           {/* Quick View - Appears on hover, minimal style */}
           <div
@@ -84,10 +96,7 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
           </h3>
 
           {/* Price */}
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium">₦{product.price.toLocaleString()}</span>
-            {hasDiscount && <span className="text-sm text-muted line-through">₦{product.compareAtPrice!.toLocaleString()}</span>}
-          </div>
+          <ProductPrice price={product.price} compareAtPrice={product.compareAtPrice} />
         </div>
       </Link>
 

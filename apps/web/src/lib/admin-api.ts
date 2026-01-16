@@ -102,11 +102,12 @@ class AdminAPI {
   }
 
   // Products
-  async getProducts(params?: { category?: string; limit?: number; offset?: number }) {
+  async getProducts(params?: { category?: string; limit?: number; offset?: number; isOnSale?: boolean }) {
     const search = new URLSearchParams();
     if (params?.category) search.set("category", params.category);
     if (params?.limit) search.set("limit", params.limit.toString());
     if (params?.offset) search.set("offset", params.offset.toString());
+    if (params?.isOnSale) search.set("isOnSale", "true");
 
     // API returns paginated response { items, total, page, ... }
     const response = await this.request<{ items: Product[]; total: number; page: number } | Product[]>(
@@ -358,6 +359,9 @@ export interface Product {
   deletedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  salePrice?: number | null;
+  saleStartDate?: string | null;
+  saleEndDate?: string | null;
 }
 
 export interface Order {
@@ -475,6 +479,11 @@ export interface CreateProductDto {
   categoryId: string;
   gender?: "MEN" | "WOMEN" | "UNISEX";
   isFeatured?: boolean;
+  bulkEnabled?: boolean;
+  bulkPricingTiers?: { minQuantity: number; discountPercent: number }[];
+  salePrice?: number;
+  saleStartDate?: string;
+  saleEndDate?: string;
   variants?: CreateVariantDto[];
 }
 

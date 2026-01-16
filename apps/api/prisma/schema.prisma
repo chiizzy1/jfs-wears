@@ -22,6 +22,7 @@ model User {
   passwordHash          String?
   profileImage          String?   // URL to user's profile image
   isVerified            Boolean   @default(false)
+  isSubscribed          Boolean   @default(false) // Newsletter marketing opt-in consent
   verificationToken     String?   // Token for email verification
   verificationExpires   DateTime? // Token expiry time
   createdAt             DateTime  @default(now())
@@ -160,6 +161,11 @@ model Product {
   bulkEnabled      Boolean           @default(false)
   bulkPricingTiers BulkPricingTier[]
 
+  // Limited Time Sale
+  salePrice     Decimal?  @db.Decimal(10, 2)
+  saleStartDate DateTime?
+  saleEndDate   DateTime?
+
 
 
   createdAt   DateTime @default(now())
@@ -247,7 +253,6 @@ model ProductVariant {
   cartItems   CartItem[]
   orderItems  OrderItem[]
 
-  @@unique([productId, size, colorGroupId])
   @@map("product_variants")
   @@index([sku])
   @@index([colorGroupId])

@@ -53,7 +53,13 @@ export function ProductTable() {
       header: () => <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">Product</span>,
       cell: ({ row }) => {
         const product = row.original;
-        const image = product.images?.find((img) => img.isMain) || product.images?.[0];
+        // First try to get image from colorGroups (new system)
+        const colorGroupImage =
+          product.colorGroups?.flatMap((cg: any) => cg.images || [])?.find((img: any) => img.isMain) ||
+          product.colorGroups?.[0]?.images?.[0];
+        // Fall back to product.images (legacy system)
+        const legacyImage = product.images?.find((img) => img.isPrimary || img.isMain) || product.images?.[0];
+        const image = colorGroupImage || legacyImage;
         return (
           <div className="flex items-center gap-4 py-2">
             <div className="w-16 h-20 overflow-hidden bg-secondary relative shrink-0">

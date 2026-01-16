@@ -2,6 +2,7 @@ import { verifySession } from "@/lib/dal";
 import { AccountSidebar } from "@/components/account/AccountSidebar";
 import { ProfileForm } from "@/components/account/ProfileForm";
 import { PasswordForm } from "@/components/account/PasswordForm";
+import { DeleteAccountSection } from "@/components/account/DeleteAccountSection";
 
 /**
  * Account Page (Server Component)
@@ -28,6 +29,7 @@ export default async function AccountPage() {
           <main className="md:col-span-2">
             <ProfileForm />
             <PasswordForm />
+            <DeleteAccountSection />
           </main>
         </div>
       </div>

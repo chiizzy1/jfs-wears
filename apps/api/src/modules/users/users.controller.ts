@@ -58,6 +58,13 @@ export class UsersController {
     return this.usersService.changePassword(req.user.sub, body.currentPassword, body.newPassword);
   }
 
+  @Delete("me")
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: "Delete current user account (soft delete)" })
+  async deleteMyAccount(@Request() req: any, @Body() body: { password: string }) {
+    return this.usersService.deleteMyAccount(req.user.sub, body.password);
+  }
+
   // Admin endpoints
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)

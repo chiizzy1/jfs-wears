@@ -24,6 +24,9 @@ interface FormData {
     colorHex?: string;
     images: { file?: File; preview: string; isMain: boolean }[];
   }[];
+  salePrice?: number;
+  saleStartDate?: string;
+  saleEndDate?: string;
 }
 
 export default function AddProductPage() {
@@ -34,18 +37,49 @@ export default function AddProductPage() {
   const handleSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      // 1. Generate variants from sizes × colors
+      // 1. Generate variants from sizes × colors with truly unique SKUs
+      const generateUniqueSku = (name: string, size: string, colorName: string) => {
+        const prefix = name
+          .slice(0, 3)
+          .toUpperCase()
+          .replace(/[^A-Z]/g, "X");
+        const sizeCode = size.slice(0, 2).toUpperCase();
+        const colorCode = colorName
+          .slice(0, 3)
+          .toUpperCase()
+          .replace(/[^A-Z]/g, "X");
+        const uniqueId = crypto.randomUUID().slice(0, 8).toUpperCase();
+        return `${prefix}-${sizeCode}-${colorCode}-${uniqueId}`;
+      };
+
       const variants = data.colorGroups.flatMap((color) =>
-        data.selectedSizes.map((size) => ({
-          size,
-          color: color.colorName,
-          sku: `${data.name.slice(0, 3).toUpperCase()}-${size.slice(0, 2).toUpperCase()}-${color.colorName
-            .slice(0, 3)
-            .toUpperCase()}-${Date.now().toString().slice(-4)}`,
-          stock: 0, // Default stock, can be updated later
-          priceAdjustment: 0,
-        }))
+        data.selectedSizes.map((size) => {
+          const variantKey = `${color.colorName}-${size}`;
+          const stockValue = (data as any).variantStocks?.[variantKey] ?? 0;
+          return {
+            size,
+            color: color.colorName,
+            sku: generateUniqueSku(data.name, size, color.colorName),
+            stock: typeof stockValue === "string" ? parseInt(stockValue) || 0 : stockValue,
+            priceAdjustment: 0,
+          };
+        })
       );
+
+      console.log("Submitting Product Payload:", {
+        name: data.name,
+        description: data.description,
+        basePrice: data.basePrice,
+        categoryId: data.categoryId,
+        gender: data.gender,
+        isFeatured: data.isFeatured,
+        bulkEnabled: data.bulkEnabled,
+        bulkPricingTiers: data.bulkPricingTiers,
+        variants,
+        salePrice: data.salePrice || undefined,
+        saleStartDate: data.saleStartDate || undefined,
+        saleEndDate: data.saleEndDate || undefined,
+      });
 
       // 2. Create the product first
       const product = await createProduct({
@@ -58,6 +92,9 @@ export default function AddProductPage() {
         bulkEnabled: data.bulkEnabled,
         bulkPricingTiers: data.bulkPricingTiers,
         variants,
+        salePrice: data.salePrice || undefined,
+        saleStartDate: data.saleStartDate || undefined,
+        saleEndDate: data.saleEndDate || undefined,
       });
 
       // 3. Create color groups and upload images for each
@@ -78,9 +115,10 @@ export default function AddProductPage() {
 
       toast.success("Product created successfully!");
       router.push("/admin/products");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create product:", error);
-      toast.error("Failed to create product. Please try again.");
+      const errorMessage = error?.message || "Failed to create product. Please try again.";
+      toast.error(`Error: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }

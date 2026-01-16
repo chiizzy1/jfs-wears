@@ -203,6 +203,63 @@ export function ProductForm({ categories, onSubmit, isSubmitting, initialData }:
           </div>
         </div>
 
+        {/* Sale Information */}
+        <div className="bg-white p-6 border shadow-sm space-y-4">
+          <h2 className="text-lg font-semibold">Sale Information (Optional)</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="salePrice"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sale Price (₦)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="e.g. 5000"
+                      {...field}
+                      value={field.value || ""} // Handle 0 or undefined gracefully
+                      onChange={(e) => {
+                        const val = e.target.value === "" ? undefined : Number(e.target.value);
+                        field.onChange(val);
+                      }}
+                      min={0}
+                    />
+                  </FormControl>
+                  <FormDescription>Must be lower than Base Price</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="saleStartDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Start Date</FormLabel>
+                  <FormControl>
+                    <Input type="datetime-local" {...field} value={field.value || ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="saleEndDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>End Date</FormLabel>
+                  <FormControl>
+                    <Input type="datetime-local" {...field} value={field.value || ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
         {/* Images */}
         <div className="bg-white p-6 border shadow-sm space-y-4">
           <h2 className="text-lg font-semibold">Images</h2>

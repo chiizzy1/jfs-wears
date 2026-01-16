@@ -6,6 +6,11 @@ import * as cookieParser from "cookie-parser";
 import { Logger } from "nestjs-pino";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
+// Fix BigInt serialization for JSON.stringify
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));

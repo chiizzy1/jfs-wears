@@ -104,6 +104,33 @@ export class UsersService {
     return { message: "Password changed successfully" };
   }
 
+  // Self-service account deletion (requires password confirmation)
+  async deleteMyAccount(userId: string, password: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.passwordHash) {
+      throw new NotFoundException("User not found");
+    }
+
+    const isValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isValid) {
+      throw new UnauthorizedException("Password is incorrect");
+    }
+
+    // Soft delete the account
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { deletedAt: new Date() },
+    });
+
+    // Revoke all refresh tokens so they can't log back in
+    await this.prisma.refreshToken.updateMany({
+      where: { userId },
+      data: { isRevoked: true },
+    });
+
+    return { message: "Account deleted successfully" };
+  }
+
   // Admin soft delete
   async softDelete(id: string) {
     return this.prisma.user.update({

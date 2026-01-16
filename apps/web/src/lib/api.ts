@@ -51,6 +51,9 @@ export interface Product {
   isFeatured: boolean;
   bulkEnabled?: boolean;
   bulkPricingTiers?: { minQuantity: number; discountPercent: number }[];
+  salePrice?: number;
+  saleStartDate?: string;
+  saleEndDate?: string;
 }
 
 export interface Category {
@@ -89,6 +92,9 @@ interface ApiProduct {
   isFeatured: boolean;
   bulkEnabled?: boolean;
   bulkPricingTiers?: Array<{ minQuantity: number; discountPercent: number }>;
+  salePrice?: number;
+  saleStartDate?: string;
+  saleEndDate?: string;
 }
 
 interface PaginatedResponse<T> {
@@ -99,7 +105,7 @@ interface PaginatedResponse<T> {
 
 // Helper function to map API product response to frontend Product interface
 function mapApiProduct(apiProduct: ApiProduct): Product {
-  return {
+  const mappedProduct: Product = {
     id: apiProduct.id,
     name: apiProduct.name,
     slug: apiProduct.slug,
@@ -124,14 +130,22 @@ function mapApiProduct(apiProduct: ApiProduct): Product {
         isMain: img.isMain || false,
       })),
     })),
-    variants: (apiProduct.variants || []).map((v) => ({
-      id: v.id,
-      sku: v.sku,
-      size: v.size || undefined,
-      color: v.color || undefined,
-      stock: v.stock,
-      price: Number(apiProduct.basePrice) + Number(v.priceAdjustment || 0),
-    })),
+    variants: (apiProduct.variants || []).map((v) => {
+      // Logic for variant pricing:
+      // If the parent is on sale, does the variant inherit the discount structure?
+      // Typically variants just adjust the base, but for now we'll keep simple variant logic
+      // and maybe revisit if variants need their own specific sale overrides.
+      // For now, variants add to the calculated base price.
+      const basePrice = Number(apiProduct.basePrice);
+      return {
+        id: v.id,
+        sku: v.sku,
+        size: v.size || undefined,
+        color: v.color || undefined,
+        stock: v.stock,
+        price: basePrice + Number(v.priceAdjustment || 0),
+      };
+    }),
     isActive: apiProduct.isActive,
     isFeatured: apiProduct.isFeatured,
     bulkEnabled: apiProduct.bulkEnabled,
@@ -139,7 +153,28 @@ function mapApiProduct(apiProduct: ApiProduct): Product {
       minQuantity: tier.minQuantity,
       discountPercent: Number(tier.discountPercent),
     })),
+    salePrice: apiProduct.salePrice ? Number(apiProduct.salePrice) : undefined,
+    saleStartDate: apiProduct.saleStartDate,
+    saleEndDate: apiProduct.saleEndDate,
   };
+
+  // Determine effective pricing based on sale status
+  const now = new Date();
+  const salePrice = apiProduct.salePrice ? Number(apiProduct.salePrice) : undefined;
+  const startDate = apiProduct.saleStartDate ? new Date(apiProduct.saleStartDate) : undefined;
+  const endDate = apiProduct.saleEndDate ? new Date(apiProduct.saleEndDate) : undefined;
+
+  const isSaleActive = salePrice !== undefined && (!startDate || startDate <= now) && (!endDate || endDate > now);
+
+  if (isSaleActive && salePrice !== undefined) {
+    mappedProduct.price = salePrice;
+    mappedProduct.compareAtPrice = Number(apiProduct.basePrice);
+  } else {
+    mappedProduct.price = Number(apiProduct.basePrice);
+    mappedProduct.compareAtPrice = undefined;
+  }
+
+  return mappedProduct;
 }
 
 export async function fetchProducts(params?: {

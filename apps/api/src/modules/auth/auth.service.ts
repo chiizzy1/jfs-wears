@@ -19,7 +19,7 @@ export class AuthService {
   // CUSTOMER AUTH
   // ============================================
 
-  async registerCustomer(email: string, password: string, name?: string) {
+  async registerCustomer(email: string, password: string, name?: string, subscribe?: boolean) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
     });
@@ -42,6 +42,7 @@ export class AuthService {
         verificationToken,
         verificationExpires,
         isVerified: false,
+        isSubscribed: subscribe ?? false,
       },
     });
 

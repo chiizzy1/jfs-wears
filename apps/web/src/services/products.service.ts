@@ -1,7 +1,7 @@
 import { adminAPI } from "@/lib/admin-api";
 
 export const productsService = {
-  getProducts: async (params?: { category?: string; limit?: number; offset?: number }) => {
+  getProducts: async (params?: { category?: string; limit?: number; offset?: number; isOnSale?: boolean }) => {
     return adminAPI.getProducts(params);
   },
 

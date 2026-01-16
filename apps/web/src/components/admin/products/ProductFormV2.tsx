@@ -14,6 +14,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import toast from "react-hot-toast";
 
 // Schema for color group with images (1-4 images per color)
 const colorGroupSchema = z.object({
@@ -38,18 +39,47 @@ const bulkPricingTierSchema = z.object({
 });
 
 // Schema for product form
-const productFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  description: z.string().min(1, "Description is required"),
-  basePrice: z.coerce.number().min(0, "Price must be positive"),
-  categoryId: z.string().min(1, "Category is required"),
-  gender: z.enum(["MEN", "WOMEN", "UNISEX"]),
-  isFeatured: z.boolean().optional().default(false),
-  bulkEnabled: z.boolean().optional().default(false),
-  bulkPricingTiers: z.array(bulkPricingTierSchema).optional(),
-  selectedSizes: z.array(z.string()).min(1, "Select at least one size"),
-  colorGroups: z.array(colorGroupSchema).min(1, "Add at least one color"),
-});
+const productFormSchema = z
+  .object({
+    name: z.string().min(1, "Name is required"),
+    description: z.string().min(1, "Description is required"),
+    basePrice: z.coerce.number().min(0, "Price must be positive"),
+    categoryId: z.string().min(1, "Category is required"),
+    gender: z.enum(["MEN", "WOMEN", "UNISEX"]),
+    isFeatured: z.boolean().optional().default(false),
+    bulkEnabled: z.boolean().optional().default(false),
+    bulkPricingTiers: z.array(bulkPricingTierSchema).optional(),
+    selectedSizes: z.array(z.string()).min(1, "Select at least one size"),
+    colorGroups: z.array(colorGroupSchema).min(1, "Add at least one color"),
+    variantStocks: z.record(z.string(), z.coerce.number().int().min(0)).optional().default({}),
+    salePrice: z.coerce.number().min(0, "Sale price must be positive").optional(),
+    saleStartDate: z.string().optional(),
+    saleEndDate: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.salePrice && data.basePrice && data.salePrice >= data.basePrice) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Sale price must be less than base price",
+      path: ["salePrice"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.saleStartDate && data.saleEndDate) {
+        return new Date(data.saleEndDate) > new Date(data.saleStartDate);
+      }
+      return true;
+    },
+    {
+      message: "End date must be after start date",
+      path: ["saleEndDate"],
+    }
+  );
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
@@ -89,6 +119,10 @@ export function ProductFormV2({
       bulkPricingTiers: [],
       selectedSizes: [],
       colorGroups: [],
+      variantStocks: {},
+      salePrice: 0,
+      saleStartDate: "",
+      saleEndDate: "",
     },
   });
 
@@ -208,7 +242,46 @@ export function ProductFormV2({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8">
+      <form
+        onSubmit={form.handleSubmit(handleFormSubmit, (errors) => {
+          console.error("Form validation errors:", errors);
+
+          // Helper to get error messages recursively
+          const getErrorMessages = (obj: any): string[] => {
+            let messages: string[] = [];
+            for (const key in obj) {
+              if (obj[key]?.message) {
+                messages.push(obj[key].message);
+              } else if (typeof obj[key] === "object") {
+                messages = [...messages, ...getErrorMessages(obj[key])];
+              }
+            }
+            return messages;
+          };
+
+          const errorMessages = getErrorMessages(errors);
+
+          if (errorMessages.length > 0) {
+            // Show the first few errors to avoid spamming
+            const uniqueErrors = Array.from(new Set(errorMessages));
+            toast.error(
+              <div className="flex flex-col gap-1">
+                <span className="font-semibold">Please fix the following errors:</span>
+                <ul className="list-disc pl-4 text-sm">
+                  {uniqueErrors.slice(0, 3).map((msg, i) => (
+                    <li key={i}>{msg}</li>
+                  ))}
+                  {uniqueErrors.length > 3 && <li>...and {uniqueErrors.length - 3} more</li>}
+                </ul>
+              </div>,
+              { duration: 5000 }
+            );
+          } else {
+            toast.error("Please fix the errors in the form before submitting.");
+          }
+        })}
+        className="space-y-8"
+      >
         {/* Basic Info */}
         <div className="bg-white p-6 space-y-4">
           <h2 className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-medium">Product Information</h2>
@@ -330,6 +403,66 @@ export function ProductFormV2({
                     <FormLabel>Featured Product</FormLabel>
                     <FormDescription>Show on homepage</FormDescription>
                   </div>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        {/* Sale Information */}
+        <div className="bg-white p-6 space-y-4">
+          <h2 className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-medium">Sale Information (Optional)</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="salePrice"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sale Price (₦)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      placeholder="Optional"
+                      value={field.value || ""}
+                      onChange={(e) => {
+                        const rawValue = e.target.value;
+                        if (rawValue === "") {
+                          field.onChange(undefined);
+                        } else {
+                          const parsed = parseInt(rawValue, 10);
+                          field.onChange(isNaN(parsed) ? 0 : parsed);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="saleStartDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sale Start Date</FormLabel>
+                  <FormControl>
+                    <Input type="datetime-local" {...field} value={field.value || ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="saleEndDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sale End Date</FormLabel>
+                  <FormControl>
+                    <Input type="datetime-local" {...field} value={field.value || ""} />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -624,33 +757,85 @@ export function ProductFormV2({
           </div>
         </div>
 
-        {/* Variant Preview */}
+        {/* Variant Stock Management */}
         {selectedSizes.length > 0 && selectedColors.length > 0 && (
           <div className="bg-gray-50 p-6 space-y-4">
-            <h2 className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-medium">Variant Preview</h2>
-            <p className="text-sm text-gray-600">
-              {selectedSizes.length} sizes × {selectedColors.length} colors = {selectedSizes.length * selectedColors.length}{" "}
-              variants will be created
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {selectedColors.slice(0, 4).map((color) =>
-                selectedSizes.slice(0, 3).map((size) => (
-                  <div key={`${color.colorName}-${size}`} className="flex items-center gap-2 px-3 py-2 bg-white text-sm">
-                    <span className="w-3 h-3" style={{ backgroundColor: color.colorHex || "#ccc" }} />
-                    <span>{color.colorName}</span>
-                    <span className="text-gray-400">·</span>
-                    <span>{size}</span>
-                    <span className="text-gray-400 text-xs ml-auto">
-                      {generateSkuPrefix()}-{size.slice(0, 1)}-{color.colorName.slice(0, 3).toUpperCase()}
-                    </span>
-                  </div>
-                ))
-              )}
-              {selectedSizes.length * selectedColors.length > 12 && (
-                <div className="flex items-center justify-center px-3 py-2 bg-gray-100 text-sm text-gray-500">
-                  +{selectedSizes.length * selectedColors.length - 12} more...
-                </div>
-              )}
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-medium">Inventory & Variants</h2>
+              <p className="text-sm text-gray-600">
+                {selectedSizes.length} sizes × {selectedColors.length} colors = {selectedSizes.length * selectedColors.length}{" "}
+                variants
+              </p>
+            </div>
+
+            {/* Stock input table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-2 px-2 font-medium text-gray-600">Color</th>
+                    <th className="text-left py-2 px-2 font-medium text-gray-600">Size</th>
+                    <th className="text-left py-2 px-2 font-medium text-gray-600">SKU</th>
+                    <th className="text-left py-2 px-2 font-medium text-gray-600">Stock</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedColors.map((color) =>
+                    selectedSizes.map((size) => {
+                      const variantKey = `${color.colorName}-${size}`;
+                      const sku = `${generateSkuPrefix()}-${size.slice(0, 2).toUpperCase()}-${color.colorName
+                        .slice(0, 3)
+                        .toUpperCase()}`;
+                      return (
+                        <tr key={variantKey} className="border-b border-gray-100 hover:bg-gray-100/50">
+                          <td className="py-2 px-2">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="w-3 h-3 rounded-sm border border-gray-300"
+                                style={{ backgroundColor: color.colorHex || "#ccc" }}
+                              />
+                              <span>{color.colorName}</span>
+                            </div>
+                          </td>
+                          <td className="py-2 px-2 font-medium">{size}</td>
+                          <td className="py-2 px-2 text-gray-500 text-xs font-mono">{sku}</td>
+                          <td className="py-2 px-2">
+                            <Input
+                              type="number"
+                              min={0}
+                              className="w-20 h-8 text-center"
+                              placeholder="0"
+                              {...form.register(`variantStocks.${variantKey}` as const)}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Quick fill action */}
+            <div className="flex items-center gap-2 pt-2 border-t border-gray-200">
+              <span className="text-xs text-gray-500">Quick fill all:</span>
+              <Input
+                type="number"
+                min={0}
+                className="w-20 h-7 text-center text-xs"
+                placeholder="Stock"
+                onChange={(e) => {
+                  const value = parseInt(e.target.value) || 0;
+                  const newStocks: Record<string, number> = {};
+                  selectedColors.forEach((color) => {
+                    selectedSizes.forEach((size) => {
+                      newStocks[`${color.colorName}-${size}`] = value;
+                    });
+                  });
+                  form.setValue("variantStocks", newStocks);
+                }}
+              />
+              <span className="text-xs text-gray-400">units each</span>
             </div>
           </div>
         )}

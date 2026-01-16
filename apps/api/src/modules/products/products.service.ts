@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CreateProductDto, UpdateProductDto, ProductQueryDto, CreateVariantDto } from "./dto/products.dto";
 // Since we are in apps/api, and shared is a package, we might need to import from relative path or just reimplement slugify for now to be safe.
@@ -16,6 +16,8 @@ function slugify(text: string) {
 
 @Injectable()
 export class ProductsService {
+  private readonly logger = new Logger(ProductsService.name);
+
   constructor(private prisma: PrismaService) {}
 
   async findAll(query: ProductQueryDto) {
@@ -64,6 +66,10 @@ export class ProductsService {
 
     if (gender) {
       where.gender = gender.toUpperCase();
+    }
+
+    if (query.isOnSale) {
+      where.salePrice = { not: null };
     }
 
     const [items, total] = await Promise.all([
@@ -134,6 +140,9 @@ export class ProductsService {
   async create(data: CreateProductDto) {
     const slug = slugify(data.name) + "-" + Date.now().toString().slice(-4);
 
+    // Log incoming data for debugging
+    this.logger.debug("Creating product with data:", JSON.stringify(data, null, 2));
+
     // Distribute variants if present
     const variantsData = data.variants?.map((v) => ({
       size: v.size,
@@ -143,6 +152,18 @@ export class ProductsService {
       priceAdjustment: v.priceAdjustment,
       isActive: true,
     }));
+
+    // Convert date strings to Date objects for Prisma
+    const saleStartDate = data.saleStartDate ? new Date(data.saleStartDate) : null;
+    const saleEndDate = data.saleEndDate ? new Date(data.saleEndDate) : null;
+
+    // Validate dates are valid
+    if (saleStartDate && isNaN(saleStartDate.getTime())) {
+      throw new HttpException("Invalid sale start date format", HttpStatus.BAD_REQUEST);
+    }
+    if (saleEndDate && isNaN(saleEndDate.getTime())) {
+      throw new HttpException("Invalid sale end date format", HttpStatus.BAD_REQUEST);
+    }
 
     return this.prisma.product.create({
       data: {
@@ -154,6 +175,9 @@ export class ProductsService {
         isFeatured: data.isFeatured,
         gender: data.gender,
         bulkEnabled: data.bulkEnabled,
+        salePrice: data.salePrice,
+        saleStartDate,
+        saleEndDate,
         variants: variantsData ? { create: variantsData } : undefined,
         bulkPricingTiers: data.bulkPricingTiers ? { create: data.bulkPricingTiers } : undefined,
       },
@@ -168,24 +192,104 @@ export class ProductsService {
   }
 
   async update(id: string, data: UpdateProductDto) {
-    return this.prisma.product.update({
-      where: { id },
-      data: {
-        ...data,
-        bulkPricingTiers: data.bulkPricingTiers
-          ? {
-              deleteMany: {},
-              create: data.bulkPricingTiers,
+    const { variants, ...productData } = data;
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Handle Variants if provided
+      if (variants) {
+        // Get existing variants
+        const existingVariants = await tx.productVariant.findMany({
+          where: { productId: id },
+          select: { id: true },
+        });
+        const existingVariantIds = existingVariants.map((v) => v.id);
+
+        // Identify variants to delete (those in DB but not in payload)
+        const payloadVariantIds = variants.filter((v) => v.id).map((v) => v.id as string);
+        const variantsToDelete = existingVariantIds.filter((id) => !payloadVariantIds.includes(id));
+
+        if (variantsToDelete.length > 0) {
+          await tx.productVariant.deleteMany({
+            where: { id: { in: variantsToDelete } },
+          });
+        }
+
+        // Handle Upserts (Update existing, Create new)
+        for (const variant of variants) {
+          if (variant.id) {
+            // Update existing variant
+            this.logger.debug(`Updating variant ${variant.id}: ${variant.size}/${variant.color}`);
+            await tx.productVariant.update({
+              where: { id: variant.id },
+              data: {
+                size: variant.size,
+                color: variant.color,
+                sku: variant.sku,
+                stock: variant.stock,
+                priceAdjustment: variant.priceAdjustment,
+                isActive: true,
+              },
+            });
+          } else {
+            // Create new variant - check for SKU collision first
+            this.logger.debug(`Creating new variant: ${variant.size}/${variant.color} with SKU ${variant.sku}`);
+
+            // Defensive check: ensure SKU doesn't already exist
+            const existingBySku = await tx.productVariant.findUnique({
+              where: { sku: variant.sku },
+              select: { id: true, productId: true },
+            });
+
+            if (existingBySku) {
+              this.logger.warn(`SKU collision detected: ${variant.sku} already exists for product ${existingBySku.productId}`);
+              throw new HttpException(
+                `SKU "${variant.sku}" already exists. Each variant must have a unique SKU.`,
+                HttpStatus.CONFLICT
+              );
             }
-          : undefined,
-      },
-      include: {
-        category: true,
-        variants: { include: { colorGroup: true } },
-        images: true,
-        colorGroups: { include: { images: true } },
-        bulkPricingTiers: true,
-      },
+
+            await tx.productVariant.create({
+              data: {
+                productId: id,
+                size: variant.size,
+                color: variant.color,
+                sku: variant.sku,
+                stock: variant.stock,
+                priceAdjustment: variant.priceAdjustment || 0,
+                isActive: true,
+              },
+            });
+          }
+        }
+      }
+
+      // Convert date strings to Date objects for Prisma
+      const saleStartDate = data.saleStartDate ? new Date(data.saleStartDate) : undefined;
+      const saleEndDate = data.saleEndDate ? new Date(data.saleEndDate) : undefined;
+
+      // 2. Update Product fields
+      return tx.product.update({
+        where: { id },
+        data: {
+          ...productData,
+          salePrice: data.salePrice,
+          saleStartDate: saleStartDate !== undefined ? saleStartDate : undefined,
+          saleEndDate: saleEndDate !== undefined ? saleEndDate : undefined,
+          bulkPricingTiers: data.bulkPricingTiers
+            ? {
+                deleteMany: {},
+                create: data.bulkPricingTiers,
+              }
+            : undefined,
+        },
+        include: {
+          category: true,
+          variants: { include: { colorGroup: true } },
+          images: true,
+          colorGroups: { include: { images: true } },
+          bulkPricingTiers: true,
+        },
+      });
     });
   }
 

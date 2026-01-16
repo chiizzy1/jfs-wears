@@ -1,5 +1,6 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { HttpAdapterHost } from "@nestjs/core";
+import { Prisma } from "@prisma/client";
 
 // List of safe error codes that can have their messages exposed
 const SAFE_ERROR_CODES = [400, 401, 403, 404, 409, 422];
@@ -45,9 +46,72 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const { httpAdapter } = this.httpAdapterHost;
-
     const ctx = host.switchToHttp();
 
+    // Handle Prisma errors first - transform them into meaningful HTTP exceptions
+    if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+      let httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+      let message = "Database error occurred";
+
+      switch (exception.code) {
+        case "P2002": {
+          // Unique constraint violation
+          const target = (exception.meta?.target as string[])?.join(", ") || "field";
+          httpStatus = HttpStatus.CONFLICT;
+          message = `Duplicate value: A record with this ${target} already exists`;
+          break;
+        }
+        case "P2025":
+          // Record not found
+          httpStatus = HttpStatus.NOT_FOUND;
+          message = "Record not found";
+          break;
+        case "P2003":
+          // Foreign key constraint violation
+          httpStatus = HttpStatus.BAD_REQUEST;
+          message = "Invalid reference: Related record does not exist";
+          break;
+        case "P2014":
+          // Required relation violation
+          httpStatus = HttpStatus.BAD_REQUEST;
+          message = "Required relation is missing";
+          break;
+        default:
+          this.logger.error(`Prisma Error ${exception.code}:`, exception.message);
+      }
+
+      const responseBody = {
+        statusCode: httpStatus,
+        timestamp: new Date().toISOString(),
+        path: httpAdapter.getRequestUrl(ctx.getRequest()),
+        message,
+        code: exception.code,
+      };
+
+      this.logger.warn(`Prisma Error: ${exception.code} - ${message}`, {
+        target: exception.meta?.target,
+        path: responseBody.path,
+      });
+
+      httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
+      return;
+    }
+
+    // Handle validation errors from Prisma
+    if (exception instanceof Prisma.PrismaClientValidationError) {
+      const responseBody = {
+        statusCode: HttpStatus.BAD_REQUEST,
+        timestamp: new Date().toISOString(),
+        path: httpAdapter.getRequestUrl(ctx.getRequest()),
+        message: "Invalid data provided to database",
+      };
+
+      this.logger.warn("Prisma Validation Error:", exception.message);
+      httpAdapter.reply(ctx.getResponse(), responseBody, HttpStatus.BAD_REQUEST);
+      return;
+    }
+
+    // Original handling for other exceptions
     const httpStatus = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const responseBody = {
