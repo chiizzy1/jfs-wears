@@ -187,6 +187,9 @@ export async function fetchProducts(params?: {
   maxPrice?: number;
   gender?: string;
   search?: string;
+  size?: string;
+  color?: string;
+  isOnSale?: boolean;
 }): Promise<{ products: Product[]; total: number; totalPages: number }> {
   const searchParams = new URLSearchParams();
   if (params?.category) searchParams.set("categoryId", params.category);
@@ -198,6 +201,9 @@ export async function fetchProducts(params?: {
   if (params?.maxPrice) searchParams.set("maxPrice", params.maxPrice.toString());
   if (params?.gender) searchParams.set("gender", params.gender);
   if (params?.search) searchParams.set("search", params.search);
+  if (params?.size) searchParams.set("size", params.size);
+  if (params?.color) searchParams.set("color", params.color);
+  if (params?.isOnSale) searchParams.set("isOnSale", "true");
 
   try {
     const data = await apiClient.get<PaginatedResponse<ApiProduct> | ApiProduct[]>(`/products?${searchParams.toString()}`);
@@ -253,6 +259,16 @@ export async function fetchProductReviewStats(productId: string): Promise<Review
   } catch (error) {
     console.error("Error fetching review stats:", error);
     return { count: 0, average: 0 };
+  }
+}
+
+export async function fetchRelatedProducts(productId: string, limit: number = 4): Promise<Product[]> {
+  try {
+    const data = await apiClient.get<ApiProduct[]>(`/products/${productId}/related?limit=${limit}`);
+    return data.map(mapApiProduct);
+  } catch (error) {
+    console.error("Error fetching related products:", error);
+    return [];
   }
 }
 

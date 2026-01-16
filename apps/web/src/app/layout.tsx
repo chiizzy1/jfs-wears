@@ -7,6 +7,7 @@ import ClientProviders from "@/components/providers/ClientProviders";
 import SmoothScroll from "@/components/common/SmoothScroll";
 import { Toaster } from "react-hot-toast";
 import { PostHogProvider } from "@/providers/posthog-provider";
+import NewsletterPopup from "@/components/common/NewsletterPopup";
 
 const hankenGrotesk = Hanken_Grotesk({
   subsets: ["latin"],
@@ -93,6 +94,7 @@ export default function RootLayout({
             <SmoothScroll>
               <ConditionalLayout>{children}</ConditionalLayout>
             </SmoothScroll>
+            <NewsletterPopup />
           </ClientProviders>
         </PostHogProvider>
       </body>

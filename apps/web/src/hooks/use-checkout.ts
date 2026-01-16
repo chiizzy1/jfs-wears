@@ -113,19 +113,23 @@ export function useCheckout() {
 
       const order = await apiClient.post<OrderResponse>("/orders", orderPayload);
 
-      // Handle Payment Redirects
-      if (data.paymentMethod === "card") {
+      // Handle Payment Redirects (Card / OPay / Monnify)
+      if (["card", "opay", "monnify"].includes(data.paymentMethod)) {
         try {
+          let provider: "PAYSTACK" | "OPAY" | "MONNIFY" = "PAYSTACK";
+          if (data.paymentMethod === "opay") provider = "OPAY";
+          if (data.paymentMethod === "monnify") provider = "MONNIFY";
+
           const paymentData = await apiClient.post<PaymentResponse>("/payments/initialize", {
             orderId: order.id,
             amount: total,
             email: data.email,
-            provider: "PAYSTACK",
+            provider,
           });
 
-          if (paymentData.authorizationUrl) {
+          if (paymentData.authorizationUrl || (paymentData as any).paymentUrl) {
             clearCart();
-            window.location.href = paymentData.authorizationUrl;
+            window.location.href = paymentData.authorizationUrl || (paymentData as any).paymentUrl;
             return;
           }
         } catch (paymentError) {

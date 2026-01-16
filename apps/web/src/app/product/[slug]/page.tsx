@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { fetchProductBySlug, fetchProductReviewStats } from "@/lib/api";
+import { fetchProductBySlug, fetchProductReviewStats, fetchRelatedProducts } from "@/lib/api";
 import ProductDetails from "@/components/storefront/ProductDetails";
 import ProductReviews from "@/components/storefront/ProductReviews";
+import RelatedProducts from "@/components/storefront/RelatedProducts";
 import RecentlyViewedTracker from "@/components/storefront/RecentlyViewedTracker";
 import { constructMetadata } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
@@ -36,7 +37,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const [reviewStats] = await Promise.all([fetchProductReviewStats(product.id)]);
+  const [reviewStats, relatedProducts] = await Promise.all([
+    fetchProductReviewStats(product.id),
+    fetchRelatedProducts(product.id, 4),
+  ]);
 
   const primaryImage = product.images.find((img) => img.isPrimary)?.url || product.images[0]?.url || "";
 
@@ -79,6 +83,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="mt-32">
           <ProductReviews productId={product.id} productName={product.name} />
         </div>
+
+        {/* Related Products */}
+        <RelatedProducts products={relatedProducts} />
 
         {/* Track recently viewed */}
         <RecentlyViewedTracker

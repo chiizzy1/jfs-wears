@@ -340,7 +340,7 @@ export interface Product {
   categoryId: string;
   category?: Category;
   gender?: "MEN" | "WOMEN" | "UNISEX";
-  images: { id: string; url: string; alt?: string; isMain: boolean; position: number }[];
+  images: { id: string; url: string; alt?: string; isMain: boolean; isPrimary?: boolean; position: number }[];
   variants: {
     id: string;
     sku: string;

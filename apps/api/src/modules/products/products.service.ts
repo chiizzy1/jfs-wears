@@ -21,7 +21,7 @@ export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(query: ProductQueryDto) {
-    const { categoryId, search, minPrice, maxPrice, gender, page = 1, limit = 12 } = query;
+    const { categoryId, search, minPrice, maxPrice, gender, size, color, page = 1, limit = 12 } = query;
 
     const where: any = {
       isActive: true,
@@ -70,6 +70,30 @@ export class ProductsService {
 
     if (query.isOnSale) {
       where.salePrice = { not: null };
+    }
+
+    // Variant-based filtering (size and/or color)
+    if (size || color) {
+      const variantConditions: any[] = [];
+
+      if (size) {
+        const sizes = size.split(",").map((s) => s.trim());
+        variantConditions.push({ size: { in: sizes } });
+      }
+
+      if (color) {
+        const colors = color.split(",").map((c) => c.trim());
+        variantConditions.push({ color: { in: colors, mode: "insensitive" } });
+      }
+
+      // Products must have at least one active variant with stock matching the criteria
+      where.variants = {
+        some: {
+          isActive: true,
+          stock: { gt: 0 },
+          AND: variantConditions,
+        },
+      };
     }
 
     const [items, total] = await Promise.all([
@@ -349,6 +373,40 @@ export class ProductsService {
           include: { images: { where: { isMain: true } } },
         },
       },
+      take: limit,
+    });
+  }
+
+  // Related products (same category, excluding current)
+  async findRelated(productId: string, limit: number = 4) {
+    // First, get the product to find its category
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      select: { categoryId: true },
+    });
+
+    if (!product || !product.categoryId) {
+      return [];
+    }
+
+    return this.prisma.product.findMany({
+      where: {
+        categoryId: product.categoryId,
+        id: { not: productId },
+        isActive: true,
+        deletedAt: null,
+      },
+      include: {
+        category: true,
+        images: { orderBy: { position: "asc" } },
+        variants: { where: { isActive: true }, include: { colorGroup: true } },
+        colorGroups: {
+          orderBy: { position: "asc" },
+          include: { images: { orderBy: { position: "asc" } } },
+        },
+        bulkPricingTiers: { orderBy: { minQuantity: "asc" } },
+      },
+      orderBy: { createdAt: "desc" },
       take: limit,
     });
   }

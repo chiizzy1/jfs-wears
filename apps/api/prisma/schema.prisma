@@ -534,6 +534,24 @@ model StoreSettings {
 }
 
 // ============================================
+// NEWSLETTER
+// ============================================
+
+model NewsletterSubscriber {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  source      String?  // e.g., "popup", "footer", "checkout"
+  isActive    Boolean  @default(true)
+  subscribedAt DateTime @default(now())
+  unsubscribedAt DateTime?
+
+  @@map("newsletter_subscribers")
+  @@index([email])
+  @@index([isActive])
+}
+
+// ============================================
 // STOREFRONT CMS
 // ============================================
 

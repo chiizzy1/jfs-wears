@@ -24,7 +24,7 @@ export function CheckoutForm({ form, availableStates, handleStateChange, selecte
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input placeholder="First Name" {...field} className="bg-transparent border-gray-200" />
+                  <Input placeholder="First Name" {...field} className="bg-transparent border-gray-200 rounded-none" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -36,7 +36,7 @@ export function CheckoutForm({ form, availableStates, handleStateChange, selecte
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input placeholder="Last Name" {...field} className="bg-transparent border-gray-200" />
+                  <Input placeholder="Last Name" {...field} className="bg-transparent border-gray-200 rounded-none" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -48,7 +48,7 @@ export function CheckoutForm({ form, availableStates, handleStateChange, selecte
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input placeholder="Email Address" {...field} className="bg-transparent border-gray-200" />
+                  <Input placeholder="Email Address" {...field} className="bg-transparent border-gray-200 rounded-none" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -60,7 +60,7 @@ export function CheckoutForm({ form, availableStates, handleStateChange, selecte
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input placeholder="Phone Number" {...field} className="bg-transparent border-gray-200" />
+                  <Input placeholder="Phone Number" {...field} className="bg-transparent border-gray-200 rounded-none" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -79,7 +79,7 @@ export function CheckoutForm({ form, availableStates, handleStateChange, selecte
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input placeholder="Street Address" {...field} className="bg-transparent border-gray-200" />
+                  <Input placeholder="Street Address" {...field} className="bg-transparent border-gray-200 rounded-none" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -92,7 +92,7 @@ export function CheckoutForm({ form, availableStates, handleStateChange, selecte
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="City" {...field} className="bg-transparent border-gray-200" />
+                    <Input placeholder="City" {...field} className="bg-transparent border-gray-200 rounded-none" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -110,7 +110,7 @@ export function CheckoutForm({ form, availableStates, handleStateChange, selecte
                         field.onChange(e);
                         handleStateChange(e.target.value);
                       }}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-md focus:outline-none focus:border-black bg-white text-sm"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-none focus:outline-none focus:border-black bg-white text-sm"
                     >
                       <option value="">Select State</option>
                       {availableStates.map((state) => (
@@ -145,7 +145,7 @@ export function CheckoutForm({ form, availableStates, handleStateChange, selecte
                 <div className="space-y-3">
                   {/* Card */}
                   <label
-                    className={`flex items-center gap-3 p-4 border rounded-md cursor-pointer transition-colors ${
+                    className={`flex items-center gap-3 p-4 border rounded-none cursor-pointer transition-colors ${
                       field.value === "card" ? "border-black bg-gray-50" : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
@@ -159,9 +159,41 @@ export function CheckoutForm({ form, availableStates, handleStateChange, selecte
                     <span className="text-sm font-medium">Card Payment (Paystack)</span>
                   </label>
 
+                  {/* OPay */}
+                  <label
+                    className={`flex items-center gap-3 p-4 border rounded-none cursor-pointer transition-colors ${
+                      field.value === "opay" ? "border-black bg-gray-50" : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      value="opay"
+                      checked={field.value === "opay"}
+                      onChange={field.onChange}
+                      className="accent-black h-4 w-4"
+                    />
+                    <span className="text-sm font-medium">OPay Wallet / Transfer</span>
+                  </label>
+
+                  {/* Monnify */}
+                  <label
+                    className={`flex items-center gap-3 p-4 border rounded-none cursor-pointer transition-colors ${
+                      field.value === "monnify" ? "border-black bg-gray-50" : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      value="monnify"
+                      checked={field.value === "monnify"}
+                      onChange={field.onChange}
+                      className="accent-black h-4 w-4"
+                    />
+                    <span className="text-sm font-medium">Monnify (by Moniepoint)</span>
+                  </label>
+
                   {/* Transfer */}
                   <label
-                    className={`flex items-center gap-3 p-4 border rounded-md cursor-pointer transition-colors ${
+                    className={`flex items-center gap-3 p-4 border rounded-none cursor-pointer transition-colors ${
                       field.value === "transfer" ? "border-black bg-gray-50" : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
@@ -177,7 +209,7 @@ export function CheckoutForm({ form, availableStates, handleStateChange, selecte
 
                   {/* COD */}
                   <label
-                    className={`flex items-center gap-3 p-4 border rounded-md cursor-pointer transition-colors ${
+                    className={`flex items-center gap-3 p-4 border rounded-none cursor-pointer transition-colors ${
                       field.value === "cod" ? "border-black bg-gray-50" : "border-gray-200 hover:border-gray-300"
                     }`}
                   >

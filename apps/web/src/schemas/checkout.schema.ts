@@ -8,7 +8,7 @@ export const checkoutSchema = z.object({
   address: z.string().min(5, "Address is required"),
   city: z.string().min(2, "City is required"),
   state: z.string().min(1, "Please select a state"),
-  paymentMethod: z.enum(["card", "transfer", "cod"], {
+  paymentMethod: z.enum(["card", "transfer", "cod", "opay", "monnify"], {
     message: "Please select a payment method",
   }),
 });

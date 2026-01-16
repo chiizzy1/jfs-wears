@@ -206,8 +206,17 @@ export class ProductQueryDto {
   @IsString()
   @IsOptional()
   gender?: string;
+
   @IsBoolean()
   @IsOptional()
   @Transform(({ value }) => value === "true" || value === true)
   isOnSale?: boolean;
+
+  @IsString()
+  @IsOptional()
+  size?: string; // Comma-separated sizes: "S,M,L"
+
+  @IsString()
+  @IsOptional()
+  color?: string; // Comma-separated colors: "Black,White"
 }

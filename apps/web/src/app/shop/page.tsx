@@ -12,6 +12,10 @@ interface ShopPageProps {
     minPrice?: string;
     maxPrice?: string;
     gender?: string;
+    size?: string;
+    color?: string;
+    isOnSale?: string;
+    search?: string;
   }>;
 }
 
@@ -40,6 +44,10 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
       minPrice: params.minPrice ? Number(params.minPrice) : undefined,
       maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
       gender: params.gender,
+      size: params.size,
+      color: params.color,
+      isOnSale: params.isOnSale === "true",
+      search: params.search,
     }),
     fetchCategories(),
   ]);

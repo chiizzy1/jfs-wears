@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { Suspense, useState } from "react";
 import PriceFilter from "@/components/storefront/PriceFilter";
+import GenderFilter from "@/components/storefront/GenderFilter";
+import SizeFilter from "@/components/storefront/SizeFilter";
+import ColorFilter from "@/components/storefront/ColorFilter";
+import OnSaleFilter from "@/components/storefront/OnSaleFilter";
+import SearchFilter from "@/components/storefront/SearchFilter";
 import { Category } from "@/lib/api";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -14,18 +19,32 @@ interface ShopSidebarProps {
   onSelect?: () => void;
 }
 
+function FilterSkeleton() {
+  return <div className="h-20 animate-pulse bg-gray-50" />;
+}
+
 function SidebarContent({ categories, currentCategory, onSelect }: ShopSidebarProps) {
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
+      {/* Search */}
+      <Suspense fallback={<FilterSkeleton />}>
+        <SearchFilter />
+      </Suspense>
+
+      {/* On Sale Toggle */}
+      <Suspense fallback={<FilterSkeleton />}>
+        <OnSaleFilter />
+      </Suspense>
+
       {/* Categories Section */}
       <div>
-        <h3 className="text-xs font-bold uppercase tracking-widest mb-6 text-black px-1">Categories</h3>
+        <h3 className="text-xs font-bold uppercase tracking-widest mb-4 text-black px-1">Categories</h3>
         <ul className="space-y-1">
           <li>
             <Link
               href="/shop"
               onClick={onSelect}
-              className={`flex items-center justify-between w-full px-4 py-3 text-sm transition-all duration-300 rounded-md group ${
+              className={`flex items-center justify-between w-full px-4 py-3 text-sm transition-all duration-300 group ${
                 !currentCategory ? "bg-black/5 font-medium text-black" : "text-gray-600 hover:bg-gray-50 hover:text-black"
               }`}
             >
@@ -38,7 +57,7 @@ function SidebarContent({ categories, currentCategory, onSelect }: ShopSidebarPr
               <Link
                 href={`/shop?category=${cat.slug}`}
                 onClick={onSelect}
-                className={`flex items-center justify-between w-full px-4 py-3 text-sm transition-all duration-300 rounded-md group ${
+                className={`flex items-center justify-between w-full px-4 py-3 text-sm transition-all duration-300 group ${
                   currentCategory === cat.slug
                     ? "bg-black/5 font-medium text-black"
                     : "text-gray-600 hover:bg-gray-50 hover:text-black"
@@ -52,14 +71,31 @@ function SidebarContent({ categories, currentCategory, onSelect }: ShopSidebarPr
         </ul>
       </div>
 
-      {/* Filters Section */}
-      <div>
-        <h3 className="text-xs font-bold uppercase tracking-widest mb-6 text-black">Filter By</h3>
-
-        <Suspense fallback={<div className="h-20 animate-pulse bg-gray-50 rounded-none" />}>
-          <PriceFilter />
+      {/* Gender Filter */}
+      <div className="border-t border-gray-100 pt-6">
+        <Suspense fallback={<FilterSkeleton />}>
+          <GenderFilter />
         </Suspense>
       </div>
+
+      {/* Size Filter */}
+      <div className="border-t border-gray-100 pt-6">
+        <Suspense fallback={<FilterSkeleton />}>
+          <SizeFilter />
+        </Suspense>
+      </div>
+
+      {/* Color Filter */}
+      <div className="border-t border-gray-100 pt-6">
+        <Suspense fallback={<FilterSkeleton />}>
+          <ColorFilter />
+        </Suspense>
+      </div>
+
+      {/* Price Filter */}
+      <Suspense fallback={<FilterSkeleton />}>
+        <PriceFilter />
+      </Suspense>
     </div>
   );
 }
@@ -83,7 +119,7 @@ export function ShopMobileFilter({ categories, currentCategory }: ShopSidebarPro
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            className="w-full flex items-center justify-between border-black/10 h-12 uppercase tracking-widest text-xs rounded-none"
+            className="w-full flex items-center justify-between border-black/10 h-12 uppercase tracking-widest text-xs"
           >
             <span>Filter & Sort</span>
             <Filter className="w-4 h-4" />

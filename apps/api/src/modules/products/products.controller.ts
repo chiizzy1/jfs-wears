@@ -38,6 +38,13 @@ export class ProductsController {
     return this.productsService.getFeatured(limit ? parseInt(limit) : 8);
   }
 
+  // Related products (public, for cross-sell)
+  @Get(":id/related")
+  @CacheTTL(600) // 10 minutes cache
+  async getRelated(@Param("id") id: string, @Query("limit") limit?: string) {
+    return this.productsService.findRelated(id, limit ? parseInt(limit) : 4);
+  }
+
   // Admin: Get product by ID (must be before :slug route)
   @Get("id/:id")
   @UseGuards(JwtAuthGuard, RolesGuard)

@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
-import { registerSchema, RegisterValues } from "@/schemas/auth.schema";
+import { registerSchema } from "@/schemas/auth.schema";
+import type { RegisterValues } from "@/schemas/auth.schema";
 import { useAuthStore } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,7 +21,7 @@ export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<RegisterValues>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registerSchema) as any,
     defaultValues: {
       name: "",
       email: "",
@@ -32,7 +33,7 @@ export function RegisterForm() {
   async function onSubmit(data: RegisterValues) {
     setIsLoading(true);
     try {
-      await register(data.email, data.password, data.name, data.subscribe);
+      await register(data.email, data.password, data.name, data.subscribe ?? false);
       toast.success("Account created successfully!");
       router.push("/");
     } catch (error) {
@@ -117,7 +118,7 @@ export function RegisterForm() {
             render={({ field }) => (
               <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                 <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  <Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} />
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel className="text-sm font-normal text-gray-600 cursor-pointer">
