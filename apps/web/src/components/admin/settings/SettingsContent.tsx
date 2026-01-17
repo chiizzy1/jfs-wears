@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSettings } from "@/hooks/use-settings";
 import { settingsSchema, SettingsFormValues } from "@/schemas/settings.schema";
@@ -10,15 +10,22 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { SettingsSkeleton } from "@/components/admin/skeletons/SettingsSkeleton";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { SettingsLogoUpload } from "./SettingsLogoUpload";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Receipt, Palette, Link2, Sparkles, Eye, EyeOff, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { aiService } from "@/services/ai.service";
+import toast from "react-hot-toast";
+import { AIConfigurationSection } from "./AIConfigurationSection";
 
 export function SettingsContent() {
   const { settings, isLoading, updateSettings, isSaving } = useSettings();
 
   const form = useForm<SettingsFormValues>({
-    resolver: zodResolver(settingsSchema) as any,
+    resolver: zodResolver(settingsSchema) as Resolver<SettingsFormValues>,
     defaultValues: {
       storeName: "",
       storeEmail: "",
@@ -26,6 +33,23 @@ export function SettingsContent() {
       notifyOrder: true,
       notifyLowStock: true,
       notifyReview: false,
+      // Receipt fields
+      storePhone: "",
+      storeAddress: "",
+      storeCity: "",
+      storeState: "",
+      storePostalCode: "",
+      storeCountry: "Nigeria",
+      logoUrl: "",
+      receiptAccentColor: "#000000",
+      receiptFooterText: "",
+      returnPolicyUrl: "",
+      termsUrl: "",
+      // AI Configuration
+      aiProvider: "DISABLED",
+      aiApiKey: "",
+      aiFallbackProvider: "DISABLED",
+      aiFallbackApiKey: "",
     },
   });
 
@@ -39,6 +63,23 @@ export function SettingsContent() {
         notifyOrder: settings.notifyOrder ?? true,
         notifyLowStock: settings.notifyLowStock ?? true,
         notifyReview: settings.notifyReview ?? false,
+        // Receipt fields
+        storePhone: settings.storePhone || "",
+        storeAddress: settings.storeAddress || "",
+        storeCity: settings.storeCity || "",
+        storeState: settings.storeState || "",
+        storePostalCode: settings.storePostalCode || "",
+        storeCountry: settings.storeCountry || "Nigeria",
+        logoUrl: settings.logoUrl || "",
+        receiptAccentColor: settings.receiptAccentColor || "#000000",
+        receiptFooterText: settings.receiptFooterText || "",
+        returnPolicyUrl: settings.returnPolicyUrl || "",
+        termsUrl: settings.termsUrl || "",
+        // AI Configuration
+        aiProvider: (settings.aiProvider as "DISABLED" | "GROQ" | "OPENROUTER" | "GEMINI") || "DISABLED",
+        aiApiKey: settings.aiApiKey || "",
+        aiFallbackProvider: (settings.aiFallbackProvider as "DISABLED" | "GROQ" | "OPENROUTER" | "GEMINI") || "DISABLED",
+        aiFallbackApiKey: settings.aiFallbackApiKey || "",
       });
     }
   }, [settings, form]);
@@ -204,6 +245,268 @@ export function SettingsContent() {
             </div>
           </div>
 
+          {/* Receipt Branding */}
+          <div className="pb-12 border-b border-gray-100">
+            <div className="flex items-center gap-3 mb-8">
+              <Receipt className="w-5 h-5 text-muted-foreground" />
+              <h2 className="text-lg font-medium tracking-tight">Receipt Branding</h2>
+            </div>
+
+            {/* Store Contact & Address */}
+            <div className="space-y-6 max-w-2xl mb-8">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Store Contact</p>
+
+              <FormField
+                control={form.control}
+                name="storePhone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
+                      Phone Number
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="+234 XXX XXX XXXX"
+                        className="border-t-0 border-x-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-black transition-colors bg-transparent placeholder:text-gray-300"
+                      />
+                    </FormControl>
+                    <FormDescription className="text-xs">Displayed on receipts for customer contact</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="storeAddress"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
+                      Street Address
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="123 Fashion Street"
+                        className="border-t-0 border-x-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-black transition-colors bg-transparent placeholder:text-gray-300"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="storeCity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs uppercase tracking-widest text-muted-foreground font-medium">City</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="Lagos"
+                          className="border-t-0 border-x-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-black transition-colors bg-transparent placeholder:text-gray-300"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="storeState"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs uppercase tracking-widest text-muted-foreground font-medium">State</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="Lagos State"
+                          className="border-t-0 border-x-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-black transition-colors bg-transparent placeholder:text-gray-300"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="storePostalCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
+                        Postal Code
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="100001"
+                          className="border-t-0 border-x-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-black transition-colors bg-transparent placeholder:text-gray-300"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="storeCountry"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
+                        Country
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="Nigeria"
+                          className="border-t-0 border-x-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-black transition-colors bg-transparent placeholder:text-gray-300"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Branding */}
+            <div className="space-y-6 max-w-2xl mb-8">
+              <div className="flex items-center gap-2 pt-4">
+                <Palette className="w-4 h-4 text-muted-foreground" />
+                <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Branding</p>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="logoUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
+                      Logo URL
+                    </FormLabel>
+                    <FormControl>
+                      <SettingsLogoUpload
+                        initialUrl={field.value}
+                        onUpload={(url) => {
+                          field.onChange(url);
+                          form.setValue("logoUrl", url, { shouldDirty: true });
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-xs">Cloudinary URL for logo displayed on receipts</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="receiptAccentColor"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
+                      Accent Color
+                    </FormLabel>
+                    <div className="flex items-center gap-4">
+                      <FormControl>
+                        <Input
+                          type="color"
+                          {...field}
+                          className="w-12 h-10 p-1 cursor-pointer border border-gray-200 rounded-none"
+                        />
+                      </FormControl>
+                      <Input
+                        value={field.value || "#000000"}
+                        onChange={field.onChange}
+                        placeholder="#000000"
+                        className="flex-1 border-t-0 border-x-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-black transition-colors bg-transparent placeholder:text-gray-300 font-mono"
+                      />
+                    </div>
+                    <FormDescription className="text-xs">Primary color used in receipt headers</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="receiptFooterText"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
+                      Footer Message
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder="Thank you for shopping with us!"
+                        rows={2}
+                        className="border border-gray-200 rounded-none px-3 py-2 focus-visible:ring-0 focus-visible:border-black transition-colors bg-transparent placeholder:text-gray-300 resize-none"
+                      />
+                    </FormControl>
+                    <FormDescription className="text-xs">Custom message displayed at the bottom of receipts</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Policy Links */}
+            <div className="space-y-6 max-w-2xl">
+              <div className="flex items-center gap-2 pt-4">
+                <Link2 className="w-4 h-4 text-muted-foreground" />
+                <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Policy Links</p>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="returnPolicyUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
+                      Return Policy URL
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="https://yourstore.com/returns"
+                        className="border-t-0 border-x-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-black transition-colors bg-transparent placeholder:text-gray-300"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="termsUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
+                      Terms & Conditions URL
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="https://yourstore.com/terms"
+                        className="border-t-0 border-x-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-black transition-colors bg-transparent placeholder:text-gray-300"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+
           {/* Payment Settings (Static for now, but matched with UI) */}
           <div className="pb-12">
             <h2 className="text-lg font-medium tracking-tight mb-8">Payment Gateways</h2>
@@ -240,6 +543,9 @@ export function SettingsContent() {
               </div>
             </div>
           </div>
+
+          {/* AI Configuration */}
+          <AIConfigurationSection form={form} />
 
           {/* Save Button */}
           <div className="flex justify-end">

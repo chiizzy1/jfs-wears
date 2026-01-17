@@ -10,6 +10,8 @@ import { ErrorFallback } from "@/components/ui/error-fallback";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { TrackOrderForm } from "./TrackOrderForm";
 import { PageHero } from "@/components/common/PageHero";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 
 const statusSteps = [
   { key: "PENDING", label: "Order Placed", icon: "📦" },
@@ -44,6 +46,41 @@ export function TrackOrderView() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isNotFound, setIsNotFound] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadReceipt = async () => {
+    if (!order?.id) return;
+    try {
+      setIsDownloading(true);
+      // For track page, we need to generate a guest token first
+      const tokenResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/track/${order.orderNumber}`, {
+        method: "GET",
+      });
+      if (!tokenResponse.ok) throw new Error("Failed to get order data");
+
+      // Use public download endpoint with order number (no auth needed for track page)
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/receipts/download/${order.id}?email=${order.guestEmail || order.user?.email || ""}`,
+        { credentials: "include" },
+      );
+
+      if (!response.ok) throw new Error("Failed to download receipt");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `receipt-${order.orderNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (error) {
+      console.error("Failed to download receipt:", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const fetchOrder = useCallback(async (num: string) => {
     if (!num.trim()) return;
@@ -252,6 +289,21 @@ export function TrackOrderView() {
                 </p>
               </div>
             )}
+
+            {/* Download Receipt Button */}
+            <div className="bg-white p-8 border border-gray-100 mt-6">
+              <h2 className="font-semibold mb-3">Download Receipt</h2>
+              <p className="text-gray-600 text-sm mb-4">Get a PDF copy of your order receipt for your records.</p>
+              <Button
+                onClick={handleDownloadReceipt}
+                disabled={isDownloading}
+                variant="outline"
+                className="border-black hover:bg-black hover:text-white transition-colors"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                {isDownloading ? "Downloading..." : "Download Receipt"}
+              </Button>
+            </div>
           </div>
         )}
 

@@ -15,7 +15,7 @@ export class OrdersService {
     private emailService: EmailService,
     private settingsService: SettingsService,
     @Inject(forwardRef(() => NotificationsService))
-    private notificationsService: NotificationsService
+    private notificationsService: NotificationsService,
   ) {}
 
   async create(userId: string | null, data: CreateOrderDto) {
@@ -69,7 +69,7 @@ export class OrdersService {
         // Check stock
         if (variant.stock < item.quantity) {
           throw new BadRequestException(
-            `Insufficient stock for ${variant.product.name} (${variant.size || "N/A"}/${variant.color || "N/A"})`
+            `Insufficient stock for ${variant.product.name} (${variant.size || "N/A"}/${variant.color || "N/A"})`,
           );
         }
 
@@ -153,8 +153,15 @@ export class OrdersService {
     // Send order confirmation email (non-blocking)
     const email = data.shippingAddress.email || (userId ? await this.getUserEmail(userId) : null);
     if (email) {
+      const emailItems = order.items.map(
+        (item: { productName: string; quantity: number; unitPrice: { toString: () => string } }) => ({
+          productName: item.productName,
+          quantity: item.quantity,
+          unitPrice: Number(item.unitPrice.toString()),
+        }),
+      );
       this.emailService
-        .sendOrderConfirmation(email, typedOrder.orderNumber, typedOrder.items, Number(typedOrder.total))
+        .sendOrderConfirmation(email, typedOrder.orderNumber, emailItems, Number(typedOrder.total))
         .catch((err) => console.error("Failed to send order confirmation:", err));
     }
 

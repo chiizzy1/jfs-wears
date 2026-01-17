@@ -98,7 +98,11 @@ export function EditStaffModal({ isOpen, onClose, staff }: EditStaffModalProps) 
             <Label htmlFor="role" className="text-xs uppercase tracking-widest">
               Role
             </Label>
-            <select id="role" {...register("role")} className="w-full px-3 py-2 border border-gray-200 text-sm cursor-pointer">
+            <select
+              id="role"
+              {...register("role")}
+              className="w-full px-3 py-2 border border-gray-200 text-base sm:text-sm cursor-pointer"
+            >
               <option value="STAFF">Staff</option>
               <option value="MANAGER">Manager</option>
               <option value="ADMIN">Admin</option>

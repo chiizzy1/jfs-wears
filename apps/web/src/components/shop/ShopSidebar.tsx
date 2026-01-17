@@ -57,7 +57,7 @@ function SidebarContent({ categories, currentCategory, onSelect }: ShopSidebarPr
               <Link
                 href={`/shop?category=${cat.slug}`}
                 onClick={onSelect}
-                className={`flex items-center justify-between w-full px-4 py-3 text-sm transition-all duration-300 group ${
+                className={`flex items-center justify-between w-full px-4 py-4 text-sm transition-all duration-300 group ${
                   currentCategory === cat.slug
                     ? "bg-black/5 font-medium text-black"
                     : "text-gray-600 hover:bg-gray-50 hover:text-black"

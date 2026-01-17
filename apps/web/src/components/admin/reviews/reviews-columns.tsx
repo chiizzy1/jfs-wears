@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Check, X, Trash2, Star } from "lucide-react";
+import { Check, X, Trash2, Star, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Review } from "@/hooks/use-reviews";
 import { formatDate } from "@/lib/utils";
@@ -9,9 +9,10 @@ import { formatDate } from "@/lib/utils";
 interface ReviewsColumnsProps {
   onApprove: (id: string, currentStatus: boolean) => void;
   onDelete: (id: string) => void;
+  onAIReply?: (review: Review) => void;
 }
 
-export const getReviewsColumns = ({ onApprove, onDelete }: ReviewsColumnsProps): ColumnDef<Review>[] => [
+export const getReviewsColumns = ({ onApprove, onDelete, onAIReply }: ReviewsColumnsProps): ColumnDef<Review>[] => [
   {
     accessorKey: "user.name",
     header: () => <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Author</span>,
@@ -85,6 +86,17 @@ export const getReviewsColumns = ({ onApprove, onDelete }: ReviewsColumnsProps):
       const review = row.original;
       return (
         <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+          {onAIReply && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onAIReply(review)}
+              className="h-8 w-8 text-violet-500 hover:text-violet-600 hover:bg-violet-50"
+              title="AI Reply Suggestion"
+            >
+              <Sparkles className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"

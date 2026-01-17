@@ -122,7 +122,7 @@ export function ProductEditClient({ id }: ProductEditClientProps) {
               ? typeof formStockValue === "string"
                 ? parseInt(formStockValue) || 0
                 : formStockValue
-              : existingVariant?.stock ?? 0;
+              : (existingVariant?.stock ?? 0);
 
           return {
             id: existingVariant?.id, // Important: Include ID to trigger update instead of create
@@ -132,16 +132,8 @@ export function ProductEditClient({ id }: ProductEditClientProps) {
             stock: stockValue,
             priceAdjustment: existingVariant?.priceAdjustment ?? 0, // Preserve existing price adjustment
           };
-        })
+        }),
       );
-
-      // Debug: Log the variants being sent
-      console.log("=== UPDATE PRODUCT DEBUG ===");
-      console.log("Product ID:", id);
-      console.log("Existing variants count:", product?.variants?.length || 0);
-      console.log("New variants count:", variants.length);
-      console.log("Variants with IDs (updates):", variants.filter((v) => v.id).length);
-      console.log("Variants without IDs (creates):", variants.filter((v) => !v.id).length);
 
       // 2. Update the product
       await updateProduct({
@@ -171,7 +163,7 @@ export function ProductEditClient({ id }: ProductEditClientProps) {
         if (newFiles.length > 0) {
           // Check if color group exists, if not create it
           const existingColorGroup = product?.colorGroups?.find(
-            (cg: any) => cg.colorName.toLowerCase() === colorGroup.colorName.toLowerCase()
+            (cg: any) => cg.colorName.toLowerCase() === colorGroup.colorName.toLowerCase(),
           );
 
           if (existingColorGroup) {

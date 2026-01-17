@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -24,7 +24,7 @@ interface SectionFormProps {
 
 export function SectionForm({ initialData, categories, onSuccess, onCancel }: SectionFormProps) {
   const form = useForm<SectionFormValues>({
-    resolver: zodResolver(sectionSchema) as any,
+    resolver: zodResolver(sectionSchema) as Resolver<SectionFormValues>,
     defaultValues: {
       title: initialData?.title || "",
       subtitle: initialData?.subtitle || "",

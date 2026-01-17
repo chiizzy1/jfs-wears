@@ -18,13 +18,19 @@ import { CreateStaffDto, UpdateStaffDto } from "./dto/staff.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard, Roles } from "../auth/guards/roles.guard";
 import { CloudinaryService } from "../upload/cloudinary.service";
+import { AuditLogService } from "../audit-log/audit-log.service";
+import { AuditAction } from "@prisma/client";
 
 @ApiTags("Staff")
 @ApiBearerAuth()
 @Controller("staff")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class StaffController {
-  constructor(private readonly staffService: StaffService, private readonly cloudinaryService: CloudinaryService) {}
+  constructor(
+    private readonly staffService: StaffService,
+    private readonly cloudinaryService: CloudinaryService,
+    private readonly auditLogService: AuditLogService,
+  ) {}
 
   // ============================================
   // SELF-SERVICE ENDPOINTS (accessible by any authenticated staff)
@@ -48,8 +54,10 @@ export class StaffController {
   @Post("me/change-password")
   @Roles("ADMIN", "MANAGER", "STAFF")
   @ApiOperation({ summary: "Change current staff member's password" })
-  changeMyPassword(@Request() req: any, @Body() body: { currentPassword: string; newPassword: string }) {
-    return this.staffService.changeMyPassword(req.user.sub, body.currentPassword, body.newPassword);
+  async changeMyPassword(@Request() req: any, @Body() body: { currentPassword: string; newPassword: string }) {
+    const result = await this.staffService.changeMyPassword(req.user.sub, body.currentPassword, body.newPassword);
+    await this.auditLogService.logFromRequest(req, AuditAction.PASSWORD_CHANGE, "Staff", req.user.sub, "Changed own password");
+    return result;
   }
 
   @Post("me/profile-image")
@@ -91,28 +99,52 @@ export class StaffController {
   @Post()
   @Roles("ADMIN")
   @ApiOperation({ summary: "Create a new staff member" })
-  create(@Body() dto: CreateStaffDto) {
-    return this.staffService.create(dto);
+  async create(@Request() req: any, @Body() dto: CreateStaffDto) {
+    const result = await this.staffService.create(dto);
+    await this.auditLogService.logFromRequest(
+      req,
+      AuditAction.CREATE,
+      "Staff",
+      result.id,
+      `Created staff member "${result.name}" (${result.role})`,
+      { staffName: result.name, role: result.role, email: result.email },
+    );
+    return result;
   }
 
   @Put(":id")
   @Roles("ADMIN")
   @ApiOperation({ summary: "Update a staff member" })
-  update(@Param("id") id: string, @Body() dto: UpdateStaffDto) {
-    return this.staffService.update(id, dto);
+  async update(@Request() req: any, @Param("id") id: string, @Body() dto: UpdateStaffDto) {
+    const result = await this.staffService.update(id, dto);
+    await this.auditLogService.logFromRequest(req, AuditAction.UPDATE, "Staff", id, `Updated staff member "${result.name}"`, {
+      staffName: result.name,
+      changes: Object.keys(dto),
+    });
+    return result;
   }
 
   @Delete(":id")
   @Roles("ADMIN")
   @ApiOperation({ summary: "Soft delete a staff member" })
-  remove(@Param("id") id: string) {
-    return this.staffService.softDelete(id);
+  async remove(@Request() req: any, @Param("id") id: string) {
+    const staff = await this.staffService.findOne(id);
+    const result = await this.staffService.softDelete(id);
+    await this.auditLogService.logFromRequest(req, AuditAction.DELETE, "Staff", id, `Deleted staff member "${staff?.name}"`, {
+      staffName: staff?.name,
+      email: staff?.email,
+    });
+    return result;
   }
 
   @Post(":id/restore")
   @Roles("ADMIN")
   @ApiOperation({ summary: "Restore a deleted staff member" })
-  restore(@Param("id") id: string) {
-    return this.staffService.restore(id);
+  async restore(@Request() req: any, @Param("id") id: string) {
+    const result = await this.staffService.restore(id);
+    await this.auditLogService.logFromRequest(req, AuditAction.RESTORE, "Staff", id, `Restored staff member "${result.name}"`, {
+      staffName: result.name,
+    });
+    return result;
   }
 }

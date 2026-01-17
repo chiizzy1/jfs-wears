@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -19,14 +19,14 @@ import toast from "react-hot-toast";
 // Schema for color group with images (1-4 images per color)
 const colorGroupSchema = z.object({
   colorName: z.string().min(1, "Color name is required"),
-  colorHex: z.string().optional(),
+  colorHex: z.string().optional().or(z.literal("")),
   images: z
     .array(
       z.object({
         file: z.instanceof(File).optional(),
         preview: z.string(),
         isMain: z.boolean().default(false),
-      })
+      }),
     )
     .min(1, "At least one image per color is required")
     .max(4, "Maximum 4 images per color (main + 3 views)"),
@@ -53,8 +53,8 @@ const productFormSchema = z
     colorGroups: z.array(colorGroupSchema).min(1, "Add at least one color"),
     variantStocks: z.record(z.string(), z.coerce.number().int().min(0)).optional().default({}),
     salePrice: z.coerce.number().min(0, "Sale price must be positive").optional(),
-    saleStartDate: z.string().optional(),
-    saleEndDate: z.string().optional(),
+    saleStartDate: z.string().optional().or(z.literal("")),
+    saleEndDate: z.string().optional().or(z.literal("")),
   })
   .refine(
     (data) => {
@@ -66,7 +66,7 @@ const productFormSchema = z
     {
       message: "Sale price must be less than base price",
       path: ["salePrice"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -78,7 +78,7 @@ const productFormSchema = z
     {
       message: "End date must be after start date",
       path: ["saleEndDate"],
-    }
+    },
   );
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -107,7 +107,7 @@ export function ProductFormV2({
   const [customColor, setCustomColor] = useState({ name: "", hex: "#000000" });
 
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productFormSchema) as any,
+    resolver: zodResolver(productFormSchema) as Resolver<ProductFormValues>,
     defaultValues: initialData || {
       name: "",
       description: "",
@@ -219,7 +219,7 @@ export function ProductFormV2({
     if (currentSizes.includes(size)) {
       form.setValue(
         "selectedSizes",
-        currentSizes.filter((s) => s !== size)
+        currentSizes.filter((s) => s !== size),
       );
     } else {
       form.setValue("selectedSizes", [...currentSizes, size]);
@@ -232,8 +232,6 @@ export function ProductFormV2({
   };
 
   const handleFormSubmit = (data: ProductFormValues) => {
-    // Generate variants from size × color combinations
-    console.log("Form data:", data);
     onSubmit(data);
   };
 
@@ -274,7 +272,7 @@ export function ProductFormV2({
                   {uniqueErrors.length > 3 && <li>...and {uniqueErrors.length - 3} more</li>}
                 </ul>
               </div>,
-              { duration: 5000 }
+              { duration: 5000 },
             );
           } else {
             toast.error("Please fix the errors in the form before submitting.");
@@ -610,7 +608,7 @@ export function ProductFormV2({
                       onClick={() => toggleSize(size)}
                       className={cn(
                         "px-4 py-2 text-sm font-medium transition-all",
-                        selectedSizes.includes(size) ? "bg-black text-white" : "bg-white text-gray-700 hover:bg-gray-50"
+                        selectedSizes.includes(size) ? "bg-black text-white" : "bg-white text-gray-700 hover:bg-gray-50",
                       )}
                     >
                       {size}
@@ -646,7 +644,7 @@ export function ProductFormV2({
                     disabled={isSelected}
                     className={cn(
                       "relative flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-all",
-                      isSelected ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-gray-50"
+                      isSelected ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-gray-50",
                     )}
                   >
                     <span className="w-4 h-4" style={{ backgroundColor: preset.hexCode }} />
@@ -810,7 +808,7 @@ export function ProductFormV2({
                           </td>
                         </tr>
                       );
-                    })
+                    }),
                   )}
                 </tbody>
               </table>

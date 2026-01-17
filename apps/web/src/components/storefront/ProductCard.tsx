@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/api";
@@ -19,7 +19,7 @@ interface ProductCardProps {
  *
  * Mason Garments-inspired: No shadows, no rounded corners, clean typography
  */
-export default function ProductCard({ product, className = "" }: ProductCardProps) {
+function ProductCardComponent({ product, className = "" }: ProductCardProps) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
   const primaryImage = product.images.find((img) => img.isPrimary) || product.images[0];
@@ -105,3 +105,10 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
     </>
   );
 }
+
+/**
+ * Memoized ProductCard for performance in grid views
+ * Only re-renders when product prop changes
+ */
+const ProductCard = React.memo(ProductCardComponent);
+export default ProductCard;

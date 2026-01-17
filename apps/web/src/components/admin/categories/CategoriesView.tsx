@@ -63,7 +63,7 @@ export function CategoriesView() {
     const productCount = category._count?.products || 0;
     if (productCount > 0) {
       toast.error(
-        `Cannot delete "${category.name}": ${productCount} product(s) are assigned. Please reassign or delete products first.`
+        `Cannot delete "${category.name}": ${productCount} product(s) are assigned. Please reassign or delete products first.`,
       );
       return;
     }
@@ -76,8 +76,9 @@ export function CategoriesView() {
       await categoriesService.delete(deleteConfirm.category.id);
       toast.success("Category deleted");
       loadCategories();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to delete category");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to delete category";
+      toast.error(message);
     } finally {
       setDeleteConfirm({ isOpen: false, category: null });
     }
@@ -89,7 +90,7 @@ export function CategoriesView() {
         onEdit: handleOpenModal,
         onDelete: handleDeleteClick,
       }),
-    []
+    [],
   );
 
   if (isLoading) {

@@ -49,8 +49,9 @@ export function DeleteAccountSection() {
       toast.success("Your account has been deleted");
       await logout();
       router.push("/");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to delete account");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to delete account";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

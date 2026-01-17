@@ -4,7 +4,7 @@ import { useEffect, useState, use } from "react";
 import { PostForm } from "@/components/admin/blog/post-form";
 import { blogService } from "@/services/blog.service";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 
 export default function EditPostPage(props: { params: Promise<{ id: string }> }) {
   const params = use(props.params);

@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, Sparkles } from "lucide-react";
 import { useState, useRef } from "react";
 import toast from "react-hot-toast";
 
@@ -17,6 +17,7 @@ import { heroSchema, HeroFormValues } from "@/schemas/storefront.schema";
 import { StorefrontHero } from "@/types/storefront.types";
 import { Category } from "@/types/category.types";
 import { storefrontService } from "@/services/storefront.service";
+import { aiService } from "@/services/ai.service";
 
 interface HeroFormProps {
   initialData?: StorefrontHero | null;
@@ -30,6 +31,8 @@ export function HeroForm({ initialData, categories, onSuccess, onCancel }: HeroF
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewIsVideo, setPreviewIsVideo] = useState(false);
+  const [isGeneratingContent, setIsGeneratingContent] = useState(false);
+  const [aiContext, setAiContext] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<HeroFormValues>({
@@ -139,6 +142,24 @@ export function HeroForm({ initialData, categories, onSuccess, onCancel }: HeroF
     }
   };
 
+  // AI Hero Content Generation
+  const handleAIGenerate = async () => {
+    try {
+      setIsGeneratingContent(true);
+      const result = await aiService.generateHero({
+        context: aiContext || "Premium Nigerian fashion sale",
+      });
+      form.setValue("headline", result.headline);
+      form.setValue("subheadline", result.subheadline);
+      form.setValue("ctaText", result.ctaText);
+      toast.success("Hero content generated!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to generate content");
+    } finally {
+      setIsGeneratingContent(false);
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -151,8 +172,8 @@ export function HeroForm({ initialData, categories, onSuccess, onCancel }: HeroF
               isUploading
                 ? "border-blue-400 bg-blue-50"
                 : form.watch("mediaUrl")
-                ? "border-green-400 bg-green-50"
-                : "border-gray-300 hover:border-gray-400"
+                  ? "border-green-400 bg-green-50"
+                  : "border-gray-300 hover:border-gray-400"
             }`}
           >
             <input
@@ -187,6 +208,38 @@ export function HeroForm({ initialData, categories, onSuccess, onCancel }: HeroF
             )}
           </div>
           <p className="text-xs text-red-500">{form.formState.errors.mediaUrl?.message}</p>
+        </div>
+
+        {/* AI Content Generation Section */}
+        <div className="bg-purple-50 border border-purple-200 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-purple-600" />
+            <span className="text-sm font-medium text-purple-800">AI Content Generator</span>
+          </div>
+          <Input
+            placeholder="Describe your promo (e.g., New Year Sale - 30% off)"
+            value={aiContext}
+            onChange={(e) => setAiContext(e.target.value)}
+            className="rounded-none text-sm"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleAIGenerate}
+            disabled={isGeneratingContent}
+            className="w-full rounded-none gap-2 border-purple-300 text-purple-700 hover:bg-purple-100"
+          >
+            {isGeneratingContent ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4" /> Generate Headline, Subheadline & CTA
+              </>
+            )}
+          </Button>
         </div>
 
         <FormField<HeroFormValues>

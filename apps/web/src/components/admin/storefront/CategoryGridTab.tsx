@@ -61,8 +61,9 @@ export function CategoryGridTab({ categories, onRefresh }: CategoryGridTabProps)
       await storefrontService.toggleCategoryFeatured(categoryId, newFeaturedState);
       toast.success(newFeaturedState ? "Category featured!" : "Category unfeatured");
       onRefresh();
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to update featured status");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to update featured status";
+      toast.error(message);
       console.error(error);
     } finally {
       setTogglingFeatured(null);
@@ -76,8 +77,9 @@ export function CategoryGridTab({ categories, onRefresh }: CategoryGridTabProps)
       await storefrontService.updateCategoryFeaturedPosition(categoryId, pos);
       toast.success(`Moved to ${POSITION_LABELS[pos]}`);
       onRefresh();
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to update position");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to update position";
+      toast.error(message);
       console.error(error);
     } finally {
       setUpdatingPosition(null);
@@ -112,7 +114,7 @@ export function CategoryGridTab({ categories, onRefresh }: CategoryGridTabProps)
               key={category.id}
               className={cn(
                 "border bg-white group relative",
-                category.isFeatured ? "border-black ring-2 ring-black" : "border-gray-200"
+                category.isFeatured ? "border-black ring-2 ring-black" : "border-gray-200",
               )}
             >
               {/* Featured Badge with Position */}
@@ -200,7 +202,7 @@ export function CategoryGridTab({ categories, onRefresh }: CategoryGridTabProps)
                         onValueChange={(val) => handlePositionChange(category.id, val)}
                         disabled={updatingPosition === category.id}
                       >
-                        <SelectTrigger className="h-8 text-xs flex-1">
+                        <SelectTrigger className="h-8 text-base sm:text-xs flex-1">
                           {updatingPosition === category.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <SelectValue />}
                         </SelectTrigger>
                         <SelectContent>

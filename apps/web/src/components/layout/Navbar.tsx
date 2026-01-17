@@ -130,70 +130,70 @@ export default function Navbar() {
 
                   {/* Navigation Links */}
                   <nav className="flex-1 p-6">
-                    <ul className="space-y-1">
-                      <li>
-                        <Link
-                          href="/shop"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="block py-3 text-sm uppercase tracking-[0.15em] text-primary hover:opacity-60 transition-opacity border-b border-gray-50"
+                    <motion.ul
+                      className="space-y-2"
+                      initial="hidden"
+                      animate="show"
+                      variants={{
+                        hidden: { opacity: 0 },
+                        show: {
+                          opacity: 1,
+                          transition: {
+                            staggerChildren: 0.1,
+                            delayChildren: 0.1,
+                          },
+                        },
+                      }}
+                    >
+                      {[
+                        { href: "/shop", label: "Shop All" },
+                        { href: "/shop?gender=men", label: "Men" },
+                        { href: "/shop?gender=women", label: "Women" },
+                        { href: "/story", label: "Our Story" },
+                      ].map((link) => (
+                        <motion.li
+                          key={link.href}
+                          variants={{
+                            hidden: { opacity: 0, x: -20 },
+                            show: { opacity: 1, x: 0 },
+                          }}
                         >
-                          Shop All
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/shop?gender=men"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="block py-3 text-sm uppercase tracking-[0.15em] text-primary hover:opacity-60 transition-opacity border-b border-gray-50"
-                        >
-                          Men
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/shop?gender=women"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="block py-3 text-sm uppercase tracking-[0.15em] text-primary hover:opacity-60 transition-opacity border-b border-gray-50"
-                        >
-                          Women
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/story"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="block py-3 text-sm uppercase tracking-[0.15em] text-primary hover:opacity-60 transition-opacity border-b border-gray-50"
-                        >
-                          Our Story
-                        </Link>
-                      </li>
-                    </ul>
+                          <Link
+                            href={link.href}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="block py-4 text-sm uppercase tracking-[0.15em] text-primary hover:text-gray-500 hover:pl-2 transition-all duration-300 border-b border-gray-50 focus-ring-premium"
+                          >
+                            {link.label}
+                          </Link>
+                        </motion.li>
+                      ))}
+                    </motion.ul>
                   </nav>
 
                   {/* Account Section */}
-                  <div className="p-6 border-t border-gray-100 bg-secondary">
+                  <div className="p-6 border-t border-gray-100 bg-secondary/30">
                     {mounted && isAuthenticated && user ? (
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                          <div className="w-10 h-10 bg-primary text-white flex items-center justify-center font-medium">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3 pb-4 border-b border-gray-200/50">
+                          <div className="w-10 h-10 bg-primary text-white flex items-center justify-center font-medium shadow-sm">
                             {user.name?.[0] || user.email[0].toUpperCase()}
                           </div>
                           <div>
-                            <p className="font-medium text-sm">{user.name || "Account"}</p>
+                            <p className="font-medium text-sm text-primary">{user.name || "Account"}</p>
                             <p className="text-xs text-gray-500">{user.email}</p>
                           </div>
                         </div>
                         <Link
                           href="/account"
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className="block py-2 text-xs uppercase tracking-widest text-primary hover:opacity-60 transition-opacity"
+                          className="block py-2 text-xs uppercase tracking-widest text-primary hover:opacity-60 transition-opacity focus-ring-premium"
                         >
                           My Account
                         </Link>
                         <Link
                           href="/account/orders"
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className="block py-2 text-xs uppercase tracking-widest text-primary hover:opacity-60 transition-opacity"
+                          className="block py-2 text-xs uppercase tracking-widest text-primary hover:opacity-60 transition-opacity focus-ring-premium"
                         >
                           My Orders
                         </Link>
@@ -203,7 +203,7 @@ export default function Navbar() {
                             setIsMobileMenuOpen(false);
                             router.push("/");
                           }}
-                          className="block py-2 text-xs uppercase tracking-widest text-sale hover:opacity-60 transition-opacity"
+                          className="block py-2 text-xs uppercase tracking-widest text-sale hover:opacity-60 transition-opacity focus-ring-premium"
                         >
                           Sign Out
                         </button>
@@ -211,7 +211,7 @@ export default function Navbar() {
                     ) : (
                       <Button
                         variant="premium-dark"
-                        className="w-full py-3"
+                        className="w-full py-6 uppercase tracking-widest text-xs"
                         onClick={() => {
                           setIsMobileMenuOpen(false);
                           router.push("/login");

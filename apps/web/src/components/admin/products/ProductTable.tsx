@@ -164,19 +164,19 @@ export function ProductTable() {
               placeholder="SEARCH PRODUCTS..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 border-t-0 border-x-0 border-b border-gray-200 rounded-none bg-transparent focus-visible:ring-0 focus-visible:border-black px-0 text-xs uppercase tracking-widest placeholder:text-gray-300"
+              className="pl-10 border-t-0 border-x-0 border-b border-gray-200 rounded-none bg-transparent focus-visible:ring-0 focus-visible:border-black px-0 text-base sm:text-xs uppercase tracking-widest placeholder:text-gray-300"
             />
           </div>
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-[180px] rounded-none border-t-0 border-x-0 border-b border-gray-200 focus:ring-0 text-xs uppercase tracking-widest">
+            <SelectTrigger className="w-[180px] rounded-none border-t-0 border-x-0 border-b border-gray-200 focus:ring-0 text-base sm:text-xs uppercase tracking-widest">
               <SelectValue placeholder="CATEGORY" />
             </SelectTrigger>
             <SelectContent className="rounded-none border-gray-100">
-              <SelectItem value="all" className="text-xs uppercase tracking-widest">
+              <SelectItem value="all" className="text-base sm:text-xs uppercase tracking-widest">
                 All Categories
               </SelectItem>
               {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.name} className="text-xs uppercase tracking-widest">
+                <SelectItem key={cat.id} value={cat.name} className="text-base sm:text-xs uppercase tracking-widest">
                   {cat.name}
                 </SelectItem>
               ))}

@@ -16,10 +16,10 @@ export type HeroFormValues = z.infer<typeof heroSchema>;
 
 export const sectionSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  subtitle: z.string().optional(),
+  subtitle: z.string().optional().or(z.literal("")),
   type: z.enum(["FEATURED", "CATEGORY", "COLLECTION"]),
-  categoryId: z.string().optional(),
-  mediaUrl: z.string().optional(),
+  categoryId: z.string().optional().or(z.literal("")),
+  mediaUrl: z.string().optional().or(z.literal("")),
   mediaType: z.enum(["IMAGE", "VIDEO"]).optional(),
   maxProducts: z.coerce.number().min(1).max(50),
   isActive: z.boolean(),

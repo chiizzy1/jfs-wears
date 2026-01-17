@@ -116,7 +116,7 @@ export function SalesProductTable() {
               placeholder="SEARCH SALES..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 border-t-0 border-x-0 border-b border-gray-200 rounded-none bg-transparent focus-visible:ring-0 focus-visible:border-black px-0 text-xs uppercase tracking-widest placeholder:text-gray-300"
+              className="pl-10 border-t-0 border-x-0 border-b border-gray-200 rounded-none bg-transparent focus-visible:ring-0 focus-visible:border-black px-0 text-base sm:text-xs uppercase tracking-widest placeholder:text-gray-300"
             />
           </div>
         </div>

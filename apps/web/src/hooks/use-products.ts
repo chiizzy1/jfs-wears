@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { productsService } from "@/services/products.service";
 import { toast } from "react-hot-toast";
 import { getErrorMessage } from "@/lib/api-client";
-import { adminAPI } from "@/lib/admin-api";
+import { adminAPI, CreateProductDto } from "@/lib/admin-api";
 
 export const useProducts = (params?: { category?: string; isOnSale?: boolean }) => {
   const queryClient = useQueryClient();
@@ -49,7 +49,7 @@ export const useProducts = (params?: { category?: string; isOnSale?: boolean }) 
   });
 
   const updateProductMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: unknown }) => productsService.updateProduct(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateProductDto> }) => productsService.updateProduct(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Product updated successfully");

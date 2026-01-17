@@ -12,6 +12,7 @@ export interface OrderItem {
 export interface ShippingAddress {
   firstName: string;
   lastName: string;
+  email?: string;
   address: string;
   city: string;
   state: string;

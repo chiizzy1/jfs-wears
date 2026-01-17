@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { productSchema, ProductFormValues } from "@/schemas/product.schema";
@@ -14,6 +14,8 @@ import { X, Plus, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { AIProductGenerator } from "./AIProductGenerator";
+import { GeneratedProduct } from "@/services/ai.service";
 
 interface ProductFormProps {
   categories: Category[];
@@ -26,7 +28,7 @@ export function ProductForm({ categories, onSubmit, isSubmitting, initialData }:
   const [images, setImages] = useState<{ file: File; preview: string }[]>([]);
 
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema) as any,
+    resolver: zodResolver(productSchema) as Resolver<ProductFormValues>, // Type-safe resolver cast
     defaultValues: initialData || {
       name: "",
       description: "",
@@ -92,6 +94,21 @@ export function ProductForm({ categories, onSubmit, isSubmitting, initialData }:
 
     form.setValue(`variants.${index}.sku`, `${prefix}-${size}-${color}-${random}`);
   };
+
+  // Handler for AI-generated product content
+  const handleAIApply = (generated: GeneratedProduct) => {
+    form.setValue("name", generated.name);
+    form.setValue("description", generated.description);
+    form.setValue("gender", generated.gender);
+    // Try to match category by name
+    const matchedCategory = categories.find((cat) => cat.name.toLowerCase() === generated.suggestedCategory.toLowerCase());
+    if (matchedCategory) {
+      form.setValue("categoryId", matchedCategory.id);
+    }
+  };
+
+  // Get first image URL for AI analysis
+  const firstImageUrl = images.length > 0 ? images[0].preview : undefined;
 
   return (
     <Form {...form}>
@@ -282,6 +299,13 @@ export function ProductForm({ categories, onSubmit, isSubmitting, initialData }:
               <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageChange} />
             </label>
           </div>
+        </div>
+
+        {/* AI Product Generator */}
+        <div className="bg-white p-6 border shadow-sm space-y-4">
+          <h2 className="text-lg font-semibold">AI Assistant</h2>
+          <p className="text-sm text-muted-foreground">Upload an image above, then use AI to generate product details</p>
+          <AIProductGenerator imageUrl={firstImageUrl} onApply={handleAIApply} disabled={isSubmitting} />
         </div>
 
         {/* Bulk Pricing */}

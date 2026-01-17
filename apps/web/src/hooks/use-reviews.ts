@@ -57,7 +57,7 @@ export function useProductReviews({ productId, page = 1, limit = 5, sortBy = "ne
     queryKey: ["reviews", productId, { page, limit, sortBy, rating }],
     queryFn: () =>
       apiClient.get<ReviewsResponse>(
-        `/reviews/product/${productId}?page=${page}&limit=${limit}&sortBy=${sortBy}${rating ? `&rating=${rating}` : ""}`
+        `/reviews/product/${productId}?page=${page}&limit=${limit}&sortBy=${sortBy}${rating ? `&rating=${rating}` : ""}`,
       ),
     placeholderData: (previousData) => previousData, // Keep previous data while fetching new page
   });
@@ -74,10 +74,9 @@ export function useSubmitReview(productId: string) {
       // Invalidate reviews to refetch
       queryClient.invalidateQueries({ queryKey: ["reviews", productId] });
     },
-    onError: (error: any) => {
-      // Error is handled globally or via toast here if needed, but apiClient usually throws.
-      // We can grab the specific message if passed.
-      const message = error.response?.data?.message || "Failed to submit review";
+    onError: (error) => {
+      // Type-safe error handling
+      const message = error instanceof Error ? error.message : "Failed to submit review";
       toast.error(message);
     },
   });

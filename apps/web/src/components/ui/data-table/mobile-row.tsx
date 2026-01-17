@@ -13,7 +13,7 @@ export function MobileRow({ children, className, cols = 2 }: MobileRowProps) {
       className={cn(
         "grid gap-4 p-4 bg-gray-50/50 border-t border-gray-100",
         cols === 1 ? "grid-cols-1" : cols === 2 ? "grid-cols-2" : "grid-cols-3",
-        className
+        className,
       )}
     >
       {children}
@@ -30,9 +30,9 @@ interface MobileRowItemProps {
 
 export function MobileRowItem({ label, children, className, fullWidth }: MobileRowItemProps) {
   return (
-    <div className={cn("space-y-1", fullWidth && "col-span-full", className)}>
+    <div className={cn("space-y-2 py-1", fullWidth && "col-span-full", className)}>
       <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block">{label}</span>
-      <div className="text-sm font-medium block break-words">{children}</div>
+      <div className="text-sm font-medium block wrap-break-word">{children}</div>
     </div>
   );
 }

@@ -29,7 +29,6 @@ export function ForgotPasswordForm() {
       // await authService.forgotPassword(data.email);
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      console.log("Password reset requested for:", data.email);
       setEmailSent(true);
       toast.success("Reset link sent!");
     } catch (error) {

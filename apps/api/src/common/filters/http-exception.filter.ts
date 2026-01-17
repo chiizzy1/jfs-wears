@@ -99,14 +99,36 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // Handle validation errors from Prisma
     if (exception instanceof Prisma.PrismaClientValidationError) {
+      // Extract the actual error message for debugging
+      const fullMessage = exception.message;
+      this.logger.error("Full Prisma Validation Error:", fullMessage);
+
+      // Try to extract field-specific info from error message
+      const fieldMatch = fullMessage.match(/Argument `(\w+)`/);
+      const typeMatch = fullMessage.match(/got `(\w+)`/);
+
+      let detailedMessage = "Invalid data provided to database";
+      if (fieldMatch) {
+        detailedMessage = `Invalid value for field: ${fieldMatch[1]}`;
+        if (typeMatch) {
+          detailedMessage += ` (received ${typeMatch[1]})`;
+        }
+      }
+
       const responseBody = {
         statusCode: HttpStatus.BAD_REQUEST,
         timestamp: new Date().toISOString(),
         path: httpAdapter.getRequestUrl(ctx.getRequest()),
-        message: "Invalid data provided to database",
+        message: detailedMessage,
       };
 
-      this.logger.warn("Prisma Validation Error:", exception.message);
+      this.logger.warn("Prisma Validation Error:", {
+        req: {
+          method: ctx.getRequest().method,
+          url: httpAdapter.getRequestUrl(ctx.getRequest()),
+        },
+        context: "AllExceptionsFilter",
+      });
       httpAdapter.reply(ctx.getResponse(), responseBody, HttpStatus.BAD_REQUEST);
       return;
     }

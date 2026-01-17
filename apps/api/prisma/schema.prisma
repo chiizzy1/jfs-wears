@@ -523,15 +523,44 @@ model StoreSettings {
   storeEmail  String   @default("contact@jfswears.com")
   currency    String   @default("NGN")
 
+  // Store Contact & Address (for receipts)
+  storePhone       String?
+  storeAddress     String?
+  storeCity        String?
+  storeState       String?
+  storePostalCode  String?
+  storeCountry     String   @default("Nigeria")
+
+  // Receipt Branding
+  logoUrl            String?                       // Cloudinary URL for logo
+  receiptAccentColor String   @default("#000000") // HEX color for headers
+  receiptFooterText  String?                       // Custom footer message
+  returnPolicyUrl    String?                       // Link to return policy
+  termsUrl           String?                       // Link to terms & conditions
+
   // Notifications
   notifyOrder    Boolean @default(true)
   notifyLowStock Boolean @default(true)
   notifyReview   Boolean @default(false)
 
+  // AI Configuration
+  aiProvider           AiProvider @default(DISABLED)
+  aiApiKey             String?    // Stored server-side only
+  aiFallbackProvider   AiProvider @default(DISABLED)
+  aiFallbackApiKey     String?    // Stored server-side only
+
   updatedAt   DateTime @updatedAt
 
   @@map("store_settings")
 }
+
+enum AiProvider {
+  DISABLED
+  GROQ
+  OPENROUTER
+  GEMINI
+}
+
 
 // ============================================
 // NEWSLETTER

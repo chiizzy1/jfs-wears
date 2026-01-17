@@ -23,13 +23,13 @@ const COLOR_OPTIONS = [
 export default function ColorFilter() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Parse current colors from URL
   const currentColors = searchParams.get("color")?.split(",").filter(Boolean) || [];
 
   const handleColorToggle = (color: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    
+
     let newColors: string[];
     if (currentColors.includes(color)) {
       // Remove color
@@ -56,7 +56,7 @@ export default function ColorFilter() {
         {COLOR_OPTIONS.map((color) => {
           const isSelected = currentColors.includes(color.name);
           const isLight = color.hex === "#FFFFFF" || color.hex === "#EAB308";
-          
+
           return (
             <Button
               key={color.name}
@@ -65,19 +65,12 @@ export default function ColorFilter() {
               onClick={() => handleColorToggle(color.name)}
               title={color.name}
               className={cn(
-                "w-8 h-8 rounded-full p-0 border-2 transition-all duration-200",
-                isSelected
-                  ? "border-black ring-2 ring-offset-1 ring-black"
-                  : "border-gray-200 hover:border-gray-400"
+                "w-10 h-10 rounded-full p-0 border-2 transition-all duration-200",
+                isSelected ? "border-black ring-2 ring-offset-1 ring-black" : "border-gray-200 hover:border-gray-400",
               )}
               style={{ backgroundColor: color.hex }}
             >
-              {isSelected && (
-                <Check 
-                  className={cn("w-4 h-4", isLight ? "text-black" : "text-white")} 
-                  strokeWidth={3}
-                />
-              )}
+              {isSelected && <Check className={cn("w-4 h-4", isLight ? "text-black" : "text-white")} strokeWidth={3} />}
             </Button>
           );
         })}

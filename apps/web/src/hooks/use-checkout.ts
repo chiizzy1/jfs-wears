@@ -21,6 +21,7 @@ interface OrderResponse {
 
 interface PaymentResponse {
   authorizationUrl?: string;
+  paymentUrl?: string;
   reference?: string;
 }
 
@@ -127,9 +128,9 @@ export function useCheckout() {
             provider,
           });
 
-          if (paymentData.authorizationUrl || (paymentData as any).paymentUrl) {
+          if (paymentData.authorizationUrl || paymentData.paymentUrl) {
             clearCart();
-            window.location.href = paymentData.authorizationUrl || (paymentData as any).paymentUrl;
+            window.location.href = paymentData.authorizationUrl || paymentData.paymentUrl || "";
             return;
           }
         } catch (paymentError) {

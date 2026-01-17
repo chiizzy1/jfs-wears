@@ -78,7 +78,7 @@ class AdminAPI {
 
   async getLowStock(threshold = 10) {
     return this.request<{ productId: string; productName: string; variantId: string; sku: string; stock: number }[]>(
-      `/analytics/low-stock?threshold=${threshold}`
+      `/analytics/low-stock?threshold=${threshold}`,
     );
   }
 
@@ -89,13 +89,16 @@ class AdminAPI {
   async getOrdersByPeriod(period: "day" | "week" | "month" = "week") {
     // Fetch recent orders and group by day for weekly chart
     const orders = await this.getOrders({ limit: 100 });
-    const grouped = orders.reduce((acc, order) => {
-      const date = new Date(order.createdAt);
-      const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
-      if (!acc[dayName]) acc[dayName] = 0;
-      acc[dayName]++;
-      return acc;
-    }, {} as Record<string, number>);
+    const grouped = orders.reduce(
+      (acc, order) => {
+        const date = new Date(order.createdAt);
+        const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+        if (!acc[dayName]) acc[dayName] = 0;
+        acc[dayName]++;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     return days.map((day) => ({ day, orders: grouped[day] || 0 }));
@@ -111,7 +114,7 @@ class AdminAPI {
 
     // API returns paginated response { items, total, page, ... }
     const response = await this.request<{ items: Product[]; total: number; page: number } | Product[]>(
-      `/products?${search.toString()}`
+      `/products?${search.toString()}`,
     );
 
     // Handle both paginated and array responses for compatibility
@@ -170,7 +173,7 @@ class AdminAPI {
 
     // API returns paginated response { items, total, page, ... }
     const response = await this.request<{ items: Order[]; total: number; page: number } | Order[]>(
-      `/orders?${search.toString()}`
+      `/orders?${search.toString()}`,
     );
 
     // Handle both paginated and array responses for compatibility
@@ -528,6 +531,18 @@ export interface UpdateSettingsDto {
   notifyOrder?: boolean;
   notifyLowStock?: boolean;
   notifyReview?: boolean;
+  // Receipt Customization
+  storePhone?: string;
+  storeAddress?: string;
+  storeCity?: string;
+  storeState?: string;
+  storePostalCode?: string;
+  storeCountry?: string;
+  logoUrl?: string;
+  receiptAccentColor?: string;
+  receiptFooterText?: string;
+  returnPolicyUrl?: string;
+  termsUrl?: string;
 }
 
 export interface StoreSettings {
@@ -539,6 +554,23 @@ export interface StoreSettings {
   notifyLowStock: boolean;
   notifyReview: boolean;
   updatedAt: string;
+  // Receipt/Contact fields (optional)
+  storePhone?: string;
+  storeAddress?: string;
+  storeCity?: string;
+  storeState?: string;
+  storePostalCode?: string;
+  storeCountry?: string;
+  logoUrl?: string;
+  receiptAccentColor?: string;
+  receiptFooterText?: string;
+  returnPolicyUrl?: string;
+  termsUrl?: string;
+  // AI Configuration
+  aiProvider?: string;
+  aiApiKey?: string;
+  aiFallbackProvider?: string;
+  aiFallbackApiKey?: string;
 }
 
 // Export singleton instance

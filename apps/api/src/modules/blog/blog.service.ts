@@ -63,7 +63,12 @@ export class BlogService {
     return post;
   }
 
-  async create(dto: CreateBlogPostDto, authorId: string) {
+  async create(dto: CreateBlogPostDto, authorId: string | undefined) {
+    // Validate authorId is provided
+    if (!authorId) {
+      throw new BadRequestException("Author ID is required. Please ensure you are logged in.");
+    }
+
     // Check if slug exists
     const existing = await this.prisma.blogPost.findUnique({ where: { slug: dto.slug } });
     if (existing) {
@@ -73,15 +78,24 @@ export class BlogService {
     // Get author name snapshot
     const staff = await this.prisma.staff.findUnique({ where: { id: authorId } });
 
-    const post = await this.prisma.blogPost.create({
-      data: {
-        ...dto,
-        authorId,
-        authorName: staff?.name,
-        publishedAt: dto.isPublished ? new Date() : null,
-      },
-    });
+    // Explicitly construct data object to avoid Prisma validation issues with undefined values
+    const data = {
+      title: dto.title,
+      slug: dto.slug,
+      content: dto.content,
+      excerpt: dto.excerpt || null,
+      coverImage: dto.coverImage || null,
+      tags: Array.isArray(dto.tags) ? dto.tags : [],
+      isPublished: dto.isPublished ?? false,
+      metaTitle: dto.metaTitle || null,
+      metaDescription: dto.metaDescription || null,
+      readTime: dto.readTime ?? null,
+      authorId,
+      authorName: staff?.name ?? null,
+      publishedAt: dto.isPublished ? new Date() : null,
+    };
 
+    const post = await this.prisma.blogPost.create({ data });
     this.logger.log(`Created blog post: ${post.id} (${post.title})`);
     return post;
   }
@@ -103,12 +117,23 @@ export class BlogService {
       publishedAt = null;
     }
 
+    // Build update data - only include defined fields to avoid Prisma issues
+    const data: Record<string, unknown> = { publishedAt };
+
+    if (dto.title !== undefined) data.title = dto.title;
+    if (dto.slug !== undefined) data.slug = dto.slug;
+    if (dto.excerpt !== undefined) data.excerpt = dto.excerpt || null;
+    if (dto.content !== undefined) data.content = dto.content;
+    if (dto.coverImage !== undefined) data.coverImage = dto.coverImage || null;
+    if (dto.tags !== undefined) data.tags = dto.tags || [];
+    if (dto.isPublished !== undefined) data.isPublished = dto.isPublished;
+    if (dto.metaTitle !== undefined) data.metaTitle = dto.metaTitle || null;
+    if (dto.metaDescription !== undefined) data.metaDescription = dto.metaDescription || null;
+    if (dto.readTime !== undefined) data.readTime = dto.readTime || null;
+
     const updated = await this.prisma.blogPost.update({
       where: { id },
-      data: {
-        ...dto,
-        publishedAt,
-      },
+      data,
     });
 
     this.logger.log(`Updated blog post: ${id}`);

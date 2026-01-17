@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   Query,
+  Request,
   UseGuards,
   UseInterceptors,
   UploadedFiles,
@@ -19,12 +20,18 @@ import { CreateProductDto, UpdateProductDto, ProductQueryDto, CreateVariantDto }
 import { ApiTags, ApiConsumes, ApiBody } from "@nestjs/swagger";
 import { CacheInterceptor, CacheTTL } from "@nestjs/cache-manager";
 import { CloudinaryService } from "../upload/cloudinary.service";
+import { AuditLogService } from "../audit-log/audit-log.service";
+import { AuditAction } from "@prisma/client";
 
 @ApiTags("Products")
 @Controller("products")
 @UseInterceptors(CacheInterceptor)
 export class ProductsController {
-  constructor(private productsService: ProductsService, private cloudinaryService: CloudinaryService) {}
+  constructor(
+    private productsService: ProductsService,
+    private cloudinaryService: CloudinaryService,
+    private auditLogService: AuditLogService,
+  ) {}
 
   @Get()
   @CacheTTL(300) // 5 minutes
@@ -64,32 +71,58 @@ export class ProductsController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("ADMIN", "MANAGER", "STAFF")
-  async create(@Body() createProductDto: CreateProductDto) {
-    return this.productsService.create(createProductDto);
+  async create(@Request() req: any, @Body() createProductDto: CreateProductDto) {
+    const result = await this.productsService.create(createProductDto);
+    await this.auditLogService.logFromRequest(req, AuditAction.CREATE, "Product", result.id, `Created product "${result.name}"`, {
+      productName: result.name,
+      slug: result.slug,
+    });
+    return result;
   }
 
   @Put(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("ADMIN", "MANAGER", "STAFF")
-  async update(@Param("id") id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productsService.update(id, updateProductDto);
+  async update(@Request() req: any, @Param("id") id: string, @Body() updateProductDto: UpdateProductDto) {
+    const result = await this.productsService.update(id, updateProductDto);
+    await this.auditLogService.logFromRequest(req, AuditAction.UPDATE, "Product", id, `Updated product "${result.name}"`, {
+      productName: result.name,
+      changes: Object.keys(updateProductDto),
+    });
+    return result;
   }
 
   @Delete(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("ADMIN", "MANAGER")
-  async delete(@Param("id") id: string, @Query("hard") hard?: string) {
+  async delete(@Request() req: any, @Param("id") id: string, @Query("hard") hard?: string) {
+    const product = await this.productsService.findById(id);
+    let result;
     if (hard === "true") {
-      return this.productsService.delete(id); // Hard delete
+      result = await this.productsService.delete(id); // Hard delete
+    } else {
+      result = await this.productsService.softDelete(id); // Soft delete (archive)
     }
-    return this.productsService.softDelete(id); // Soft delete (archive)
+    await this.auditLogService.logFromRequest(
+      req,
+      AuditAction.DELETE,
+      "Product",
+      id,
+      `Deleted product "${product?.name}" (${hard === "true" ? "permanent" : "archived"})`,
+      { productName: product?.name, hardDelete: hard === "true" },
+    );
+    return result;
   }
 
   @Post(":id/restore")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("ADMIN", "MANAGER")
-  async restore(@Param("id") id: string) {
-    return this.productsService.restore(id);
+  async restore(@Request() req: any, @Param("id") id: string) {
+    const result = await this.productsService.restore(id);
+    await this.auditLogService.logFromRequest(req, AuditAction.RESTORE, "Product", id, `Restored product "${result.name}"`, {
+      productName: result.name,
+    });
+    return result;
   }
 
   // Variant management
@@ -110,7 +143,7 @@ export class ProductsController {
     data: {
       url: string;
       isMain?: boolean;
-    }
+    },
   ) {
     return this.productsService.addImage(productId, data.url, data.isMain);
   }

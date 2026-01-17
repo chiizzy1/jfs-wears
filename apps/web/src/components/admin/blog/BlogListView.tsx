@@ -50,8 +50,9 @@ export function BlogListView() {
       await blogService.delete(deleteConfirm.post.id);
       toast.success("Post deleted");
       loadPosts();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to delete post");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to delete post";
+      toast.error(message);
     } finally {
       setDeleteConfirm({ isOpen: false, post: null });
     }
@@ -62,7 +63,7 @@ export function BlogListView() {
       getBlogColumns({
         onDelete: handleDeleteClick,
       }),
-    []
+    [],
   );
 
   if (isLoading) {

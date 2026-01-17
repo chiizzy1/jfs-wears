@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -21,7 +21,7 @@ export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<RegisterValues>({
-    resolver: zodResolver(registerSchema) as any,
+    resolver: zodResolver(registerSchema) as Resolver<RegisterValues>,
     defaultValues: {
       name: "",
       email: "",

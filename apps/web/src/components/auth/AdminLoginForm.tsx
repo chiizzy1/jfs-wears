@@ -32,8 +32,9 @@ export function AdminLoginForm() {
       await login(data.email, data.password);
       toast.success("Welcome back, Admin!");
       router.push("/admin");
-    } catch (error: any) {
-      toast.error(error.message || "Invalid credentials");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Invalid credentials";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

@@ -43,7 +43,7 @@ export default function SizeFilter() {
             key={size}
             variant={currentSizes.includes(size) ? "default" : "outline"}
             size="icon"
-            className="w-10 h-10 text-xs"
+            className="w-12 h-12 text-sm"
             onClick={() => handleSizeToggle(size)}
           >
             {size}

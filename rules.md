@@ -990,12 +990,127 @@ console.error("[ModuleName][FunctionName] Error description:", {
 
 ### 13.1 TypeScript
 
-- Enable strict mode
+- Enable strict mode (`"strict": true` in `tsconfig.json`)
 - Avoid `any` type - use `unknown` if necessary
 - Define explicit return types for functions
 - Use union types over enums where appropriate
 - Prefer interfaces for objects, types for unions
 - Use generics for reusable types
+
+#### 13.1.1 Strict Mode (MANDATORY)
+
+Projects MUST have `"strict": true` in `tsconfig.json`. This enables:
+
+- `strictNullChecks`: Catch null/undefined bugs
+- `noImplicitAny`: Force explicit types
+- `strictFunctionTypes`: Ensure function parameter compatibility
+
+#### 13.1.2 Banning `as any` (CRITICAL)
+
+**NEVER use `as any`**. It completely disables type safety. Use these patterns instead:
+
+```typescript
+// ❌ BAD - Silences all type errors
+const data = someValue as any;
+
+// ✅ GOOD - Narrow the type properly
+const data = someValue as unknown;
+if (typeof data === "string") {
+  // Now TypeScript knows it's a string
+}
+
+// ✅ GOOD - Use explicit type assertions with known types
+const data = someValue as SpecificType;
+```
+
+#### 13.1.3 Type-Safe Error Handling
+
+**NEVER use `catch (error: any)`**. Use this pattern:
+
+```typescript
+// ❌ BAD
+try {
+  await riskyOperation();
+} catch (error: any) {
+  toast.error(error.message);
+}
+
+// ✅ GOOD
+try {
+  await riskyOperation();
+} catch (error) {
+  const message = error instanceof Error ? error.message : "Something went wrong";
+  toast.error(message);
+}
+```
+
+#### 13.1.4 Form Resolver Pattern (React Hook Form + Zod)
+
+When using `zodResolver` with `react-hook-form`, use explicit `Resolver` casting:
+
+```typescript
+import { useForm, Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// Define schema
+const formSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+});
+type FormValues = z.infer<typeof formSchema>;
+
+// ✅ GOOD - Explicit Resolver cast for type safety
+const form = useForm<FormValues>({
+  resolver: zodResolver(formSchema) as Resolver<FormValues>,
+  defaultValues: { name: "", email: "" },
+});
+```
+
+**For optional string fields that may be empty in forms:**
+
+```typescript
+// ❌ BAD - Form initializes to "" but schema expects string | undefined
+subtitle: z.string().optional();
+
+// ✅ GOOD - Explicitly allows empty strings
+subtitle: z.string().optional().or(z.literal(""));
+```
+
+#### 13.1.5 Service Layer Typing
+
+Services MUST have explicit input and return types. Never use `any`:
+
+```typescript
+// ❌ BAD
+export async function createProduct(data: any) { ... }
+
+// ✅ GOOD - Use DTOs from backend or define interfaces
+import { CreateProductDto, Product } from "@/lib/admin-api";
+
+export async function createProduct(data: CreateProductDto): Promise<Product> {
+  return adminAPI.createProduct(data);
+}
+
+export async function updateProduct(id: string, data: Partial<CreateProductDto>): Promise<Product> {
+  return adminAPI.updateProduct(id, data);
+}
+```
+
+#### 13.1.6 Mutation Typing (React Query)
+
+Always type mutation function parameters explicitly:
+
+```typescript
+// ❌ BAD - data is unknown or any
+const updateMutation = useMutation({
+  mutationFn: ({ id, data }: { id: string; data: unknown }) => updateProduct(id, data),
+});
+
+// ✅ GOOD - Explicit type
+const updateMutation = useMutation({
+  mutationFn: ({ id, data }: { id: string; data: Partial<CreateProductDto> }) => updateProduct(id, data),
+});
+```
 
 ### 13.2 React & UI Patterns
 

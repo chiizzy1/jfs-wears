@@ -25,8 +25,8 @@ export const productSchema = z
     variants: z.array(productVariantSchema).min(1, "At least one variant is required"),
     bulkPricingTiers: z.array(bulkPricingTierSchema).optional(),
     salePrice: z.coerce.number().min(0).optional(),
-    saleStartDate: z.string().optional(),
-    saleEndDate: z.string().optional(),
+    saleStartDate: z.string().optional().or(z.literal("")),
+    saleEndDate: z.string().optional().or(z.literal("")),
   })
   .refine(
     (data) => {
@@ -38,7 +38,7 @@ export const productSchema = z
     {
       message: "Sale price must be lower than base price",
       path: ["salePrice"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -50,7 +50,7 @@ export const productSchema = z
     {
       message: "End date must be after start date",
       path: ["saleEndDate"],
-    }
+    },
   );
 
 export type ProductFormValues = z.infer<typeof productSchema>;

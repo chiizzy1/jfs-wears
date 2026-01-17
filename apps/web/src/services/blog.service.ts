@@ -1,6 +1,19 @@
 import { apiClient as api } from "@/lib/api-client";
 import { BlogPost, BlogPostResponse } from "@/types/blog";
 
+/** Input type for creating/updating blog posts */
+export interface BlogPostInput {
+  title: string;
+  slug: string;
+  content: string;
+  excerpt?: string;
+  coverImage?: string;
+  tags?: string[];
+  isPublished?: boolean;
+  metaTitle?: string;
+  metaDescription?: string;
+}
+
 export const blogService = {
   getAllAdmin: async () => {
     return await api.get<BlogPost[]>("/admin/blog");
@@ -18,11 +31,11 @@ export const blogService = {
     return await api.get<BlogPost>(`/admin/blog/${id}`);
   },
 
-  create: async (data: any) => {
+  create: async (data: BlogPostInput): Promise<BlogPost> => {
     return await api.post<BlogPost>("/admin/blog", data);
   },
 
-  update: async (id: string, data: any) => {
+  update: async (id: string, data: Partial<BlogPostInput>): Promise<BlogPost> => {
     return await api.patch<BlogPost>(`/admin/blog/${id}`, data);
   },
 

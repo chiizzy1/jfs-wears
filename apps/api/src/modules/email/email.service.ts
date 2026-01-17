@@ -1,6 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
+interface EmailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType: string;
+}
+
 @Injectable()
 export class EmailService {
   private from: string;
@@ -11,10 +17,20 @@ export class EmailService {
     this.frontendUrl = config.get("FRONTEND_URL") || "http://localhost:3000";
   }
 
-  async sendOrderConfirmation(to: string, orderNumber: string, items: any[], total: number) {
+  async sendOrderConfirmation(
+    to: string,
+    orderNumber: string,
+    items: { productName: string; quantity: number; unitPrice: number }[],
+    total: number,
+    pdfBuffer?: Buffer,
+  ) {
     const itemsHtml = items
       .map((item) => `<li>${item.productName} × ${item.quantity} - ₦${item.unitPrice.toLocaleString()}</li>`)
       .join("");
+
+    const attachments: EmailAttachment[] = pdfBuffer
+      ? [{ filename: `receipt-${orderNumber}.pdf`, content: pdfBuffer, contentType: "application/pdf" }]
+      : [];
 
     await this.sendEmail(
       to,
@@ -27,9 +43,11 @@ export class EmailService {
       <p><strong>Total:</strong> ₦${total.toLocaleString()}</p>
       <p>We'll notify you when your order ships.</p>
       <p><a href="${this.frontendUrl}/track?order=${orderNumber}">Track Your Order</a></p>
+      ${pdfBuffer ? "<p><strong>Your receipt is attached to this email.</strong></p>" : ""}
       <br>
       <p>— The JFS Wears Team</p>
-    `
+    `,
+      attachments,
     );
   }
 
@@ -47,7 +65,7 @@ export class EmailService {
       </a></p>
       <p>This link expires in 1 hour.</p>
       <p>If you didn't request this, ignore this email.</p>
-    `
+    `,
     );
   }
 
@@ -69,7 +87,7 @@ export class EmailService {
       <p>If you didn't create an account, ignore this email.</p>
       <br>
       <p>— The JFS Wears Team</p>
-    `
+    `,
     );
   }
 
@@ -82,11 +100,11 @@ export class EmailService {
       <p>Order <strong>${orderNumber}</strong> has been shipped.</p>
       ${trackingNumber ? `<p><strong>Tracking Number:</strong> ${trackingNumber}</p>` : ""}
       <p><a href="${this.frontendUrl}/track?order=${orderNumber}">Track Your Order</a></p>
-    `
+    `,
     );
   }
 
-  private async sendEmail(to: string, subject: string, html: string) {
+  private async sendEmail(to: string, subject: string, html: string, attachments: EmailAttachment[] = []) {
     // Check if email provider is configured
     const resendKey = this.config.get("RESEND_API_KEY");
     const smtpHost = this.config.get("SMTP_HOST");
@@ -96,7 +114,20 @@ export class EmailService {
       try {
         const { Resend } = await import("resend");
         const resend = new Resend(resendKey);
-        await resend.emails.send({ from: this.from, to, subject, html });
+
+        // Format attachments for Resend
+        const resendAttachments = attachments.map((att) => ({
+          filename: att.filename,
+          content: att.content,
+        }));
+
+        await resend.emails.send({
+          from: this.from,
+          to,
+          subject,
+          html,
+          attachments: resendAttachments.length > 0 ? resendAttachments : undefined,
+        });
         console.log(`Email sent to ${to}: ${subject}`);
       } catch (error) {
         console.error("Failed to send email via Resend:", error);
@@ -113,7 +144,21 @@ export class EmailService {
             pass: this.config.get("SMTP_PASS"),
           },
         });
-        await transporter.sendMail({ from: this.from, to, subject, html });
+
+        // Format attachments for Nodemailer
+        const nodemailerAttachments = attachments.map((att) => ({
+          filename: att.filename,
+          content: att.content,
+          contentType: att.contentType,
+        }));
+
+        await transporter.sendMail({
+          from: this.from,
+          to,
+          subject,
+          html,
+          attachments: nodemailerAttachments.length > 0 ? nodemailerAttachments : undefined,
+        });
         console.log(`Email sent to ${to}: ${subject}`);
       } catch (error) {
         console.error("Failed to send email via SMTP:", error);
@@ -123,6 +168,9 @@ export class EmailService {
       console.log(`[EMAIL] To: ${to}`);
       console.log(`[EMAIL] Subject: ${subject}`);
       console.log(`[EMAIL] Content preview: ${html.substring(0, 200)}...`);
+      if (attachments.length > 0) {
+        console.log(`[EMAIL] Attachments: ${attachments.map((a) => a.filename).join(", ")}`);
+      }
     }
   }
 }

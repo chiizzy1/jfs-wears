@@ -49,6 +49,16 @@
 
   --spacing-container: clamp(1rem, 5vw, 4rem);
   --spacing-section: clamp(4rem, 10vw, 8rem);
+
+  /* Force Sharp Edges Globally */
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius: 0px; /* Default radius */
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
 }
 
 @layer base {
@@ -87,8 +97,6 @@
     --border: #e4e4e7;
     --input: #e4e4e7;
     --ring: #1c1c1c;
-
-    --radius: 0px; /* Force 0 radius variable just in case */
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -134,6 +142,19 @@
 
   body {
     @apply bg-background text-foreground font-sans;
+  }
+
+  /* Reset default outline for consistent custom focus rings */
+  *:focus-visible {
+    outline: none;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    @apply ring-2 ring-primary ring-offset-2 ring-offset-background;
   }
 
   /* Lenis Smooth Scroll */
@@ -221,14 +242,19 @@
 /* Premium Utility Classes */
 @layer utilities {
   .tracking-premium {
-    letter-spacing: 0.15em;
+    letter-spacing: 0.1em; /* Standardized to widest/0.1em */
   }
   .tracking-wide-premium {
-    letter-spacing: 0.2em;
+    letter-spacing: 0.2em; /* Kept for display headers */
   }
   .uppercase-premium {
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.1em;
+  }
+
+  /* Focus Ring Utility */
+  .focus-ring-premium {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
 }
 

@@ -6,6 +6,8 @@ import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { RegisterDto, LoginDto, RefreshTokenDto, ForgotPasswordDto, ResetPasswordDto } from "./dto/auth.dto";
 import { ConfigService } from "@nestjs/config";
 import { ApiTags } from "@nestjs/swagger";
+import { AuditLogService } from "../audit-log/audit-log.service";
+import { AuditAction } from "@prisma/client";
 
 // Cookie configuration
 const COOKIE_OPTIONS = {
@@ -22,7 +24,11 @@ const REFRESH_TOKEN_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days
 @ApiTags("Auth")
 @Controller("auth")
 export class AuthController {
-  constructor(private authService: AuthService, private configService: ConfigService) {}
+  constructor(
+    private authService: AuthService,
+    private configService: ConfigService,
+    private auditLogService: AuditLogService,
+  ) {}
 
   /**
    * Helper to set auth cookies on response
@@ -121,15 +127,30 @@ export class AuthController {
   // ============================================
 
   @Post("staff/login")
-  async staffLogin(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+  async staffLogin(@Request() req: any, @Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.loginStaff(dto.email, dto.password);
     this.setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken);
+    // Log successful staff login
+    await this.auditLogService.log({
+      staffId: result.user.id,
+      staffEmail: result.user.email,
+      staffName: result.user.name,
+      action: AuditAction.LOGIN,
+      entity: "Staff",
+      entityId: result.user.id,
+      description: `Staff "${result.user.name}" logged in`,
+      ipAddress: req.ip || req.headers?.["x-forwarded-for"],
+      userAgent: req.headers?.["user-agent"],
+    });
     return result;
   }
 
   @Post("staff/logout")
   @HttpCode(HttpStatus.OK)
-  async staffLogout(@Res({ passthrough: true }) res: Response) {
+  @UseGuards(JwtAuthGuard)
+  async staffLogout(@Request() req: any, @Res({ passthrough: true }) res: Response) {
+    // Log staff logout before clearing cookies
+    await this.auditLogService.logFromRequest(req, AuditAction.LOGOUT, "Staff", req.user?.sub, "Staff logged out");
     this.clearAuthCookies(res);
     return { message: "Logged out successfully" };
   }

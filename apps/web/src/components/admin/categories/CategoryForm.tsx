@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Image as ImageIcon, X } from "lucide-react";
+import { Loader2, Image as ImageIcon, X, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Category, CategoryFormData } from "@/types/category.types";
 import { categorySchema, CategoryValues } from "@/schemas/category.schema";
 import { categoriesService } from "@/services/categories.service";
+import { aiService } from "@/services/ai.service";
 
 interface CategoryFormProps {
   initialData?: Category | null;
@@ -22,6 +23,7 @@ interface CategoryFormProps {
 
 export function CategoryForm({ initialData, onSuccess, onCancel }: CategoryFormProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<CategoryValues>({
@@ -88,10 +90,29 @@ export function CategoryForm({ initialData, onSuccess, onCancel }: CategoryFormP
         toast.success("Category created");
       }
       onSuccess();
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      const message = error?.message || "Something went wrong";
+      const message = error instanceof Error ? error.message : "Something went wrong";
       toast.error(message);
+    }
+  };
+
+  // AI Description Generation
+  const handleGenerateDescription = async () => {
+    const name = form.getValues("name");
+    if (!name) {
+      toast.error("Please enter a category name first");
+      return;
+    }
+    try {
+      setIsGeneratingDescription(true);
+      const result = await aiService.generateCategoryDescription({ categoryName: name });
+      form.setValue("description", result.description);
+      toast.success("Description generated!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to generate description");
+    } finally {
+      setIsGeneratingDescription(false);
     }
   };
 
@@ -142,7 +163,20 @@ export function CategoryForm({ initialData, onSuccess, onCancel }: CategoryFormP
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs uppercase tracking-[0.15em] text-gray-500">Description</FormLabel>
+              <div className="flex items-center justify-between">
+                <FormLabel className="text-xs uppercase tracking-[0.15em] text-gray-500">Description</FormLabel>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleGenerateDescription}
+                  disabled={isGeneratingDescription || !form.getValues("name")}
+                  className="h-6 px-2 text-xs gap-1 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                >
+                  {isGeneratingDescription ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                  AI Generate
+                </Button>
+              </div>
               <FormControl>
                 <Input {...field} placeholder="Optional description" className="rounded-none" />
               </FormControl>
@@ -190,8 +224,8 @@ export function CategoryForm({ initialData, onSuccess, onCancel }: CategoryFormP
                     isUploading
                       ? "border-blue-400 bg-blue-50"
                       : field.value
-                      ? "border-green-400 bg-green-50"
-                      : "border-gray-300 hover:border-gray-400"
+                        ? "border-green-400 bg-green-50"
+                        : "border-gray-300 hover:border-gray-400"
                   }`}
                 >
                   <input

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
 import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 
 interface Order {
   id: string;
@@ -29,6 +30,32 @@ export function OrderList() {
   const { isAuthenticated } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const handleDownloadReceipt = async (orderId: string, orderNumber: string) => {
+    try {
+      setDownloadingId(orderId);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/receipts/${orderId}`, {
+        credentials: "include",
+      });
+
+      if (!response.ok) throw new Error("Failed to download receipt");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `receipt-${orderNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (error) {
+      console.error("Failed to download receipt:", error);
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   useEffect(() => {
     async function fetchOrders() {
@@ -119,7 +146,7 @@ export function OrderList() {
             <div className="flex items-center gap-3">
               <span
                 className={`px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-semibold ${getStatusColor(
-                  order.status
+                  order.status,
                 )}`}
               >
                 {order.status}
@@ -143,6 +170,20 @@ export function OrderList() {
               </div>
             ))}
             {order.items.length > 2 && <p className="text-xs text-muted-foreground">+{order.items.length - 2} more items</p>}
+          </div>
+
+          {/* Actions */}
+          <div className="mt-4 pt-4 border-t border-gray-50 flex justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDownloadReceipt(order.id, order.orderNumber)}
+              disabled={downloadingId === order.id}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              <Download className="w-3.5 h-3.5 mr-1.5" />
+              {downloadingId === order.id ? "Downloading..." : "Download Receipt"}
+            </Button>
           </div>
         </div>
       ))}

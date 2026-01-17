@@ -139,6 +139,7 @@ export default function CategoryGrid() {
                   src={mainCategory.imageUrl || FALLBACK_IMAGE}
                   alt={mainCategory.name}
                   fill
+                  sizes="(max-width: 1024px) 100vw, 66vw"
                   className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
                 />
                 {/* Gradient Overlay */}
@@ -168,6 +169,7 @@ export default function CategoryGrid() {
                       src={cat.imageUrl || FALLBACK_IMAGE}
                       alt={cat.name}
                       fill
+                      sizes="(max-width: 1024px) 100vw, 33vw"
                       className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors duration-500" />
@@ -221,11 +223,12 @@ export default function CategoryGrid() {
                   href={`/shop?category=${cat.slug}`}
                   className="group shrink-0 w-[200px] md:w-[250px] snap-start"
                 >
-                  <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
+                  <div className="relative aspect-4/5 overflow-hidden bg-gray-100">
                     <Image
                       src={cat.imageUrl || FALLBACK_IMAGE}
                       alt={cat.name}
                       fill
+                      sizes="(max-width: 768px) 200px, 250px"
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />

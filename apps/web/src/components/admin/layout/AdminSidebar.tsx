@@ -29,7 +29,7 @@ export function AdminSidebar({ pathname, onSelect }: AdminSidebarProps) {
               <Link
                 href={item.href}
                 onClick={onSelect}
-                className={`flex items-center gap-3 px-6 py-3 text-sm transition-colors ${
+                className={`flex items-center gap-3 px-6 py-4 text-sm transition-colors ${
                   pathname === item.href ? "bg-black text-white" : "text-primary hover:bg-gray-50"
                 }`}
               >

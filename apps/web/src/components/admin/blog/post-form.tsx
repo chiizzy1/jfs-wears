@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 import { BlogPostFormValues, blogPostSchema } from "@/schemas/blog";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
@@ -12,11 +12,21 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { apiClient as api } from "@/lib/api-client";
+import { apiClient as api, getErrorMessage, isApiError } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { CoverImageUpload } from "./cover-image-upload";
+import { aiService } from "@/services/ai.service";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface PostFormProps {
   initialData?: any; // Replace with proper type when available
@@ -26,6 +36,10 @@ interface PostFormProps {
 export function PostForm({ initialData, isEditing = false }: PostFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiOutline, setAiOutline] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
 
   const form = useForm<BlogPostFormValues>({
     resolver: zodResolver(blogPostSchema),
@@ -74,13 +88,26 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
       }
 
       router.refresh();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Blog post submission error:", error);
 
-      // Extract detailed error message from API response
-      const errorMessage = error?.response?.data?.message || error?.message || "Something went wrong. Please try again.";
+      // Use centralized error handler for user-friendly messages
+      const errorMessage = getErrorMessage(error);
 
-      toast.error(errorMessage);
+      // Show specific toast based on error type
+      if (isApiError(error)) {
+        if (error.isValidationError) {
+          toast.error(`Validation Error: ${errorMessage}`);
+        } else if (error.isUnauthorized) {
+          toast.error("Session expired. Please log in again.");
+        } else if (error.isNetworkError) {
+          toast.error(`Connection Error: ${errorMessage}`);
+        } else {
+          toast.error(`Failed to save post: ${errorMessage}`);
+        }
+      } else {
+        toast.error(errorMessage || "Something went wrong");
+      }
     } finally {
       setLoading(false);
     }
@@ -99,6 +126,60 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
     }
   };
 
+  // Handle form validation errors with toast notification
+  const onInvalid = (errors: Record<string, { message?: string }>) => {
+    const errorFields = Object.keys(errors);
+    if (errorFields.length === 1) {
+      toast.error(errors[errorFields[0]]?.message || "Please fill in all required fields");
+    } else {
+      const messages = errorFields.slice(0, 3).map((field) => {
+        return errors[field]?.message || `${field} is required`;
+      });
+      toast.error(`Please fix: ${messages.join(", ")}${errorFields.length > 3 ? "..." : ""}`);
+    }
+  };
+
+  // AI Blog Generation Handler
+  const handleAIGenerate = async () => {
+    if (!aiTopic.trim()) {
+      toast.error("Please enter a topic for the blog post");
+      return;
+    }
+
+    try {
+      setAiLoading(true);
+      const result = await aiService.generateBlog({
+        topic: aiTopic,
+        outline: aiOutline || undefined,
+        existingDraft: form.getValues("content") || undefined,
+      });
+
+      // Populate form with AI-generated content
+      form.setValue("title", result.title);
+      form.setValue("excerpt", result.excerpt);
+      form.setValue("content", result.content);
+      form.setValue("tags", result.tags.join(", "));
+      form.setValue("metaTitle", result.metaTitle);
+      form.setValue("metaDescription", result.metaDescription);
+
+      // Auto-generate slug from title
+      const generatedSlug = result.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+      form.setValue("slug", generatedSlug);
+
+      toast.success("Blog post generated! Review and edit as needed.");
+      setAiDialogOpen(false);
+      setAiTopic("");
+      setAiOutline("");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to generate blog post");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6 w-full pb-20">
       <div className="flex items-center gap-4 border-b border-gray-200 pb-6">
@@ -112,9 +193,75 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
           <p className="text-gray-500 text-sm mt-1">Create and manage your high-fashion editorial content.</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
+          {/* AI Generate Button */}
+          <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-none h-10 px-4 gap-2 text-xs uppercase tracking-widest border-purple-300 text-purple-700 hover:bg-purple-50"
+              >
+                <Sparkles className="h-4 w-4" />
+                Generate with AI
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-purple-600" />
+                  Generate Blog Post with AI
+                </DialogTitle>
+                <DialogDescription>
+                  Enter a topic and optional outline. AI will generate title, content, excerpt, and SEO metadata.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Topic *</label>
+                  <Input
+                    placeholder="e.g., Top 10 Ankara Styles for 2026"
+                    value={aiTopic}
+                    onChange={(e) => setAiTopic(e.target.value)}
+                    className="rounded-none"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Outline (optional)</label>
+                  <Textarea
+                    placeholder="Optional: Provide an outline or key points to cover..."
+                    value={aiOutline}
+                    onChange={(e) => setAiOutline(e.target.value)}
+                    rows={4}
+                    className="rounded-none"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setAiDialogOpen(false)} className="rounded-none">
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleAIGenerate}
+                  disabled={aiLoading || !aiTopic.trim()}
+                  className="rounded-none bg-purple-600 hover:bg-purple-700 text-white gap-2"
+                >
+                  {aiLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" /> Generate
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <Button
             disabled={loading}
-            onClick={() => form.handleSubmit(onSubmit)()}
+            onClick={() => form.handleSubmit(onSubmit, onInvalid)()}
             className="rounded-none bg-black text-white hover:bg-gray-800 h-10 px-8 uppercase tracking-widest text-xs"
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -124,7 +271,7 @@ export function PostForm({ initialData, isEditing = false }: PostFormProps) {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-8">
           <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
             {/* Main Content */}
             <div className="space-y-8">

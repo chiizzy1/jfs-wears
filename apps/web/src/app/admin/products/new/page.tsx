@@ -63,23 +63,8 @@ export default function AddProductPage() {
             stock: typeof stockValue === "string" ? parseInt(stockValue) || 0 : stockValue,
             priceAdjustment: 0,
           };
-        })
+        }),
       );
-
-      console.log("Submitting Product Payload:", {
-        name: data.name,
-        description: data.description,
-        basePrice: data.basePrice,
-        categoryId: data.categoryId,
-        gender: data.gender,
-        isFeatured: data.isFeatured,
-        bulkEnabled: data.bulkEnabled,
-        bulkPricingTiers: data.bulkPricingTiers,
-        variants,
-        salePrice: data.salePrice || undefined,
-        saleStartDate: data.saleStartDate || undefined,
-        saleEndDate: data.saleEndDate || undefined,
-      });
 
       // 2. Create the product first
       const product = await createProduct({
@@ -115,9 +100,9 @@ export default function AddProductPage() {
 
       toast.success("Product created successfully!");
       router.push("/admin/products");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to create product:", error);
-      const errorMessage = error?.message || "Failed to create product. Please try again.";
+      const errorMessage = error instanceof Error ? error.message : "Failed to create product. Please try again.";
       toast.error(`Error: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);

@@ -33,8 +33,9 @@ export function PasswordForm() {
 
       toast.success("Password changed successfully");
       form.reset();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to change password");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to change password";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

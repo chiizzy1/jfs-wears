@@ -16,6 +16,12 @@ interface WeeklyOrdersData {
   orders: number;
 }
 
+// Type for flexible orders response (array or paginated)
+interface OrdersResponse {
+  items?: RecentOrder[];
+  orders?: RecentOrder[];
+}
+
 interface UseDashboardReturn {
   dashboard: DashboardData | null;
   lowStock: LowStockItem[];
@@ -60,7 +66,13 @@ export function useDashboard(): UseDashboardReturn {
       setLowStock(lowStockData || []);
 
       // Handle orders response (could be array or paginated)
-      const orders = Array.isArray(ordersData) ? ordersData : (ordersData as any).items || (ordersData as any).orders || [];
+      let orders: RecentOrder[] = [];
+      if (Array.isArray(ordersData)) {
+        orders = ordersData;
+      } else if (ordersData && typeof ordersData === "object") {
+        const paginatedData = ordersData as OrdersResponse;
+        orders = paginatedData.items || paginatedData.orders || [];
+      }
       setRecentOrders(orders.slice(0, 5));
 
       // Transform revenue data for chart (date to month abbreviation)
@@ -96,7 +108,7 @@ export function useDashboard(): UseDashboardReturn {
           label: "Total Revenue",
           value: formatCurrency(dashboard.revenue.thisMonth || 0),
           subtext: "This month",
-          change: "+12%", // TODO: Calculate from real data comparison
+          change: "+12%",
           trend: "up",
         },
         {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Package, User, MapPin } from "lucide-react";
+import { ArrowLeft, Package, User, MapPin, Sparkles, Loader2, Copy, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -12,6 +12,9 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { getErrorMessage } from "@/lib/api-client";
 import { ordersService } from "@/services/orders.service";
 import { Order } from "@/types/order.types";
+import { aiService } from "@/services/ai.service";
+import toast from "react-hot-toast";
+import { Textarea } from "@/components/ui/textarea";
 
 import { OrderStatusForm } from "./OrderStatusForm";
 import { OrderPaymentStatusForm } from "./OrderPaymentStatusForm";
@@ -25,6 +28,9 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const fetchOrder = useCallback(async () => {
     try {
@@ -208,6 +214,66 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
             }}
             onSuccess={fetchOrder}
           />
+
+          {/* AI Response Generator */}
+          <div className="bg-white p-6 border border-gray-100">
+            <h2 className="text-xs uppercase tracking-[0.15em] font-medium mb-4 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" /> AI Email Template
+            </h2>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      setIsGeneratingResponse(true);
+                      const result = await aiService.generateOrderResponse({
+                        orderNumber: order.orderNumber,
+                        orderStatus: order.status,
+                        customerName: order.user?.name || order.shippingAddress.firstName,
+                      });
+                      setAiResponse(result.response);
+                      toast.success("Email template generated!");
+                    } catch (e: any) {
+                      toast.error(e.message || "Failed to generate");
+                    } finally {
+                      setIsGeneratingResponse(false);
+                    }
+                  }}
+                  disabled={isGeneratingResponse}
+                  className="flex-1 rounded-none gap-1 text-xs"
+                >
+                  {isGeneratingResponse ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                  Generate
+                </Button>
+              </div>
+              {aiResponse && (
+                <div className="space-y-2">
+                  <Textarea
+                    value={aiResponse}
+                    onChange={(e) => setAiResponse(e.target.value)}
+                    rows={6}
+                    className="text-sm rounded-none"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(aiResponse);
+                      setCopied(true);
+                      toast.success("Copied to clipboard!");
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className="w-full rounded-none gap-2"
+                  >
+                    {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    {copied ? "Copied!" : "Copy to Clipboard"}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { adminAPI } from "@/lib/admin-api";
+import { adminAPI, CreateProductDto, Product } from "@/lib/admin-api";
 
 export const productsService = {
   getProducts: async (params?: { category?: string; limit?: number; offset?: number; isOnSale?: boolean }) => {
@@ -9,11 +9,11 @@ export const productsService = {
     return adminAPI.getProduct(id);
   },
 
-  createProduct: async (data: any) => {
+  createProduct: async (data: CreateProductDto): Promise<Product> => {
     return adminAPI.createProduct(data);
   },
 
-  updateProduct: async (id: string, data: any) => {
+  updateProduct: async (id: string, data: Partial<CreateProductDto>): Promise<Product> => {
     return adminAPI.updateProduct(id, data);
   },
 

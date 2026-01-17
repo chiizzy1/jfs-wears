@@ -9,6 +9,11 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { DashboardSkeleton } from "@/components/admin/dashboard/DashboardSkeleton";
 import { ChartPeriod } from "@/constants/dashboard.constants";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Sparkles, Loader2, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { aiService } from "@/services/ai.service";
+import toast from "react-hot-toast";
+import { InventoryPredictionsPanel } from "@/components/admin/products/InventoryPredictionsPanel";
 
 // Store opening date - months before this cannot be selected
 const STORE_OPENING_DATE = new Date(2026, 0, 1); // January 1, 2026
@@ -39,6 +44,8 @@ export function DashboardView() {
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("year");
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [aiInsights, setAiInsights] = useState<string[] | null>(null);
+  const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
 
   // Generate available years (from store opening to current year)
   const availableYears = useMemo(() => {
@@ -79,6 +86,28 @@ export function DashboardView() {
     return <DashboardSkeleton />;
   }
 
+  // AI Insights Generation
+  const handleGenerateInsights = async () => {
+    if (!dashboard) return;
+    try {
+      setIsGeneratingInsights(true);
+      const result = await aiService.getDashboardInsights({
+        totalRevenue: dashboard.revenue?.thisMonth || 0,
+        orderCount: dashboard.overview?.totalOrders || 0,
+        topProducts: dashboard.topProducts?.map((p) => p.name) || [],
+        lowStockItems: lowStock?.map((l) => l.productName) || [],
+      });
+      // Combine all insights into a single array
+      const allInsights = [result.summary, ...result.trends, ...result.recommendations, ...result.opportunities].filter(Boolean);
+      setAiInsights(allInsights);
+      toast.success("Insights generated!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to generate insights");
+    } finally {
+      setIsGeneratingInsights(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Stats Grid */}
@@ -95,6 +124,50 @@ export function DashboardView() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* AI Insights Section */}
+      <div className="bg-linear-to-br from-purple-50 to-violet-50 border border-purple-200 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-purple-600 flex items-center justify-center rounded-lg">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h2 className="text-sm font-medium">AI Business Insights</h2>
+              <p className="text-xs text-muted-foreground">Powered by your sales data</p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleGenerateInsights}
+            disabled={isGeneratingInsights}
+            className="gap-2 border-purple-300 text-purple-700 hover:bg-purple-100"
+          >
+            {isGeneratingInsights ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : aiInsights ? (
+              <RefreshCw className="h-4 w-4" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
+            {isGeneratingInsights ? "Analyzing..." : aiInsights ? "Refresh" : "Generate Insights"}
+          </Button>
+        </div>
+        {aiInsights ? (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {aiInsights.slice(0, 6).map((insight, i) => (
+              <div key={i} className="bg-white/80 border border-purple-100 p-4">
+                <p className="text-sm text-gray-700">{insight}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-purple-600/70 text-center py-6">
+            Click "Generate Insights" to get AI-powered analysis of your store performance
+          </p>
+        )}
       </div>
 
       {/* Revenue Chart with Recharts */}
@@ -114,7 +187,7 @@ export function DashboardView() {
             <div className="flex gap-1">
               <button
                 onClick={() => setChartPeriod("year")}
-                className={`px-4 py-2 text-xs uppercase tracking-widest transition-colors cursor-pointer ${
+                className={`px-4 py-2 text-base sm:text-xs uppercase tracking-widest transition-colors cursor-pointer ${
                   chartPeriod === "year" ? "bg-black text-white" : "border border-gray-200 hover:border-black"
                 }`}
               >
@@ -122,7 +195,7 @@ export function DashboardView() {
               </button>
               <button
                 onClick={() => setChartPeriod("month")}
-                className={`px-4 py-2 text-xs uppercase tracking-widest transition-colors cursor-pointer ${
+                className={`px-4 py-2 text-base sm:text-xs uppercase tracking-widest transition-colors cursor-pointer ${
                   chartPeriod === "month" ? "bg-black text-white" : "border border-gray-200 hover:border-black"
                 }`}
               >
@@ -136,7 +209,7 @@ export function DashboardView() {
                 <select
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                  className="px-3 py-2 text-xs border border-gray-200 bg-white uppercase tracking-widest cursor-pointer hover:border-black transition-colors"
+                  className="px-3 py-2 text-base sm:text-xs border border-gray-200 bg-white uppercase tracking-widest cursor-pointer hover:border-black transition-colors"
                 >
                   {availableMonths.map(({ name, index, disabled }) => (
                     <option key={index} value={index} disabled={disabled}>
@@ -147,7 +220,7 @@ export function DashboardView() {
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
-                  className="px-3 py-2 text-xs border border-gray-200 bg-white uppercase tracking-widest cursor-pointer hover:border-black transition-colors"
+                  className="px-3 py-2 text-base sm:text-xs border border-gray-200 bg-white uppercase tracking-widest cursor-pointer hover:border-black transition-colors"
                 >
                   {availableYears.map((year) => (
                     <option key={year} value={year}>
@@ -343,6 +416,9 @@ export function DashboardView() {
           </div>
         </div>
       </div>
+
+      {/* AI Inventory Predictions */}
+      <InventoryPredictionsPanel lowStockItems={lowStock} />
     </div>
   );
 }
